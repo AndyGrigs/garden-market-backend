@@ -1,0 +1,7 @@
+POST http://localhost:4444/
+Content-Type: application/json
+Body: {"key": "value"}
+
+
+###
+GET http://localhost:4444/api/resource

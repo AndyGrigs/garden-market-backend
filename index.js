@@ -1,5 +1,4 @@
 import express from 'express'
-import multer from 'multer'
 import cors from 'cors'
 
 import mongoose from 'mongoose'
@@ -12,8 +11,16 @@ import checkAuth from "./utils/checkAuth.js"
 import { register, login, getMe } from './controllers/userController.js';
 import * as postController from './controllers/postController.js'
 import handleValidationErrors from './utils/handleValidationErrors.js'
+import dotenv from 'dotenv';
 
-mongoose.connect('')
+dotenv.config();
+
+
+const DATABASE_URL = process.env.DATABASE_URL;
+
+
+
+mongoose.connect(DATABASE_URL)
         .then(()=>{
             console.log('db works')
         }).catch((err)=>{
@@ -23,16 +30,7 @@ mongoose.connect('')
 
 const app = express();
 
-const storage = multer.diskStorage({
-    destination: (_, __, callback) => {
-        callback(null, 'uploads')
-    },
-    filename: (_, file, callback) =>{
-        callback(null, file.originalname)
-    }
-})
 
-const upload = multer({ storage })
 
 app.use(express.json())
 app.use('/uploads', express.static('uploads'))
