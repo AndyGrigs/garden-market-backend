@@ -31,7 +31,6 @@ const UserSchema = new mongoose.Schema({
   buyerInfo: {
     purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }] // array of order IDs
   },
-  timestamps: true,
 });
 
 export default mongoose.model('User', UserSchema);

@@ -102,7 +102,7 @@ export const login = async (req, res) => {
     }
   };
 
-  export const getMe = async (req, res) => {
+export const getMe = async (req, res) => {
     try {
       const user = await UserModel.findById(req.userId);
   

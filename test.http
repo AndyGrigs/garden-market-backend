@@ -1,7 +1,15 @@
-POST http://localhost:4444/
+POST http://localhost:4444/auth/register
 Content-Type: application/json
-Body: {"key": "value"}
+ 
+ {
+  "email": "test@example.com",
+  "fullName": "Test User",
+  "password": "securePassword123",
+  "role": "",
+  "sellerInfo": {"name": "Test Seller"},
+  "buyerInfo": {}
+}
 
 
 ###
-GET http://localhost:4444/api/resource
+GET http://localhost:4444/
