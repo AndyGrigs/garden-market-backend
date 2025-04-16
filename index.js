@@ -10,6 +10,8 @@ import checkAuth from "./utils/checkAuth.js"
 import { register, login, getMe } from './controllers/userController.js';
 import handleValidationErrors from './utils/handleValidationErrors.js'
 import dotenv from 'dotenv';
+import cookieParser from 'cookie-parser';
+
 
 dotenv.config();
 
@@ -28,10 +30,14 @@ mongoose.connect(DATABASE_URL)
 
 const app = express();
 
-
-
+app.use(cookieParser());
 app.use(express.json())
-app.use(cors())
+
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true               
+}));
+
 
 
 app.post('/auth/login',loginValidation, handleValidationErrors, login);
