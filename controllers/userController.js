@@ -153,3 +153,14 @@ export const getMe = async (req, res) => {
     res.status(500).json({ message: 'Something went wrong' });
   }
 };
+
+export const logout = (req, res) => {
+  res.clearCookie('auth_token', {
+    httpOnly: true,
+    // secure: process.env.NODE_ENV === 'production',
+    secure: false,
+    sameSite: 'Strict',
+    path: '/',
+  });
+  res.status(200).json({ message: 'Logout successful' });
+};
