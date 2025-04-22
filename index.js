@@ -24,10 +24,10 @@ const DATABASE_URL = process.env.DATABASE_URL;
 mongoose
   .connect(DATABASE_URL)
   .then(() => {
-    console.log("db works");
+    console.log('✅ MongoDB connected');
   })
   .catch((err) => {
-    console.log("db error", err);
+    console.log('❌ MongoDB connection error:', err);
   });
 
 const app = express();
