@@ -1,5 +1,7 @@
 import express from "express";
 import cors from "cors";
+import cookieParser from "cookie-parser";
+import dotenv from "dotenv";
 
 import mongoose from "mongoose";
 
@@ -14,8 +16,7 @@ import {
   logout,
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
+import { createCategory, getCategories } from "./controllers/categoryController.js";
 
 dotenv.config();
 
@@ -24,10 +25,10 @@ const DATABASE_URL = process.env.DATABASE_URL;
 mongoose
   .connect(DATABASE_URL)
   .then(() => {
-    console.log('✅ MongoDB connected');
+    console.log("✅ MongoDB connected");
   })
   .catch((err) => {
-    console.log('❌ MongoDB connection error:', err);
+    console.log("❌ MongoDB connection error:", err);
   });
 
 const app = express();
@@ -51,6 +52,9 @@ app.post(
 );
 app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
+
+app.get("/categories", getCategories);
+app.post("/categories", checkAuth, createCategory);
 
 app.listen(4444, (err) => {
   if (err) {
