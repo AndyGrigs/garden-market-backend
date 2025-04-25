@@ -16,7 +16,16 @@ import {
   logout,
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
-import { createCategory, getCategories } from "./controllers/categoryController.js";
+import {
+  createCategory,
+  deleteCategory,
+  getCategories,
+} from "./controllers/categoryController.js";
+import {
+  createTree,
+  deleteTree,
+  getAllTrees,
+} from "./controllers/treeController.js";
 
 dotenv.config();
 
@@ -54,7 +63,13 @@ app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
 
 app.get("/categories", getCategories);
-app.post("/categories", checkAuth, createCategory);
+// app.post("/categories", checkAuth, createCategory);
+app.post("/categories", createCategory);
+app.delete("/categories/:id", deleteCategory);
+
+app.get("/trees", getAllTrees);
+app.post("/trees", createTree);
+app.delete("/trees/:id", deleteTree);
 
 app.listen(4444, (err) => {
   if (err) {

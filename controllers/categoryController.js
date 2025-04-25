@@ -26,3 +26,20 @@ export const getCategories = async (req, res) => {
     res.status(500).json({ message: 'Помилка отримання категорій' });
   }
 };
+
+export const deleteCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+
+    const deleted = await CategorySchema.findByIdAndDelete(categoryId);
+
+    if (!deleted) {
+      return res.status(404).json({ message: 'Категорію не знайдено' });
+    }
+
+    res.json({ message: 'Категорія видалена успішно' });
+  } catch (err) {
+    res.status(500).json({ message: 'Помилка при видаленні категорії' });
+  }
+};
+

@@ -11,5 +11,38 @@ Content-Type: application/json
 }
 
 
+
+
 ###
-GET http://localhost:4444/
+POST  http://localhost:4444/categories
+Content-Type: application/json
+ 
+ {
+  "name": "інвентар"
+}
+
+###
+GET http://localhost:4444/categories
+
+
+###
+DELETE http://localhost:4444/categories/680a4892744395de768f5193
+
+###
+GET  http://localhost:4444/trees
+
+###
+POST  http://localhost:4444/trees
+Content-Type: application/json
+ 
+ {
+   "title": "werft",
+  "description": "Вічнозелене дерево, висота 2м",
+  "price": 299,
+  "imageUrl": "https://example.com/sosna.jpg",
+  "category": "6627e8c86d6d3cc4b0fd8abc", 
+  "stock": 10
+}
+
+###
+DELETE http://localhost:4444/trees/680b8891d1cc6c807880efd9
