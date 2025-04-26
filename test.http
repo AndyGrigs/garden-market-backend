@@ -10,6 +10,15 @@ Content-Type: application/json
   "buyerInfo": {}
 }
 
+###
+POST http://localhost:4444/auth/login
+Content-Type: application/json
+
+{
+  "email": "paulowniaptz07@gmail.com",
+  "password": "234234"
+}
+
 
 
 
@@ -23,7 +32,13 @@ Content-Type: application/json
 
 ###
 GET http://localhost:4444/categories
+###
+PATCH  http://localhost:4444/categories/680a48bc744395de768f5197
+Content-Type: application/json
 
+{
+  "name": "растения"
+}
 
 ###
 DELETE http://localhost:4444/categories/680a4892744395de768f5193
@@ -36,7 +51,7 @@ POST  http://localhost:4444/trees
 Content-Type: application/json
  
  {
-   "title": "werft",
+   "title": "дерево",
   "description": "Вічнозелене дерево, висота 2м",
   "price": 299,
   "imageUrl": "https://example.com/sosna.jpg",

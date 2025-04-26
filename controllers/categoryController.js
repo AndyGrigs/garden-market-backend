@@ -27,6 +27,29 @@ export const getCategories = async (req, res) => {
   }
 };
 
+export const updateCategory = async (req, res) => {
+  try {
+    const categoryId = req.params.id;
+    const { name } = req.body;
+
+    const updated = await CategorySchema.findByIdAndUpdate(
+      categoryId,
+      { name, slug: slugify(name, { lower: true }) },
+      { new: true }
+    );
+
+    if (!updated) {
+      return res.status(404).json({ message: 'Категорію не знайдено' });
+    }
+
+    res.json(updated);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: 'Помилка оновлення категорії' });
+  }
+};
+
+
 export const deleteCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;

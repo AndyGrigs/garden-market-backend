@@ -20,6 +20,7 @@ import {
   createCategory,
   deleteCategory,
   getCategories,
+  updateCategory,
 } from "./controllers/categoryController.js";
 import {
   createTree,
@@ -65,6 +66,7 @@ app.post("/auth/logout", logout);
 app.get("/categories", getCategories);
 // app.post("/categories", checkAuth, createCategory);
 app.post("/categories", createCategory);
+app.patch("/categories/:id", updateCategory);
 app.delete("/categories/:id", deleteCategory);
 
 app.get("/trees", getAllTrees);
