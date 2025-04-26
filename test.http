@@ -60,4 +60,11 @@ Content-Type: application/json
 }
 
 ###
+PATCH  http://localhost:4444/trees/680b31f28784a4dbfd0f6710
+Content-Type: application/json
+
+{
+  "description": "дерево"
+}
+###
 DELETE http://localhost:4444/trees/680b8891d1cc6c807880efd9

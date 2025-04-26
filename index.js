@@ -26,6 +26,7 @@ import {
   createTree,
   deleteTree,
   getAllTrees,
+  updateTree,
 } from "./controllers/treeController.js";
 
 dotenv.config();
@@ -71,6 +72,7 @@ app.delete("/categories/:id", deleteCategory);
 
 app.get("/trees", getAllTrees);
 app.post("/trees", createTree);
+app.patch("/trees/:id", updateTree);
 app.delete("/trees/:id", deleteTree);
 
 app.listen(4444, (err) => {

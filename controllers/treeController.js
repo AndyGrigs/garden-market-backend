@@ -32,6 +32,28 @@ export const getAllTrees = async (req, res) => {
     }
   };
 
+  export const updateTree = async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { title, description, price, imageUrl, category, stock } = req.body;
+  
+      const updatedTree = await TreeSchema.findByIdAndUpdate(
+        id,
+        { $set: { title, description, price, imageUrl, category, stock } },
+        { new: true }
+      );
+  
+      if (!updatedTree) {
+        return res.status(404).json({ message: "Tree not found" });
+      }
+  
+      res.status(200).json(updatedTree);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Failed to update tree" });
+    }
+  };
+
 
   export const deleteTree = async (req, res) => {
     try {
