@@ -4,15 +4,22 @@ import slugify from "slugify";
 export const createCategory = async (req, res) => {
   try {
     const { name } = req.body;
-    const existing = await CategorySchema.findOne({ name });
-    if (existing) {
-      return res.stasus(400).json({ message: "Категория уже есть" });
-    }
-    const slug = slugify(name, { lower: true });
 
-    const category = new CategorySchema({ name, slug });
-    await category.save();
-    res.status(201).json(category);
+    if (!name || !name.ru) {
+      return res.status(400).json({ message: "Поле ru обязательно" }); // Fixed typo
+    }
+
+    const existing = await CategorySchema.findOne({ "name.ru": name.ru }); // Check for existing category by `name.ru`
+    if (existing) {
+      return res.status(400).json({ message: "Категория уже есть" }); // Fixed typo
+    }
+
+    const slug = slugify(name.ru, { lower: true }); // Use `name.ru` for slug generation
+
+    const doc = new CategorySchema({ name, slug });
+    const saved = await doc.save();
+
+    res.status(201).json(saved);
   } catch (error) {
     res.status(500).json({ message: "ошибка!" });
   }
@@ -32,20 +39,26 @@ export const updateCategory = async (req, res) => {
     const categoryId = req.params.id;
     const { name } = req.body;
 
+    if (!name || !name.ru) {
+      return res.status(400).json({ message: "Поле ru обязательно" });
+    }
+
+    const slug = slugify(name.ru, { lower: true });
+
     const updated = await CategorySchema.findByIdAndUpdate(
       categoryId,
-      { name, slug: slugify(name, { lower: true }) },
+      { name, slug },
       { new: true }
     );
 
     if (!updated) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ message: "Категорію не знайдено" });
     }
 
     res.json(updated);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: 'Помилка оновлення категорії' });
+    res.status(500).json({ message: "Помилка оновлення категорії" });
   }
 };
 

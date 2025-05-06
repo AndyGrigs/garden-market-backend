@@ -23,25 +23,37 @@ Content-Type: application/json
 
 
 ###
-POST  http://localhost:4444/categories
+POST http://localhost:4444/categories
 Content-Type: application/json
- 
- {
-  "name": "інвентар"
+
+{
+  "name": {
+    "ru": "Деревья",
+    "ro": "Reitfs",
+    "en": "Trees"
+  }
 }
+
 
 ###
 GET http://localhost:4444/categories
 ###
-PATCH  http://localhost:4444/categories/680a48bc744395de768f5197
+PATCH  http://localhost:4444/categories/681a04dce29672505c925fe0
 Content-Type: application/json
 
 {
-  "name": "растения"
+  "name": {
+    "ru": "Обновленные деревья",
+    "ro": "Actualizat Reitfs",
+    "en": "Updated Trees"
+  }
 }
 
 ###
-DELETE http://localhost:4444/categories/680a4892744395de768f5193
+DELETE http://localhost:4444/categories/680b886ad1cc6c807880efd6
+
+
+
 
 ###
 GET  http://localhost:4444/trees
@@ -51,11 +63,11 @@ POST  http://localhost:4444/trees
 Content-Type: application/json
  
  {
-   "title": "дерево",
+   "title": "павлония",
   "description": "Вічнозелене дерево, висота 2м",
   "price": 299,
   "imageUrl": "https://example.com/sosna.jpg",
-  "category": "6627e8c86d6d3cc4b0fd8abc", 
+  "category": "680b886ad1cc6c807880efd6", 
   "stock": 10
 }
 
@@ -67,4 +79,4 @@ Content-Type: application/json
   "description": "дерево"
 }
 ###
-DELETE http://localhost:4444/trees/680b8891d1cc6c807880efd9
+DELETE http://localhost:4444/trees/680b31f28784a4dbfd0f6710

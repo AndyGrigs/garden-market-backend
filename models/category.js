@@ -1,16 +1,19 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const CategorySchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: true,
-    unique: true,
+const CategorySchema = new mongoose.Schema(
+  {
+    name: {
+      ru: { type: String, required: true },
+      en: { type: String },
+      ro: { type: String },
+    },
+    slug: {
+      type: String,
+      required: true,
+      unique: true,
+    },
   },
-  slug: {
-    type: String,
-    required: true,
-    unique: true,
-  }
-}, { timestamps: true });
+  { timestamps: true }
+);
 
-export default mongoose.model('Category', CategorySchema);
+export default mongoose.model("Category", CategorySchema);
