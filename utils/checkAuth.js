@@ -19,7 +19,7 @@
 // };
 
 import jwt from 'jsonwebtoken';
-import UserModel from '../models/UserModel.js';
+import UserSchema from '../models/user.js'; // Import UserSchema
 
 export const checkAuth = async (req, res, next) => {
   try {
@@ -29,7 +29,7 @@ export const checkAuth = async (req, res, next) => {
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserModel.findById(decoded._id).select("-passwordHash");
+    const user = await UserSchema.findById(decoded._id).select("-passwordHash");
 
     if (!user) {
       return res.status(401).json({ message: 'Користувача не знайдено' });
@@ -43,5 +43,4 @@ export const checkAuth = async (req, res, next) => {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
-
 

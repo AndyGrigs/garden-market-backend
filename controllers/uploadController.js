@@ -1,7 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { checkAdmin } from "../utils/checkAdmin";
+import { checkAdmin } from "../utils/checkAdmin.js";
 
 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 
