@@ -2,13 +2,14 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 
+const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+
 // Створити папку "uploads", якщо не існує
 const uploadDir = path.resolve("uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir);
 }
 
-// Налаштування збереження
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
@@ -19,7 +20,15 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Недопустимий тип файлу. Дозволено лише JPG та PNG"), false);
+  }
+};
+
+const upload = multer({ storage, fileFilter });
 
 // Контролер
 export const uploadImage = [
