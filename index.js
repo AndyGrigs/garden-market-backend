@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import path from "path"
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
@@ -28,6 +29,7 @@ import {
   getAllTrees,
   updateTree,
 } from "./controllers/treeController.js";
+import { uploadImage } from "./controllers/uploadController.js";
 
 dotenv.config();
 
@@ -54,6 +56,9 @@ app.use(
   })
 );
 
+app.use("/uploads", express.static(path.resolve("uploads")));
+app.post("/upload", uploadImage);
+
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
 app.post(
   "/auth/register",
@@ -65,15 +70,15 @@ app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
 
 app.get("/categories", getCategories);
-// app.post("/categories", checkAuth, createCategory);
-app.post("/categories", createCategory);
-app.patch("/categories/:id", updateCategory);
-app.delete("/categories/:id", deleteCategory);
+app.post("/categories", checkAuth, createCategory);
+// app.post("/categories", createCategory);
+app.patch("/categories/:id", checkAuth, updateCategory);
+app.delete("/categories/:id", checkAuth, deleteCategory);
 
 app.get("/trees", getAllTrees);
-app.post("/trees", createTree);
-app.patch("/trees/:id", updateTree);
-app.delete("/trees/:id", deleteTree);
+app.post("/trees",checkAuth, createTree);
+app.patch("/trees/:id", checkAuth, updateTree);
+app.delete("/trees/:id", checkAuth, deleteTree);
 
 app.listen(4444, (err) => {
   if (err) {

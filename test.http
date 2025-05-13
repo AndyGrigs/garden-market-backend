@@ -43,7 +43,7 @@ Content-Type: application/json
 
 {
   "name": {
-    "ru": "Обновленные деревья",
+    "ru": "Деревья",
     "ro": "Actualizat Reitfs",
     "en": "Updated Trees"
   }
@@ -72,11 +72,11 @@ Content-Type: application/json
 }
 
 ###
-PATCH  http://localhost:4444/trees/680b31f28784a4dbfd0f6710
+PATCH  http://localhost:4444/trees/6818c1eabe407ca5739df1bd
 Content-Type: application/json
 
 {
-  "description": "дерево"
+  "category": "681aefe6224bf06198199221"
 }
 ###
 DELETE http://localhost:4444/trees/680b31f28784a4dbfd0f6710
