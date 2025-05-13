@@ -1,43 +1,47 @@
+ 
+// import jwt from 'jsonwebtoken';
 
+// export const checkAuth = (req, res, next) => {
+//   try {
+//     const token = req.cookies.auth_token;
 
-// import jwt from 'jsonwebtoken'
-
-// export default (req, res, next) => {
-//   const token = (req.headers.authorization || '').replace(/Bearer\s?/, '')
-//   if (token) {
-//     try {
-//       const decoded = jwt.verify(token, '')
-//       req.userId = decoded._id
-//     } catch (error) {
-//       return res.status(403).json({
-//         message: 'No access!'
-//       })
+//     if (!token) {
+//       return res.status(401).json({ message: 'No token provided' });
 //     }
-//   } else {
-//     return res.status(403).json({
-//       message: 'No access!'
-//     })
-//   }
-//   next()
-// }
-import jwt from 'jsonwebtoken';
 
-export const checkAuth = (req, res, next) => {
+//     const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+
+//     req.userId = decoded._id;
+//     next();
+//   } catch (error) {
+//     return res.status(401).json({ message: 'Invalid or expired token' });
+//   }
+// };
+
+import jwt from 'jsonwebtoken';
+import UserModel from '../models/UserModel.js';
+
+export const checkAuth = async (req, res, next) => {
   try {
     const token = req.cookies.auth_token;
-
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const user = await UserModel.findById(decoded._id).select("-passwordHash");
 
-    req.userId = decoded._id;
+    if (!user) {
+      return res.status(401).json({ message: 'Користувача не знайдено' });
+    }
+
+    req.userId = user._id;
+    req.user = user;
+
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Invalid or expired token' });
   }
 };
-
 
 

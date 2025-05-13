@@ -30,6 +30,7 @@ import {
   updateTree,
 } from "./controllers/treeController.js";
 import { uploadImage } from "./controllers/uploadController.js";
+import { checkAdmin } from "./utils/checkAdmin.js";
 
 dotenv.config();
 
@@ -57,7 +58,7 @@ app.use(
 );
 
 app.use("/uploads", express.static(path.resolve("uploads")));
-app.post("/upload", uploadImage);
+app.post("/upload", checkAuth, checkAdmin,  uploadImage);
 
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
 app.post(
@@ -71,7 +72,6 @@ app.post("/auth/logout", logout);
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, createCategory);
-// app.post("/categories", createCategory);
 app.patch("/categories/:id", checkAuth, updateCategory);
 app.delete("/categories/:id", checkAuth, deleteCategory);
 

@@ -1,6 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import { checkAdmin } from "../utils/checkAdmin";
 
 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
 
@@ -32,6 +33,7 @@ const upload = multer({ storage, fileFilter });
 
 // Контролер
 export const uploadImage = [
+  checkAdmin,
   upload.single("image"),
   (req, res) => {
     if (!req.file) {
