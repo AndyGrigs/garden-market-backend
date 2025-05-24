@@ -18,31 +18,7 @@ export const register = async (req, res) => {
     });
     const user = await doc.save();
 
-    // Send confirmation email
-    //  const transporter = nodemailer.createTransport({
-    //     host: 'smtp.gmail.com',
-    //     port: 587,
-    //     secure: false, // or 'STARTTLS'
-    //     auth: {
-    //       user: 'your-email@gmail.com',
-    //       pass: 'your-password',
-    //     },
-    //   });
 
-    //   const mailOptions = {
-    //     from: 'your-email@gmail.com',
-    //     to: user.email,
-    //     subject: 'Registration Confirmation',
-    //     text: `Hello ${user.fullName}, thank you for registering!`,
-    //   };
-
-    //   transporter.sendMail(mailOptions, (error, info) => {
-    //     if (error) {
-    //       console.log(error);
-    //     } else {
-    //       console.log('Email sent: ' + info.response);
-    //     }
-    //   });
 
     const token = jwt.sign(
       {
