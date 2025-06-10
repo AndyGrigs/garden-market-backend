@@ -2,9 +2,9 @@ POST http://localhost:4444/auth/register
 Content-Type: application/json
  
  {
-  "email": "test@example.com",
-  "name": "Test User",
-  "password": "securePassword123",
+  "fullName": "Andy Grig",
+  "email": "andygrigs88@gmail.com",
+  "password": "123123",
   "role": "",
   "sellerInfo": {"name": "Test Seller"},
   "buyerInfo": {}

@@ -1,6 +1,9 @@
 import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import UserModel from "../models/user.js";
+import EmailService from "../services/emailService.js";
+
+const emailService = new EmailService();
 
 export const register = async (req, res) => {
   try {
@@ -18,7 +21,8 @@ export const register = async (req, res) => {
     });
     const user = await doc.save();
 
-
+    // Send welcome email
+    await emailService.sendWelcomeEmail(user.email, user.fullName);
 
     const token = jwt.sign(
       {
@@ -77,66 +81,39 @@ export const login = async (req, res) => {
         //secure: process.env.NODE_ENV === "production", HTTPS only у продакшені
         secure: false,
         sameSite: "Strict",
-        maxAge: 30 * 24 * 60 * 60 * 1000, 
+        maxAge: 30 * 24 * 60 * 60 * 1000,
         path: "/",
       })
       .status(200)
-      .json({ ...userData }); 
+      .json({ ...userData });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Login failed" });
   }
 };
 
-// export const getMe = async (req, res) => {
-//   try {
-//     const user = await UserModel.findById(req.userId);
-
-//     if (!user) {
-//       return res.status(404).json({
-//         message: "User is not found!",
-//       });
-//     }
-
-//     const { passwordHash, ...userData } = user._doc;
-
-//     if (user.role === "seller") {
-//       userData.sellerInfo = user.sellerInfo;
-//     } else if (user.role === "buyer") {
-//       userData.buyerInfo = user.buyerInfo;
-//     }
-
-//     res.json(userData);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({
-//       message: "some error",
-//     });
-//   }
-// };
-
 export const getMe = async (req, res) => {
   try {
-    const user = await UserModel.findById(req.userId).select('-passwordHash');
+    const user = await UserModel.findById(req.userId).select("-passwordHash");
 
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     res.json(user);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: 'Something went wrong' });
+    res.status(500).json({ message: "Something went wrong" });
   }
 };
 
 export const logout = (req, res) => {
-  res.clearCookie('auth_token', {
+  res.clearCookie("auth_token", {
     httpOnly: true,
     // secure: process.env.NODE_ENV === 'production',
     secure: false,
-    sameSite: 'Strict',
-    path: '/',
+    sameSite: "Strict",
+    path: "/",
   });
-  res.status(200).json({ message: 'Logout successful' });
+  res.status(200).json({ message: "Logout successful" });
 };

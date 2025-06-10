@@ -31,6 +31,9 @@ import {
 } from "./controllers/treeController.js";
 import { uploadImage } from "./controllers/uploadController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
+import EmailService from './services/emailService.js';
+
+
 
 dotenv.config();
 
@@ -79,6 +82,11 @@ app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree);
 app.patch("/trees/:id", checkAuth, updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
+
+
+const emailService = new EmailService();
+
+emailService.testConnection();
 
 app.listen(4444, (err) => {
   if (err) {
