@@ -15,6 +15,8 @@ import {
   login,
   getMe,
   logout,
+  requestPasswordReset,
+  resetPassword,
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
 import {
@@ -72,6 +74,8 @@ app.post(
 );
 app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
+app.post('/auth/request-password-reset', requestPasswordReset);
+app.post('/auth/reset-password', resetPassword);
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, createCategory);

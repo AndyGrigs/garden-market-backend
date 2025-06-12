@@ -11,6 +11,10 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
+    // Generate verification token and expiry (24h)
+    const verificationToken = crypto.randomBytes(32).toString("hex");
+    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
     const doc = new UserModel({
       email: req.body.email,
       fullName: req.body.fullName,
@@ -18,11 +22,19 @@ export const register = async (req, res) => {
       role: req.body.role || "buyer",
       sellerInfo: req.body.sellerInfo || {},
       buyerInfo: req.body.buyerInfo || {},
+      isVerified: false,
+      verificationToken,
+      verificationTokenExpires,
+      isActive: true,
     });
     const user = await doc.save();
 
     // Send welcome email
-    await emailService.sendWelcomeEmail(user.email, user.fullName);
+    await emailService.sendVerificationEmail(
+      user.email,
+      user.fullName,
+      verificationToken
+    );
 
     const token = jwt.sign(
       {
@@ -39,6 +51,8 @@ export const register = async (req, res) => {
     res.json({
       ...userData,
       token,
+      message:
+        "Registration successful. Please check your email to verify your account.",
     });
   } catch (error) {
     console.log(error);
@@ -64,7 +78,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: "Invalid email or password" });
     }
 
-    // Check if the user has a valid role
     if (!["buyer", "seller", "admin"].includes(user.role)) {
       return res.status(401).json({ message: "Invalid user role" });
     }
@@ -116,4 +129,57 @@ export const logout = (req, res) => {
     path: "/",
   });
   res.status(200).json({ message: "Logout successful" });
+};
+
+export const requestPasswordReset = async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await UserModel.findOne({ email, isActive: true });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ message: "User with this email is not exist" });
+    }
+
+    // Generate reset token and expiry (1 hour)
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+
+    user.resetToken = resetToken;
+    user.resetTokenExpires = resetTokenExpires;
+    await user.save();
+
+    emailService.sendPasswordResetEmail(user.email, user.fullName, resetToken);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error reset password" });
+  }
+};
+
+export const resetPassword = async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    const user = await UserModel.findOne({
+      resetToken: token,
+      resetTokenExpires: { $gt: new Date() },
+      isActive: true,
+    });
+
+    if (!user) {
+      return res
+        .status(400)
+        .json({ message: "Недійсний або прострочений токен" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.passwordHash = await bcrypt.hash(newPassword, salt);
+    user.resetToken = undefined;
+    user.resetTokenExpires = undefined;
+    await user.save();
+
+    res.json({ message: "Пароль успішно змінено" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Помилка при зміні пароля" });
+  }
 };

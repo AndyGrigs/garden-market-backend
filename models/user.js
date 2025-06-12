@@ -3,34 +3,45 @@ import mongoose from "mongoose";
 const UserSchema = new mongoose.Schema({
   fullName: {
     type: String,
-    required: true
+    required: true,
   },
   email: {
     type: String,
     required: true,
-    unique: true
+    unique: true,
   },
   passwordHash: {
     type: String,
-    required: true
+    required: true,
   },
   avatarUrl: String,
   role: {
     type: String,
-    enum: ['buyer', 'seller', 'admin'],
-    default: 'buyer'
+    enum: ["buyer", "seller", "admin"],
+    default: "buyer",
   },
-  
+
   sellerInfo: {
     nurseryName: String,
     address: String,
     phoneNumber: String,
-    treeVarieties: [{ type: String }] // array of tree varieties sold by the seller
+    treeVarieties: [{ type: String }],
   },
-  // Additional fields for buyers
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verificationToken: String,
+  verificationTokenExpires: Date,
+  isActive: {
+    type: Boolean,
+    default: true,
+  },
+  resetToken: String,
+  resetTokenExpires: Date,
   buyerInfo: {
-    purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Order' }] // array of order IDs
+    purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }], // array of order IDs
   },
 });
 
-export default mongoose.model('User', UserSchema);
+export default mongoose.model("User", UserSchema);

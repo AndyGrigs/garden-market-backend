@@ -239,5 +239,5 @@ class emailService {
   }
 }
 
-// ...existing code...
+
 export default emailService;
