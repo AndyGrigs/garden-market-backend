@@ -9,12 +9,12 @@ export const createCategory = async (req, res) => {
       return res.status(400).json({ message: "Поле ru обязательно" }); // Fixed typo
     }
 
-    const existing = await CategorySchema.findOne({ "name.ru": name.ru }); // Check for existing category by `name.ru`
+    const existing = await CategorySchema.findOne({ "name.ru": name.ru }); 
     if (existing) {
-      return res.status(400).json({ message: "Категория уже есть" }); // Fixed typo
+      return res.status(400).json({ message: "Категория уже есть" });
     }
 
-    const slug = slugify(name.ru, { lower: true }); // Use `name.ru` for slug generation
+    const slug = slugify(name.ru, { lower: true }); 
 
     const doc = new CategorySchema({ name, slug });
     const saved = await doc.save();
