@@ -2,12 +2,31 @@ POST http://localhost:4444/auth/register
 Content-Type: application/json
  
  {
-  "fullName": "Andy Grig",
-  "email": "andygrigs88@gmail.com",
+  "fullName": "David Grig",
+  "email": "davidgrygorov@gmail.com",
   "password": "123123",
   "role": "",
-  "sellerInfo": {"name": "Test Seller"},
+  "sellerInfo": {},
   "buyerInfo": {}
+}
+
+
+
+###
+POST http://localhost:4444/auth/request-password-reset
+Content-Type: application/json
+
+{
+  "email": "andygrigs88@gmail.com"
+}
+
+###
+POST http://localhost:4444/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "PASTE_YOUR_TOKEN_HERE",
+  "newPassword": "newpassword123"
 }
 
 ###
