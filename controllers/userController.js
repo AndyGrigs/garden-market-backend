@@ -141,7 +141,7 @@ export const requestPasswordReset = async (req, res) => {
         .json({ message: "User with this email is not exist" });
     }
 
-    // Generate reset token and expiry (1 hour)
+    
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
 
