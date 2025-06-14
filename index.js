@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import { registerValidation } from "./validations/auth.js";
 import { loginValidation } from "./validations/login.js";
 
-import { checkAuth } from "./utils/checkAuth.js";
+import { checkAuth, verifyEmail } from "./utils/checkAuth.js";
 import {
   register,
   login,
@@ -72,6 +72,7 @@ app.post(
   handleValidationErrors,
   register
 );
+app.post("/auth/verify-email", verifyEmail)
 app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
 app.post('/auth/request-password-reset', requestPasswordReset);

@@ -1,9 +1,6 @@
 import nodemailer from "nodemailer";
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
-
-
-
 
 class emailService {
   constructor() {
@@ -20,8 +17,6 @@ class emailService {
       },
     });
   }
-
-  
 
   // Тестування підключення
   async testConnection() {
@@ -75,49 +70,48 @@ class emailService {
     }
   }
 
-   // Відновлення пароля
+  // Відновлення пароля
   async sendPasswordResetEmail(userEmail, userName, resetToken) {
     try {
       const resetUrl = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
-      
+
       const mailOptions = {
         from: `"Garden Market" <${process.env.EMAIL_USER}>`,
         to: userEmail,
-        subject: 'Відновлення пароля - Garden Market',
-        html: this.getPasswordResetTemplate(userName, resetUrl)
+        subject: "Відновлення пароля - Garden Market",
+        html: this.getPasswordResetTemplate(userName, resetUrl),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log('✓ Password reset email відправлено:', result.messageId);
+      console.log("✓ Password reset email відправлено:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
-      console.error('✗ Помилка password reset email:', error);
+      console.error("✗ Помилка password reset email:", error);
       return { success: false, error: error.message };
     }
   }
 
-
-   async sendPasswordResetEmail(userEmail, userName, resetToken) {
+  async sendPasswordResetEmail(userEmail, userName, resetToken) {
     try {
       const resetUrl = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
-      
+
       const mailOptions = {
         from: `"Garden Market" <${process.env.EMAIL_USER}>`,
         to: userEmail,
-        subject: 'Відновлення пароля - Garden Market',
-        html: this.getPasswordResetTemplate(userName, resetUrl)
+        subject: "Відновлення пароля - Garden Market",
+        html: this.getPasswordResetTemplate(userName, resetUrl),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log('✓ Password reset email відправлено:', result.messageId);
+      console.log("✓ Password reset email відправлено:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
-      console.error('✗ Помилка password reset email:', error);
+      console.error("✗ Помилка password reset email:", error);
       return { success: false, error: error.message };
     }
   }
 
-    // Шаблон welcome email
+  // Шаблон welcome email
   getWelcomeTemplate(userName) {
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
@@ -163,7 +157,7 @@ class emailService {
     `;
   }
 
-   // Шаблон verification email
+  // Шаблон verification email
   getVerificationTemplate(userName, verificationUrl) {
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
@@ -179,7 +173,7 @@ class emailService {
           
           <div style="text-align: center; margin: 30px 0;">
             <a href="${verificationUrl}" 
-               style="background-color: #2196F3; color: white; padding: 15px 30px; 
+              style="background-color: #2196F3; color: white; padding: 15px 30px; 
                       text-decoration: none; border-radius: 25px; display: inline-block; 
                       font-weight: bold; font-size: 16px;">
               ✓ Підтвердити Email
@@ -238,6 +232,5 @@ class emailService {
     `;
   }
 }
-
 
 export default emailService;
