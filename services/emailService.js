@@ -49,23 +49,21 @@ class emailService {
     }
   }
 
-  // Email підтвердження
-  async sendVerificationEmail(userEmail, userName, verificationToken) {
+  // Надіслати email з кодом підтвердження
+  async sendVerificationCodeEmail(userEmail, userName, code) {
     try {
-      const verificationUrl = `${process.env.BASE_URL}/verify-email?token=${verificationToken}`;
-
       const mailOptions = {
         from: `"Garden Market" <${process.env.EMAIL_USER}>`,
         to: userEmail,
-        subject: "Підтвердіть свій email - Garden Market",
-        html: this.getVerificationTemplate(userName, verificationUrl),
+        subject: "Ваш код підтвердження - Garden Market",
+        html: this.getVerificationCodeTemplate(userName, code),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log("✓ Verification email відправлено:", result.messageId);
+      console.log("✓ Verification code email відправлено:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
-      console.error("✗ Помилка verification email:", error);
+      console.error("✗ Помилка verification code email:", error);
       return { success: false, error: error.message };
     }
   }
@@ -158,42 +156,77 @@ class emailService {
   }
 
   // Шаблон verification email
-  getVerificationTemplate(userName, verificationUrl) {
+  // getVerificationTemplate(userName, verificationUrl) {
+  //   return `
+  //     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+  //       <div style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 30px; text-align: center;">
+  //         <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження Email</h1>
+  //       </div>
+        
+  //       <div style="padding: 30px;">
+  //         <h2 style="color: #333;">Привіт, ${userName}!</h2>
+  //         <p style="color: #555; line-height: 1.6;">
+  //           Щоб завершити реєстрацію в Garden Market, підтвердьте свій email адрес.
+  //         </p>
+          
+  //         <div style="text-align: center; margin: 30px 0;">
+  //           <a href="${verificationUrl}" 
+  //             style="background-color: #2196F3; color: white; padding: 15px 30px; 
+  //                     text-decoration: none; border-radius: 25px; display: inline-block; 
+  //                     font-weight: bold; font-size: 16px;">
+  //             ✓ Підтвердити Email
+  //           </a>
+  //         </div>
+          
+  //         <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
+  //           <p style="color: #856404; margin: 0; font-size: 14px;">
+  //             ⚠️ Посилання дійсне протягом 24 годин
+  //           </p>
+  //         </div>
+          
+  //         <p style="color: #666; font-size: 14px;">
+  //           Якщо кнопка не працює, скопіюйте це посилання:<br>
+  //           <span style="word-break: break-all; color: #2196F3;">${verificationUrl}</span>
+  //         </p>
+  //       </div>
+  //     </div>
+  //   `;
+  // }
+
+  // ...existing code...
+
+  // Генерація 6-значного коду
+  generateVerificationCode() {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  }
+
+
+
+  // Шаблон листа з кодом
+  getVerificationCodeTemplate(userName, code) {
     return `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
         <div style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження Email</h1>
+          <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження акаунта</h1>
         </div>
-        
         <div style="padding: 30px;">
           <h2 style="color: #333;">Привіт, ${userName}!</h2>
           <p style="color: #555; line-height: 1.6;">
-            Щоб завершити реєстрацію в Garden Market, підтвердьте свій email адрес.
+            Ваш код підтвердження акаунта:
           </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${verificationUrl}" 
-              style="background-color: #2196F3; color: white; padding: 15px 30px; 
-                      text-decoration: none; border-radius: 25px; display: inline-block; 
-                      font-weight: bold; font-size: 16px;">
-              ✓ Підтвердити Email
-            </a>
+          <div style="font-size: 32px; font-weight: bold; color: #2196F3; margin: 30px 0;">
+            ${code}
           </div>
-          
-          <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p style="color: #856404; margin: 0; font-size: 14px;">
-              ⚠️ Посилання дійсне протягом 24 годин
-            </p>
-          </div>
-          
           <p style="color: #666; font-size: 14px;">
-            Якщо кнопка не працює, скопіюйте це посилання:<br>
-            <span style="word-break: break-all; color: #2196F3;">${verificationUrl}</span>
+            Введіть цей код у формі на сайті для підтвердження акаунта.<br>
+            Код дійсний протягом 10 хвилин.
           </p>
         </div>
       </div>
     `;
   }
+
+// ...existing code...
 
   // Шаблон password reset
   getPasswordResetTemplate(userName, resetUrl) {

@@ -12,9 +12,9 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    // Generate verification token and expiry (24h)
-    const verificationToken = crypto.randomBytes(32).toString("hex");
-    const verificationTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    // Generate verification code and expiry (10 min)
+    const code = emailService.generateVerificationCode();
+    const verificationTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const doc = new UserModel({
       email: req.body.email,
@@ -24,17 +24,17 @@ export const register = async (req, res) => {
       sellerInfo: req.body.sellerInfo || {},
       buyerInfo: req.body.buyerInfo || {},
       isVerified: false,
-      verificationToken,
+      verificationToken: code,
       verificationTokenExpires,
       isActive: true,
     });
     const user = await doc.save();
 
-    // Send welcome email
-    await emailService.sendVerificationEmail(
+    // Send email with code
+    await emailService.sendVerificationCodeEmail(
       user.email,
       user.fullName,
-      verificationToken
+      code
     );
 
     const token = jwt.sign(
@@ -53,12 +53,12 @@ export const register = async (req, res) => {
       ...userData,
       token,
       message:
-        "Registration successful. Please check your email to verify your account.",
+        "Registration successful. Please check your email and enter the code to verify your account.",
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "Ragistration failed",
+      message: "Registration failed",
     });
   }
 };
@@ -142,7 +142,6 @@ export const requestPasswordReset = async (req, res) => {
         .json({ message: "User with this email is not exist" });
     }
 
-    
     const resetToken = crypto.randomBytes(32).toString("hex");
     const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
 

@@ -26,17 +26,21 @@ export const checkAuth = async (req, res, next) => {
 
 export const verifyEmail = async (req, res) => {
   try {
-    const { token } = req.body;
-    const user = await UserSchema.findOne({
-      verificationToken: token,
-      verificationTokenExpires: { $gt: new Date(Date.now() - 24 * 60 * 60 * 1000) },
-      isVerified: true,
-      isActive: true,
-    });
+    const {email, code} = req.body;
+    const user = await UserSchema.findOne({email});
 
     if (!user) {
-      return res.status(400).json({ message: "Invalid or expired token..." });
+      return res.status(400).json({ message: "User not found..." });
     }
+
+     if (
+    user.verificationToken !== code ||
+    !user.verificationTokenExpires ||
+    user.verificationTokenExpires < new Date()
+  ) {
+    return res.status(400).json({ message: "Invalid or expired code" });
+  }
+  
     user.isVerified = true;
     user.verificationToken = undefined;
     user.verificationTokenExpires = undefined;
