@@ -31,9 +31,10 @@ import {
   getAllTrees,
   updateTree,
 } from "./controllers/treeController.js";
-import { uploadImage } from "./controllers/uploadController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from './services/emailService.js';
+import { uploadImage } from "./controllers/uploadController.js";
+import { deleteImage } from './controllers/uploadController.js';
 
 
 
@@ -63,7 +64,7 @@ app.use(
 );
 
 app.use("/uploads", express.static(path.resolve("uploads")));
-app.post("/upload", checkAuth, checkAdmin,  uploadImage);
+
 
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
 app.post(
@@ -87,11 +88,14 @@ app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree);
 app.patch("/trees/:id", checkAuth, updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
-
+app.post("/upload",checkAdmin, uploadImage)
+app.delete("/image/:filename", deleteImage)
 
 const emailService = new EmailService();
 
 emailService.testConnection();
+
+app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.listen(4444, (err) => {
   if (err) {
