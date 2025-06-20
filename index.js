@@ -58,7 +58,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: "http://localhost:5173" || "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io" ,
+    // origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
     credentials: true,
   })
 );
