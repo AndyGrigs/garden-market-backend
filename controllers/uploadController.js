@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 
 // Дозволені типи файлів
-const allowedTypes = ["image/jpeg", "image/png"];
+const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 
 // Створення папки для збереження фото, якщо її немає
 const uploadDir = path.resolve("uploads");
@@ -41,9 +41,9 @@ export const uploadImage = [
       return res.status(400).json({ message: "Файл не отримано" });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`; // Повертаємо URL зображення
+    const imageUrl = `/uploads/${req.file.filename}`; 
     res.status(200).json({ imageUrl });
-  },
+  }
 ];
 
 

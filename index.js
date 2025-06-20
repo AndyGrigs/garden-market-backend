@@ -88,8 +88,8 @@ app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree);
 app.patch("/trees/:id", checkAuth, updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
-app.post("/upload",checkAdmin, uploadImage)
-app.delete("/image/:filename", deleteImage)
+app.post("/upload", uploadImage)
+app.delete("/delete-image/:filename", deleteImage)
 
 const emailService = new EmailService();
 

@@ -99,3 +99,6 @@ Content-Type: application/json
 }
 ###
 DELETE http://localhost:4444/trees/680b31f28784a4dbfd0f6710
+
+###
+DELETE http://localhost:4444/delete-image/1750406817953.jpeg
