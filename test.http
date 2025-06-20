@@ -91,11 +91,15 @@ Content-Type: application/json
 }
 
 ###
-PATCH  http://localhost:4444/trees/6818c1eabe407ca5739df1bd
+PATCH  http://localhost:4444/trees/68556fab88911da06881f675
 Content-Type: application/json
 
 {
-  "category": "681aefe6224bf06198199221"
+   "title": {
+      "ru": "Дуб",
+      "ro": "Fasrte",
+    "en": "Oakoloe"
+    }
 }
 ###
 DELETE http://localhost:4444/trees/680b31f28784a4dbfd0f6710

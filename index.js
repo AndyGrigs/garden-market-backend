@@ -86,7 +86,7 @@ app.delete("/categories/:id", checkAuth, deleteCategory);
 
 app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree);
-app.patch("/trees/:id", checkAuth, updateTree);
+app.patch("/trees/:id", updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
 app.post("/upload", uploadImage)
 app.delete("/delete-image/:filename", deleteImage)
