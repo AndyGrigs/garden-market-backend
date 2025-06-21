@@ -14,6 +14,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  language: { type: String, enum: ["ru", "ro", "en"], default: "en" },
   avatarUrl: String,
   role: {
     type: String,
@@ -37,10 +38,10 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: true,
   },
-  resetToken: String,
-  resetTokenExpires: Date,
+  resetCode: String,
+  resetCodeExpires: Date,
   buyerInfo: {
-    purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }], // array of order IDs
+    purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
 });
 

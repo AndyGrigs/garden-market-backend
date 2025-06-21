@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import { verificationCodeTemplates } from "./emailTemplates";
 dotenv.config();
 
 class emailService {
@@ -29,34 +30,19 @@ class emailService {
       return false;
     }
   }
-
-  // Welcome email при реєстрації
-  async sendWelcomeEmail(userEmail, userName) {
-    try {
-      const mailOptions = {
-        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: "Ласкаво просимо в Garden Market!",
-        html: this.getWelcomeTemplate(userName),
-      };
-
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log("✓ Welcome email відправлено:", result.messageId);
-      return { success: true, messageId: result.messageId };
-    } catch (error) {
-      console.error("✗ Помилка welcome email:", error);
-      return { success: false, error: error.message };
-    }
-  }
-
   // Надіслати email з кодом підтвердження
-  async sendVerificationCodeEmail(userEmail, userName, code) {
+  async sendVerificationCodeEmail(userEmail, userName, code, userLang = "ru") {
     try {
+      const lang = ["ru", "en", "ro"].includes(userLang) ? userLang : "ru";
       const mailOptions = {
         from: `"Garden Market" <${process.env.EMAIL_USER}>`,
         to: userEmail,
-        subject: "Ваш код підтвердження - Garden Market",
-        html: this.getVerificationCodeTemplate(userName, code),
+        subject: {
+          ru: "Ваш код подтверждения - Garden Market",
+          en: "Your verification code - Garden Market",
+          ro: "Codul dvs. de verificare - Garden Market",
+        }[lang],
+        html: verificationCodeTemplates[lang](userName, code)
       };
 
       const result = await this.transporter.sendMail(mailOptions);
@@ -68,92 +54,22 @@ class emailService {
     }
   }
 
-  // Відновлення пароля
-  async sendPasswordResetEmail(userEmail, userName, resetToken) {
-    try {
-      const resetUrl = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
+  async sendResetCodeEmail(userEmail, userName, code, userLang = "ru") {
+  const lang = ["ru", "ro", "en"].includes(userLang) ? userLang : "ru";
+  const mailOptions = {
+    from: `"Garden Market" <${process.env.EMAIL_USER}>`,
+    to: userEmail,
+    subject: {
+      en: "Password reset code - Garden Market",
+      ru: "Код для сброса пароля - Garden Market",
+      ro: "Cod de resetare a parolei - Garden Market"
+    }[lang],
+    html: resetCodeTemplates[lang](userName, code)
+  };
+  return await this.transporter.sendMail(mailOptions);
+}
 
-      const mailOptions = {
-        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: "Відновлення пароля - Garden Market",
-        html: this.getPasswordResetTemplate(userName, resetUrl),
-      };
 
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log("✓ Password reset email відправлено:", result.messageId);
-      return { success: true, messageId: result.messageId };
-    } catch (error) {
-      console.error("✗ Помилка password reset email:", error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  async sendPasswordResetEmail(userEmail, userName, resetToken) {
-    try {
-      const resetUrl = `${process.env.BASE_URL}/reset-password?token=${resetToken}`;
-
-      const mailOptions = {
-        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
-        to: userEmail,
-        subject: "Відновлення пароля - Garden Market",
-        html: this.getPasswordResetTemplate(userName, resetUrl),
-      };
-
-      const result = await this.transporter.sendMail(mailOptions);
-      console.log("✓ Password reset email відправлено:", result.messageId);
-      return { success: true, messageId: result.messageId };
-    } catch (error) {
-      console.error("✗ Помилка password reset email:", error);
-      return { success: false, error: error.message };
-    }
-  }
-
-  // Шаблон welcome email
-  getWelcomeTemplate(userName) {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #4CAF50, #45a049); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">🌱 Garden Market</h1>
-          <p style="margin: 10px 0 0 0; font-size: 16px;">Ваш садовий магазин онлайн</p>
-        </div>
-        
-        <div style="padding: 30px;">
-          <h2 style="color: #333; margin-bottom: 20px;">Привіт, ${userName}! 👋</h2>
-          <p style="color: #555; line-height: 1.6; margin-bottom: 20px;">
-            Дякуємо за реєстрацію в Garden Market! Тепер ви можете:
-          </p>
-          
-          <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
-            <ul style="color: #333; line-height: 1.8; padding-left: 20px;">
-              <li>🛒 Переглядати каталог садових товарів</li>
-              <li>🌿 Замовляти рослини та інструменти</li>
-              <li>📦 Відстежувати статус замовлень</li>
-              <li>💚 Отримувати персональні рекомендації</li>
-            </ul>
-          </div>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.BASE_URL}" 
-               style="background-color: #4CAF50; color: white; padding: 15px 30px; 
-                      text-decoration: none; border-radius: 25px; display: inline-block; 
-                      font-weight: bold; font-size: 16px;">
-              Почати покупки
-            </a>
-          </div>
-          
-          <p style="color: #666; font-size: 14px; margin-top: 30px;">
-            Якщо у вас виникли питання, звертайтеся: 
-            <a href="mailto:${process.env.EMAIL_USER}" style="color: #4CAF50;">${process.env.EMAIL_USER}</a>
-          </p>
-        </div>
-        
-        <div style="background-color: #f8f9fa; padding: 20px; text-align: center; color: #666; font-size: 12px;">
-          <p>© 2025 Garden Market. Всі права захищені.</p>
-        </div>
-      </div>
-    `;
-  }
 
   // Шаблон verification email
   // getVerificationTemplate(userName, verificationUrl) {
@@ -162,28 +78,28 @@ class emailService {
   //       <div style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 30px; text-align: center;">
   //         <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження Email</h1>
   //       </div>
-        
+
   //       <div style="padding: 30px;">
   //         <h2 style="color: #333;">Привіт, ${userName}!</h2>
   //         <p style="color: #555; line-height: 1.6;">
   //           Щоб завершити реєстрацію в Garden Market, підтвердьте свій email адрес.
   //         </p>
-          
+
   //         <div style="text-align: center; margin: 30px 0;">
-  //           <a href="${verificationUrl}" 
-  //             style="background-color: #2196F3; color: white; padding: 15px 30px; 
-  //                     text-decoration: none; border-radius: 25px; display: inline-block; 
+  //           <a href="${verificationUrl}"
+  //             style="background-color: #2196F3; color: white; padding: 15px 30px;
+  //                     text-decoration: none; border-radius: 25px; display: inline-block;
   //                     font-weight: bold; font-size: 16px;">
   //             ✓ Підтвердити Email
   //           </a>
   //         </div>
-          
+
   //         <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
   //           <p style="color: #856404; margin: 0; font-size: 14px;">
   //             ⚠️ Посилання дійсне протягом 24 годин
   //           </p>
   //         </div>
-          
+
   //         <p style="color: #666; font-size: 14px;">
   //           Якщо кнопка не працює, скопіюйте це посилання:<br>
   //           <span style="word-break: break-all; color: #2196F3;">${verificationUrl}</span>
@@ -197,73 +113,10 @@ class emailService {
 
   // Генерація 6-значного коду
   generateVerificationCode() {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+    return Math.floor(100 + Math.random() * 900).toString();
   }
 
 
-
-  // Шаблон листа з кодом
-  getVerificationCodeTemplate(userName, code) {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження акаунта</h1>
-        </div>
-        <div style="padding: 30px;">
-          <h2 style="color: #333;">Привіт, ${userName}!</h2>
-          <p style="color: #555; line-height: 1.6;">
-            Ваш код підтвердження акаунта:
-          </p>
-          <div style="font-size: 32px; font-weight: bold; color: #2196F3; margin: 30px 0;">
-            ${code}
-          </div>
-          <p style="color: #666; font-size: 14px;">
-            Введіть цей код у формі на сайті для підтвердження акаунта.<br>
-            Код дійсний протягом 10 хвилин.
-          </p>
-        </div>
-      </div>
-    `;
-  }
-
-// ...existing code...
-
-  // Шаблон password reset
-  getPasswordResetTemplate(userName, resetUrl) {
-    return `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-        <div style="background: linear-gradient(135deg, #FF9800, #F57C00); color: white; padding: 30px; text-align: center;">
-          <h1 style="margin: 0; font-size: 28px;">🔑 Відновлення пароля</h1>
-        </div>
-        
-        <div style="padding: 30px;">
-          <h2 style="color: #333;">Привіт, ${userName}!</h2>
-          <p style="color: #555; line-height: 1.6;">
-            Ви запросили відновлення пароля для вашого акаунта в Garden Market.
-          </p>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${resetUrl}" 
-               style="background-color: #FF9800; color: white; padding: 15px 30px; 
-                      text-decoration: none; border-radius: 25px; display: inline-block; 
-                      font-weight: bold; font-size: 16px;">
-              🔄 Відновити пароль
-            </a>
-          </div>
-          
-          <div style="background-color: #ffebee; border: 1px solid #ffcdd2; padding: 15px; border-radius: 5px; margin: 20px 0;">
-            <p style="color: #c62828; margin: 0; font-size: 14px;">
-              ⚠️ Посилання дійсне протягом 1 години
-            </p>
-          </div>
-          
-          <p style="color: #666; font-size: 14px;">
-            Якщо ви не запрошували відновлення пароля, просто проігноруйте цей лист.
-          </p>
-        </div>
-      </div>
-    `;
-  }
 }
 
 export default emailService;

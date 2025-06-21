@@ -1,0 +1,17 @@
+{
+ "success": {
+    "register": "Registration successful. Please check your email and enter the code to verify your account.",
+    "login": "Login successful.",
+    "reset_code_sent": "Password reset code sent to your email.",
+    "password_changed": "Password successfully changed."
+     },
+  "errors": {
+    "server_error": "Server error. Please try again later.",
+    "user_exists": "User with this email already exists.",
+    "user_not_found": "User not found.",
+    "invalid_or_expired_code": "Invalid or expired code.",
+    "invalid_credentials": "Invalid email or password.",
+    "invalid_role": "Invalid user role.",
+    "login_failed": "Login failed. Please try again later."
+  }
+}

@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import UserModel from "../models/user.js";
 import EmailService from "../services/emailService.js";
 import crypto from "crypto";
+import { t } from "../localisation.js";
 
 const emailService = new EmailService();
 
@@ -12,6 +13,15 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
+    const userLang = req.body.language || "ru";
+
+    const existingUser = await UserModel.findOne({ email: req.body.email });
+    if (existingUser) {
+      return res.status(409).json({
+        message: t(userLang, "errors.user_exists"),
+      });
+    }
+
     // Generate verification code and expiry (10 min)
     const code = emailService.generateVerificationCode();
     const verificationTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
@@ -20,6 +30,7 @@ export const register = async (req, res) => {
       email: req.body.email,
       fullName: req.body.fullName,
       passwordHash: hash,
+      language: userLang,
       role: req.body.role || "buyer",
       sellerInfo: req.body.sellerInfo || {},
       buyerInfo: req.body.buyerInfo || {},
@@ -34,7 +45,8 @@ export const register = async (req, res) => {
     await emailService.sendVerificationCodeEmail(
       user.email,
       user.fullName,
-      code
+      code,
+      user.language
     );
 
     const token = jwt.sign(
@@ -52,13 +64,12 @@ export const register = async (req, res) => {
     res.json({
       ...userData,
       token,
-      message:
-        "Registration successful. Please check your email and enter the code to verify your account.",
+      message: t(userLang, "success.register"),
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({
-      message: "Registration failed",
+      message: t(req.body.language || "ru", "errors.server_error"),
     });
   }
 };
@@ -68,19 +79,26 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await UserModel.findOne({ email });
+    const userLang = user?.language || req.body.language || "ru";
 
     if (!user) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ message: t(userLang, "errors.invalid_credentials") });
     }
 
     const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
     if (!isPasswordValid) {
-      return res.status(401).json({ message: "Invalid email or password" });
+      return res
+        .status(401)
+        .json({ message: t(userLang, "errors.invalid_credentials") });
     }
 
     if (!["buyer", "seller", "admin"].includes(user.role)) {
-      return res.status(401).json({ message: "Invalid user role" });
+      return res
+        .status(401)
+        .json({ message: t(userLang, "errors.invalid_role") });
     }
 
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
@@ -99,10 +117,14 @@ export const login = async (req, res) => {
         path: "/",
       })
       .status(200)
-      .json({ ...userData });
+      .json({
+        ...userData,
+        message: t(userLang, "success.login"),
+      });
   } catch (error) {
+    const userLang = req.body.language || "en";
     console.log(error);
-    res.status(500).json({ message: "Login failed" });
+    res.status(500).json({ message: t(userLang, "errors.login_failed") });
   }
 };
 
@@ -111,13 +133,13 @@ export const getMe = async (req, res) => {
     const user = await UserModel.findById(req.userId).select("-passwordHash");
 
     if (!user) {
-      return res.status(404).json({ message: "User not found" });
+       return res.status(404).json({ message: t(userLang, 'errors.user_not_found') });
     }
 
     res.json(user);
   } catch (err) {
     console.log(err);
-    res.status(500).json({ message: "Something went wrong" });
+    res.status(500).json({ message: t(userLang, 'errors.server_error') });
   }
 };
 
@@ -132,54 +154,69 @@ export const logout = (req, res) => {
   res.status(200).json({ message: "Logout successful" });
 };
 
-export const requestPasswordReset = async (req, res) => {
+export const sendResetCode = async (req, res) => {
   try {
     const { email } = req.body;
     const user = await UserModel.findOne({ email, isActive: true });
+
+    const userLang = user?.language || req.body.language || "en";
+
     if (!user) {
-      return res
-        .status(404)
-        .json({ message: "User with this email is not exist" });
+      return res.status(404).json({ message: t(userLang, "errors.user_not_found") });
     }
 
-    const resetToken = crypto.randomBytes(32).toString("hex");
-    const resetTokenExpires = new Date(Date.now() + 60 * 60 * 1000);
+    // Генеруємо 3-значний код
+    const code = emailService.generateVerificationCode();
+    const resetCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
-    user.resetToken = resetToken;
-    user.resetTokenExpires = resetTokenExpires;
+    user.resetCode = code;
+    user.resetCodeExpires = resetCodeExpires;
     await user.save();
 
-    emailService.sendPasswordResetEmail(user.email, user.fullName, resetToken);
+    // Відправляємо e-mail з кодом
+    await emailService.sendResetCodeEmail(
+      user.email,
+      user.fullName,
+      code,
+      user.language
+    );
+
+    res.json({ message: t(userLang, "success.reset_code_sent") });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Error reset password" });
+    res.status(500).json({ message: t("en", "errors.server_error") });
   }
 };
 
+
 export const resetPassword = async (req, res) => {
   try {
-    const { token, newPassword } = req.body;
+    const { code, newPassword, email } = req.body;
     const user = await UserModel.findOne({
-      resetToken: token,
-      resetTokenExpires: { $gt: new Date() },
+      email,
+      resetCode: code,
+      resetCodeExpires: { $gt: new Date() },
       isActive: true,
     });
+
+    const userLang = user?.language || req.body.language || "en";
 
     if (!user) {
       return res
         .status(400)
-        .json({ message: "Недійсний або прострочений токен" });
+        .json({ message: t(userLang, "errors.invalid_or_expired_code") });
     }
 
     const salt = await bcrypt.genSalt(10);
     user.passwordHash = await bcrypt.hash(newPassword, salt);
-    user.resetToken = undefined;
-    user.resetTokenExpires = undefined;
+    user.resetCode = undefined;
+    user.resetCodeExpires = undefined;
     await user.save();
 
-    res.json({ message: "Пароль успішно змінено" });
+    res.json({ message: t(userLang, "success.password_changed") });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: "Помилка при зміні пароля" });
+    res.status(500).json({ message: t("en", "errors.server_error") });
   }
 };
+
