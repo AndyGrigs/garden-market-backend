@@ -1,6 +1,7 @@
-import en from './locales/en.json' assert { type: "json" };
-import ru from './locales/ru.json' assert { type: "json" };
-import ro from './locales/ro.json' assert { type: "json" };
+import fs from 'fs';
+const en = JSON.parse(fs.readFileSync('./locales/en.json', 'utf-8'));
+const ru = JSON.parse(fs.readFileSync('./locales/ru.json', 'utf-8'));
+const ro = JSON.parse(fs.readFileSync('./locales/ro.json', 'utf-8'));
 
 const locales = { en, ru, ro };
 
