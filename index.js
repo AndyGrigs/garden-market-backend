@@ -15,7 +15,7 @@ import {
   login,
   getMe,
   logout,
-  requestPasswordReset,
+  sendResetCode,
   resetPassword,
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
@@ -58,8 +58,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    origin: "http://localhost:5173"  ,
-    // origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
+    // origin: "http://localhost:5173"  ,
+    origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
     credentials: true,
   })
 );
@@ -77,8 +77,9 @@ app.post(
 app.post("/auth/verify-email", verifyEmail)
 app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
-app.post('/auth/request-password-reset', requestPasswordReset);
-app.post('/auth/reset-password', resetPassword);
+app.post('/auth/send-reset-code', sendResetCode);
+app.post('/auth/reset-password', resetPassword);   
+
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, createCategory);
