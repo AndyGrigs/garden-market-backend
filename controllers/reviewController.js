@@ -1,5 +1,5 @@
-import Review from './models/review.js';
-import GuestReview from './models/guestReview.js';
+import Review from '../models/review.js';
+import GuestReview from '../models/guestReview.js';
 
 /**
  * Повертає всі рев’ю: і від користувачів, і від гостей

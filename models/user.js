@@ -40,7 +40,7 @@ const UserSchema = new mongoose.Schema({
   },
   resetCode: String,
   resetCodeExpires: Date,
-  reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
   buyerInfo: {
     purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },

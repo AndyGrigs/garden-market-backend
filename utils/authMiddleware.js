@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import User from './models/user.js';
+import User from '../models/user.js'; // Use consistent naming
 
 /**
  * Строгий middleware: перевіряє наявність і валідність JWT,
@@ -7,21 +7,26 @@ import User from './models/user.js';
  */
 export async function authenticate(req, res, next) {
   const auth = req.headers.authorization;
-  if (!auth) {
+  if (!auth || !auth.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Token required' });
   }
   try {
     const token = auth.split(' ')[1];
-    const { id } = jwt.verify(token, process.env.JWT_SECRET);
+    if (!token) {
+      return res.status(401).json({ error: 'Token required' });
+    }
+    const { id } = jwt.verify(token, process.env.JWT_SECRET || '');
     const user = await User.findById(id);
-    if (!user) throw new Error();
+    if (!user) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
     req.user = user;
     next();
-  } catch {
+  } catch (err) {
+    console.error('JWT auth error:', err.message);
     res.status(401).json({ error: 'Unauthorized' });
   }
 }
-
 
 /**
  * Опціональний middleware: якщо є валідний JWT — додає req.user,
@@ -29,13 +34,16 @@ export async function authenticate(req, res, next) {
  */
 export async function authenticateOptional(req, res, next) {
   const auth = req.headers.authorization;
-  if (auth) {
+  if (auth && auth.startsWith('Bearer ')) {
     try {
       const token = auth.split(' ')[1];
-      const { id } = jwt.verify(token, process.env.JWT_SECRET);
-      req.user = await User.findById(id);
-    } catch {
-      // ігноруємо невірний токен
+      if (token) {
+        const { id } = jwt.verify(token, process.env.JWT_SECRET || '');
+        req.user = await User.findById(id);
+      }
+    } catch (err) {
+      // ігноруємо невірний токен, але можна залогувати для дебагу
+      console.warn('Optional JWT auth failed:', err.message);
     }
   }
   next();

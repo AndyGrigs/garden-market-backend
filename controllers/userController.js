@@ -24,7 +24,7 @@ export const register = async (req, res) => {
 
     // Generate verification code and expiry (10 min)
     const code = emailService.generateVerificationCode();
-    const verificationTokenExpires = new Date(Date.now() + 10 * 60 * 1000);
+    const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
     const doc = new UserModel({
       email: req.body.email,
@@ -35,8 +35,8 @@ export const register = async (req, res) => {
       sellerInfo: req.body.sellerInfo || {},
       buyerInfo: req.body.buyerInfo || {},
       isVerified: false,
-      verificationToken: code,
-      verificationTokenExpires,
+      verificationCode: code,
+      verificationCodeExpires,
       isActive: true,
     });
     const user = await doc.save();

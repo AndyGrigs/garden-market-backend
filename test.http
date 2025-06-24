@@ -2,8 +2,8 @@ POST http://localhost:4444/auth/register
 Content-Type: application/json
  
  {
-  "fullName": "Sam Derg",
-  "email": "ajtjfwoxp@10mail.org",
+  "fullName": "Andrii Grygorov",
+  "email": "andygrigs88@gmail.com",
   "password": "123123",
   "role": "",
   "sellerInfo": {},
