@@ -35,6 +35,8 @@ import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from './services/emailService.js';
 import { uploadImage } from "./controllers/uploadController.js";
 import { deleteImage } from './controllers/uploadController.js';
+import { authenticate, authenticateOptional } from './utils/authMiddleware.js';
+import { getReviews, createReview, getUserReviews } from './controllers/reviewController.js';
 
 
 
@@ -58,8 +60,8 @@ app.use(express.json());
 
 app.use(
   cors({
-    // origin: "http://localhost:5173"  ,
-    origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
+    origin: "http://localhost:5173"  ,
+    // origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
     credentials: true,
   })
 );
@@ -92,6 +94,11 @@ app.patch("/trees/:id", updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
 app.post("/upload", uploadImage)
 app.delete("/delete-image/:filename", deleteImage)
+
+// Ендпоінти рев’ю без окремого роутера
+app.get('/api/reviews', getReviews);
+app.post('/api/reviews', authenticateOptional, createReview);
+app.get('/api/reviews/user/:userId', authenticate, getUserReviews);
 
 const emailService = new EmailService();
 

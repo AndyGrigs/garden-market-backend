@@ -32,14 +32,15 @@ const UserSchema = new mongoose.Schema({
     type: Boolean,
     default: false,
   },
-  verificationToken: String,
-  verificationTokenExpires: Date,
+  verificationCode: String,
+  verificationCodeExpires: Date,
   isActive: {
     type: Boolean,
     default: true,
   },
   resetCode: String,
   resetCodeExpires: Date,
+  reviews: [{ type: Schema.Types.ObjectId, ref: 'Review' }],
   buyerInfo: {
     purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
   },
