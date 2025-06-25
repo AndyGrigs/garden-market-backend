@@ -1,8 +1,8 @@
 # VS Code REST Client examples for testing Review feature
 
 @host = http://localhost:4444
-@token = <YOUR_JWT_TOKEN>
-@userId = <USER_ID>
+@token = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJfaWQiOiI2ODVjMDhjMzRkNGFiOWQxYWM2OThkNTEiLCJpYXQiOjE3NTA4NjIwMjAsImV4cCI6MTc1MzQ1NDAyMH0.nFAZYbZaUNBKcl-9UrzKxaSj7b44XGPpxmNPlNWVMoY
+@userId = 685c08c34d4ab9d1ac698d51
 
 ###
 # 1. Get all reviews (public + guest)
@@ -27,7 +27,7 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
-  "name": "Registered User",
+  "name": "Andrii",
   "rating": 5,
   "comment": "Відмінний сервіс!"
 }
