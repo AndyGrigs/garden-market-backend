@@ -33,8 +33,8 @@ POST http://localhost:4444/auth/login
 Content-Type: application/json
 
 {
-  "email": "paulowniaptz07@gmail.com",
-  "password": "234234"
+  "email": "andygrigs88@gmail.com",
+  "password": "111222"
 }
 
 
@@ -105,3 +105,26 @@ DELETE http://localhost:4444/trees/680b31f28784a4dbfd0f6710
 
 ###
 DELETE http://localhost:4444/delete-image/1750406817953.jpeg
+
+### send reset code
+
+
+
+
+POST http://localhost:4444/auth/send-reset-code 
+Content-Type: application/json
+
+{
+  "email": "andygrigs88@gmail.com"
+}
+
+
+###
+POST  http://localhost:4444/auth/reset-password
+Content-Type: application/json
+
+{
+  "email": "andygrigs88@gmail.com",
+  "newPassword": "111222",
+  "code": "645"
+}

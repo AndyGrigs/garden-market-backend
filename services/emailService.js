@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
 import { verificationCodeTemplates } from './emailTemplates.js';
+import { resetCodeTemplates } from './emailTemplates.js';
 
 dotenv.config();
 

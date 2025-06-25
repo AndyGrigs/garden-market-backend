@@ -14,7 +14,7 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  language: { type: String, enum: ["ru", "ro", "en"], default: "en" },
+  language: { type: String, enum: ["ru", "ro", "en"], default: "ru" },
   avatarUrl: String,
   role: {
     type: String,

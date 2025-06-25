@@ -199,7 +199,7 @@ export const resetPassword = async (req, res) => {
       isActive: true,
     });
 
-    const userLang = user?.language || req.body.language || "en";
+    const userLang = user?.language || req.body.language || "ru";
 
     if (!user) {
       return res
@@ -216,7 +216,7 @@ export const resetPassword = async (req, res) => {
     res.json({ message: t(userLang, "success.password_changed") });
   } catch (error) {
     console.log(error);
-    res.status(500).json({ message: t("en", "errors.server_error") });
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
 
