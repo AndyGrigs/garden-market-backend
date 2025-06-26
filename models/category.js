@@ -12,6 +12,10 @@ const CategorySchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    imageUrl: {
+      type: String,
+      required: false, // or true, depending on whether an image is always required
+    },
   },
   { timestamps: true }
 );
