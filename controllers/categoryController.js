@@ -3,7 +3,7 @@ import slugify from "slugify";
 
 export const createCategory = async (req, res) => {
   try {
-    const { name } = req.body;
+    const { name, photoUrl } = req.body;
 
     if (!name || !name.ru) {
       return res.status(400).json({ message: "Поле ru обязательно" }); // Fixed typo
@@ -16,7 +16,7 @@ export const createCategory = async (req, res) => {
 
     const slug = slugify(name.ru, { lower: true }); 
 
-    const doc = new CategorySchema({ name, slug });
+    const doc = new CategorySchema({ name, slug, photoUrl: req.file ? `/uploads/${req.file.originalname}` : undefined });
     const saved = await doc.save();
 
     res.status(201).json(saved);
