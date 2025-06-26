@@ -97,8 +97,8 @@ app.delete("/delete-image/:filename", deleteImage)
 
 // Ендпоінти рев’ю без окремого роутера
 app.get('/api/reviews', getReviews);
-app.post('/api/reviews', authenticateOptional, createReview);
-app.get('/api/reviews/user/:userId', authenticate, getUserReviews);
+app.post('/api/reviews', checkAuth, createReview);
+app.get('/api/reviews/user/:userId', getUserReviews);
 
 const emailService = new EmailService();
 
