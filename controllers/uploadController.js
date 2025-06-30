@@ -31,7 +31,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
-const upload = multer({ storage, fileFilter });
+export const upload = multer({ storage, fileFilter });
 
 // Контролер для завантаження файлу
 export const uploadImage = [

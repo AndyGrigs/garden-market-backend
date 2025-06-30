@@ -68,7 +68,7 @@ Content-Type: application/json
 }
 
 ###
-DELETE http://localhost:4444/categories/680b886ad1cc6c807880efd6
+DELETE http://localhost:4444/categories/6862c8a452910491444241ea
 
 
 

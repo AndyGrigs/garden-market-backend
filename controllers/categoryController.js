@@ -3,20 +3,20 @@ import slugify from "slugify";
 
 export const createCategory = async (req, res) => {
   try {
-    const { name, photoUrl } = req.body;
+    const { name, imageUrl } = req.body;
 
     if (!name || !name.ru) {
-      return res.status(400).json({ message: "Поле ru обязательно" }); // Fixed typo
+      return res.status(400).json({ message: "Поле ru обязательно" });
     }
 
-    const existing = await CategorySchema.findOne({ "name.ru": name.ru }); 
+    const existing = await CategorySchema.findOne({ "name.ru": name.ru });
     if (existing) {
       return res.status(400).json({ message: "Категория уже есть" });
     }
 
-    const slug = slugify(name.ru, { lower: true }); 
+    const slug = slugify(name.ru, { lower: true });
 
-    const doc = new CategorySchema({ name, slug, photoUrl: req.file ? `/uploads/${req.file.originalname}` : undefined });
+    const doc = new CategorySchema({ name, slug, imageUrl });
     const saved = await doc.save();
 
     res.status(201).json(saved);
@@ -30,14 +30,14 @@ export const getCategories = async (req, res) => {
     const categories = await CategorySchema.find().sort({ name: 1 });
     res.json(categories);
   } catch (error) {
-    res.status(500).json({ message: 'Помилка отримання категорій' });
+    res.status(500).json({ message: "Помилка отримання категорій" });
   }
 };
 
 export const updateCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
-    const { name } = req.body;
+    const { name, imageUrl } = req.body;
 
     if (!name || !name.ru) {
       return res.status(400).json({ message: "Поле ru обязательно" });
@@ -45,23 +45,26 @@ export const updateCategory = async (req, res) => {
 
     const slug = slugify(name.ru, { lower: true });
 
-    const updated = await CategorySchema.findByIdAndUpdate(
+    let updateData = { name, slug };
+    if (imageUrl !== undefined) {
+      updateData.imageUrl = imageUrl;
+    }
+
+     const updated = await CategorySchema.findByIdAndUpdate(
       categoryId,
-      { name, slug },
+      updateData,
       { new: true }
     );
 
     if (!updated) {
       return res.status(404).json({ message: "Категорію не знайдено" });
     }
-
     res.json(updated);
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Помилка оновлення категорії" });
   }
 };
-
 
 export const deleteCategory = async (req, res) => {
   try {
@@ -70,12 +73,11 @@ export const deleteCategory = async (req, res) => {
     const deleted = await CategorySchema.findByIdAndDelete(categoryId);
 
     if (!deleted) {
-      return res.status(404).json({ message: 'Категорію не знайдено' });
+      return res.status(404).json({ message: "Категорію не знайдено" });
     }
 
-    res.json({ message: 'Категорія видалена успішно' });
+    res.json({ message: "Категорія видалена успішно" });
   } catch (err) {
-    res.status(500).json({ message: 'Помилка при видаленні категорії' });
+    res.status(500).json({ message: "Помилка при видаленні категорії" });
   }
 };
-

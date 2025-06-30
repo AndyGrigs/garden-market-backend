@@ -33,7 +33,7 @@ import {
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from './services/emailService.js';
-import { uploadImage } from "./controllers/uploadController.js";
+import { uploadImage, upload } from "./controllers/uploadController.js";
 import { deleteImage } from './controllers/uploadController.js';
 import { authenticate, authenticateOptional } from './utils/authMiddleware.js';
 import { getReviews, createReview, getUserReviews } from './controllers/reviewController.js';
@@ -84,15 +84,16 @@ app.post('/auth/reset-password', resetPassword);
 
 
 app.get("/categories", getCategories);
-app.post("/categories", checkAuth, createCategory);
-app.patch("/categories/:id", checkAuth, updateCategory);
+app.post("/categories", checkAuth, upload.single("image"), createCategory);
+app.patch("/categories/:id", checkAuth, upload.single("image"), updateCategory);
 app.delete("/categories/:id", checkAuth, deleteCategory);
+
+app.post("/upload", uploadImage)
 
 app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree);
 app.patch("/trees/:id", updateTree);
 app.delete("/trees/:id", checkAuth, deleteTree);
-app.post("/upload", uploadImage)
 app.delete("/delete-image/:filename", deleteImage)
 
 // Ендпоінти рев’ю без окремого роутера

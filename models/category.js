@@ -13,8 +13,7 @@ const CategorySchema = new mongoose.Schema(
       unique: true,
     },
     imageUrl: {
-      type: String,
-      required: false, // or true, depending on whether an image is always required
+      type: String
     },
   },
   { timestamps: true }
