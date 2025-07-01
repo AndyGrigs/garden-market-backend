@@ -26,28 +26,58 @@ export const checkAuth = async (req, res, next) => {
 
 export const verifyEmail = async (req, res) => {
   try {
-    const {email, code} = req.body;
-    const user = await UserSchema.findOne({email});
+    const { email, code } = req.body;
 
-    if (!user) {
-      return res.status(400).json({ message: "User not found..." });
+    if (!email || !code) {
+      return res.status(400).json({ 
+        message: "Email та код обов'язкові" 
+      });
     }
 
-     if (
-    user.verificationToken !== code ||
-    !user.verificationTokenExpires ||
-    user.verificationTokenExpires < new Date()
-  ) {
-    return res.status(400).json({ message: "Invalid or expired code" });
-  }
-  
-    user.isVerified = true;
-    user.verificationToken = undefined;
-    user.verificationTokenExpires = undefined;
+    // Знаходимо користувача за email та кодом
+    const user = await UserModel.findOne({
+      email,
+      verificationCode: code,
+      verificationCodeExpires: { $gt: new Date() }, // Код ще не прострочений
+      isActive: true
+    });
 
+    const userLang = user?.language || req.body.language || "ru";
+
+    if (!user) {
+      return res.status(400).json({ 
+        message: t(userLang, "errors.invalid_or_expired_code")
+      });
+    }
+
+    // Якщо користувач вже підтверджений
+    if (user.isVerified) {
+      return res.status(400).json({ 
+        message: t(userLang, "errors.already_verified")
+      });
+    }
+
+    // Підтверджуємо email та очищуємо код
+    user.isVerified = true;
+    user.verificationCode = null;
+    user.verificationCodeExpires = null;
     await user.save();
-    res.json({ message: "Email successfully verified!" });
+
+    res.json({ 
+      message: t(userLang, "success.email_verified"),
+      user: {
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        isVerified: user.isVerified,
+        role: user.role
+      }
+    });
+
   } catch (error) {
-    res.status(500).json({ message: "Verification failed!" });
+    console.log(error);
+    res.status(500).json({ 
+      message: t(req.body.language || "ru", "errors.server_error")
+    });
   }
 };

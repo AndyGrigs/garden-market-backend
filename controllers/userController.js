@@ -220,3 +220,71 @@ export const resetPassword = async (req, res) => {
   }
 };
 
+// Додайте цю функцію до userController.js
+
+export const resendVerificationCode = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ 
+        message: "Email обов'язковий" 
+      });
+    }
+
+    const user = await UserModel.findOne({ 
+      email, 
+      isActive: true 
+    });
+
+    const userLang = user?.language || req.body.language || "ru";
+
+    if (!user) {
+      return res.status(404).json({ 
+        message: t(userLang, "errors.user_not_found")
+      });
+    }
+
+    // Якщо користувач вже підтверджений
+    if (user.isVerified) {
+      return res.status(400).json({ 
+        message: t(userLang, "errors.already_verified")
+      });
+    }
+
+    // Перевіряємо, чи не надто часто запитує код (не частіше ніж раз на хвилину)
+    if (user.verificationCodeExpires && 
+        user.verificationCodeExpires > new Date(Date.now() + 9 * 60 * 1000)) {
+      return res.status(429).json({ 
+        message: "Спробуйте пізніше. Код вже відправлено."
+      });
+    }
+
+    // Генеруємо новий код
+    const code = emailService.generateVerificationCode();
+    const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Оновлюємо користувача з новим кодом
+    user.verificationCode = code;
+    user.verificationCodeExpires = verificationCodeExpires;
+    await user.save();
+
+    // Відправляємо email з новим кодом
+    await emailService.sendVerificationCodeEmail(
+      user.email,
+      user.fullName,
+      code,
+      user.language
+    );
+
+    res.json({ 
+      message: t(userLang, "success.verification_code_resent")
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ 
+      message: t(req.body.language || "ru", "errors.server_error")
+    });
+  }
+};
