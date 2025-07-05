@@ -1,29 +1,25 @@
+// utils/checkAuth.js
 import jwt from "jsonwebtoken";
-import UserSchema from "../models/user.js"; 
+import UserModel from "../models/user.js";
+import { t } from "../localisation.js";
 
-export const checkAuth = async (req, res, next) => {
-  try {
-    const token = req.cookies.auth_token;
-    if (!token) {
-      return res.status(401).json({ message: "No token provided" });
+export const checkAuth = (req, res, next) => {
+  const token = req.cookies.auth_token || (req.headers.authorization || "").replace(/Bearer\s?/, "");
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.userId = decoded._id;
+      next();
+    } catch (err) {
+      return res.status(403).json({ message: "Нет доступа" });
     }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await UserSchema.findById(decoded._id).select("-passwordHash");
-
-    if (!user) {
-      return res.status(401).json({ message: "Користувача не знайдено" });
-    }
-
-    req.userId = user._id;
-    req.user = user;
-
-    next();
-  } catch (error) {
-    return res.status(401).json({ message: "Invalid or expired token" });
+  } else {
+    return res.status(403).json({ message: "Нет доступа" });
   }
 };
 
+// Підтвердження email з автоматичним логіном
 export const verifyEmail = async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -38,7 +34,7 @@ export const verifyEmail = async (req, res) => {
     const user = await UserModel.findOne({
       email,
       verificationCode: code,
-      verificationCodeExpires: { $gt: new Date() }, // Код ще не прострочений
+      verificationCodeExpires: { $gt: new Date() },
       isActive: true
     });
 
@@ -63,19 +59,40 @@ export const verifyEmail = async (req, res) => {
     user.verificationCodeExpires = null;
     await user.save();
 
-    res.json({ 
-      message: t(userLang, "success.email_verified"),
-      user: {
-        _id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        isVerified: user.isVerified,
-        role: user.role
-      }
-    });
+    // Генеруємо JWT токен для автоматичного логіну
+    const token = jwt.sign(
+      { _id: user._id }, 
+      process.env.JWT_SECRET, 
+      { expiresIn: "30d" }
+    );
+
+    // Прибираємо sensitive дані з відповіді
+    const { 
+      passwordHash, 
+      resetCode, 
+      resetCodeExpires, 
+      verificationCode, 
+      verificationCodeExpires, 
+      ...userData 
+    } = user._doc;
+
+    // Встановлюємо cookie та повертаємо дані користувача
+    res
+      .cookie("auth_token", token, {
+        httpOnly: true,
+        secure: false, // змініть на true для HTTPS в продакшені
+        sameSite: "Strict",
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
+        path: "/",
+      })
+      .status(200)
+      .json({ 
+        ...userData,
+        message: t(userLang, "success.email_verified_and_logged_in")
+      });
 
   } catch (error) {
-    console.log(error);
+    console.log("Помилка при підтвердженні email:", error);
     res.status(500).json({ 
       message: t(req.body.language || "ru", "errors.server_error")
     });
