@@ -3,7 +3,9 @@
     "register": "Registration successful. Please check your email and enter the code to verify your account.",
     "login": "Login successful.",
     "reset_code_sent": "Password reset code sent to your email.",
-    "password_changed": "Password successfully changed."
+    "password_changed": "Password successfully changed.",
+    "email_verified_and_logged_in": "Email successfully verified! You are now logged in.",
+    "verification_code_resent": "Verification code has been resent to your email."
      },
   "errors": {
     "server_error": "Server error. Please try again later.",
@@ -12,6 +14,10 @@
     "invalid_or_expired_code": "Invalid or expired code.",
     "invalid_credentials": "Invalid email or password.",
     "invalid_role": "Invalid user role.",
-    "login_failed": "Login failed. Please try again later."
+    "login_failed": "Login failed. Please try again later.",
+    "already_verified": "Email already verified"
+  },
+    "warnings":{
+      "no_eccess": "No eccess!"
   }
 }

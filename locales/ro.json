@@ -3,7 +3,9 @@
     "register": "Înregistrare reușită. Verificați email-ul și introduceți codul pentru a vă confirma contul.",
     "login": "Autentificare reușită.",
     "reset_code_sent": "Codul de resetare a parolei a fost trimis pe email.",
-    "password_changed": "Parola a fost schimbată cu succes."
+    "password_changed": "Parola a fost schimbată cu succes.",
+    "email_verified_and_logged_in": "Email verificat cu succes! Acum sunteți conectat.",
+    "verification_code_resent": "Codul de verificare a fost retrimis la email-ul dvs."
   },
   "errors": {
     "server_error": "Eroare de server. Vă rugăm să încercați mai târziu.",
@@ -12,6 +14,10 @@
     "user_not_found": "Utilizatorul nu a fost găsit.",
     "invalid_credentials": "Email sau parolă incorectă.",
     "invalid_role": "Rol de utilizator nevalid.",
-    "login_failed": "Autentificarea a eșuat. Vă rugăm să încercați mai târziu."
+    "login_failed": "Autentificarea a eșuat. Vă rugăm să încercați mai târziu.",
+    "already_verified": "Email-ul este deja verificat"
+  },
+   "warnings":{
+      "no_eccess": "Fără exces!"
   }
 }
