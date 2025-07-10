@@ -22,15 +22,42 @@ export const createTree = async (req, res) => {
 };
 
 
+// export const getAllTrees = async (req, res) => {
+//     try {
+//       const trees = await TreeSchema.find().populate('category');
+//       res.json(trees);
+//     } catch (err) {
+//       console.log(err)
+//       res.status(500).json({ message: 'Помилка отримання товарів' });
+//     }
+//   };
+
 export const getAllTrees = async (req, res) => {
-    try {
-      const trees = await TreeSchema.find().populate('category');
-      res.json(trees);
-    } catch (err) {
-      console.log(err)
-      res.status(500).json({ message: 'Помилка отримання товарів' });
-    }
-  };
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const trees = await TreeSchema
+      .find()
+      .populate('category')
+      .skip(skip)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await TreeSchema.countDocuments();
+
+    res.json({
+      trees,
+      currentPage: page,
+      totalPages: Math.ceil(total / limit),
+      totalItems: total
+    });
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching trees' });
+  }
+};
+
 
   export const updateTree = async (req, res) => {
     try {

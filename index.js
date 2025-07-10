@@ -35,8 +35,19 @@ import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from './services/emailService.js';
 import { uploadImage, upload } from "./controllers/uploadController.js";
 import { deleteImage } from './controllers/uploadController.js';
-import { authenticate, authenticateOptional } from './utils/authMiddleware.js';
-import { getReviews, createReview, getUserReviews } from './controllers/reviewController.js';
+import { authenticate } from './utils/authMiddleware.js';
+import { getReviews, createReview, getUserReviews, updateReview, deleteReview } from './controllers/reviewController.js';
+import rateLimit from 'express-rate-limit';
+import { treeValidation } from './validations/tree.js';
+import { errorHandler } from './utils/errorHandler.js';
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // limit each IP to 5 requests per windowMs
+  message: 'Too many login attempts, please try again later.'
+});
+
+
 
 
 
@@ -57,7 +68,7 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
-
+app.use(errorHandler);
 app.use(
   cors({
     origin: "http://localhost:5173"  ,
@@ -68,7 +79,7 @@ app.use(
 
 app.use("/uploads", express.static(path.resolve("uploads")));
 
-
+app.use('/auth/login', authLimiter);
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
 app.post(
   "/auth/register",
@@ -91,15 +102,17 @@ app.delete("/categories/:id", checkAuth, deleteCategory);
 app.post("/upload", uploadImage)
 
 app.get("/trees", getAllTrees);
-app.post("/trees",checkAuth, createTree);
-app.patch("/trees/:id", updateTree);
-app.delete("/trees/:id", checkAuth, deleteTree);
+app.post("/trees",checkAuth, createTree, handleValidationErrors, treeValidation);
+app.patch("/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors,  updateTree);
+app.delete("/trees/:id", checkAuth, checkAdmin, deleteTree);
 app.delete("/delete-image/:filename", deleteImage)
 
-// Ендпоінти рев’ю без окремого роутера
+
 app.get('/api/reviews', getReviews);
-app.post('/api/reviews', checkAuth, createReview);
-app.get('/api/reviews/user/:userId', getUserReviews);
+app.post('/api/reviews', authenticate, createReview);
+app.get('/api/reviews/user/:userId', authenticate,  getUserReviews);
+app.patch('/api/reviews/:id', authenticate, updateReview);
+app.delete('/api/reviews/id', authenticate, deleteReview);
 
 const emailService = new EmailService();
 
