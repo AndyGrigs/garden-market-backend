@@ -11,6 +11,12 @@
       "updated": "Categoria a fost actualizată cu succes.",
       "deleted": "Categoria a fost ștearsă cu succes.",
       "fetched": "Categoriile au fost obținute cu succes."
+    },
+    "upload": {
+      "uploaded": "Imaginea a fost încărcată cu succes.",
+      "deleted": "Imaginea a fost ștearsă cu succes.",
+      "info_retrieved": "Informațiile despre imagine au fost obținute.",
+      "cleanup_completed": "Curățarea completă. Au fost șterse {{count}} fișiere mai vechi de {{days}} zile."
     }
   },
   "errors": {
@@ -29,6 +35,18 @@
       "fetch_failed": "Nu s-au putut obține categoriile.",
       "update_failed": "Nu s-a putut actualiza categoria.",
       "delete_failed": "Nu s-a putut șterge categoria."
+    },
+     "upload": {
+      "no_file": "Niciun fișier primit.",
+      "invalid_file_type": "Tip de fișier nevalid. Sunt permise doar JPG, PNG și JPEG.",
+      "file_too_large": "Fișierul este prea mare. Dimensiunea maximă este {{maxSize}}.",
+      "too_many_files": "Prea multe fișiere. Este permis doar un fișier.",
+      "unexpected_field": "Câmp de fișier neașteptat.",
+      "general": "Încărcarea fișierului a eșuat.",
+      "invalid_filename": "Nume de fișier nevalid.",
+      "file_not_found": "Fișierul nu a fost găsit.",
+      "delete_failed": "Nu s-a putut șterge imaginea.",
+      "cleanup_failed": "Curățarea fișierelor a eșuat."
     }
   },
    "warnings":{

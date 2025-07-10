@@ -99,7 +99,10 @@ app.post("/categories", checkAuth, upload.single("image"), createCategory);
 app.patch("/categories/:id", checkAuth, upload.single("image"), updateCategory);
 app.delete("/categories/:id", checkAuth, deleteCategory);
 
-app.post("/upload", uploadImage)
+app.post("/upload", uploadImage);
+app.delete("/delete-image/:filename", deleteImage);
+app.get("/image-info/:filename", getImageInfo); 
+app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles); 
 
 app.get("/trees", getAllTrees);
 app.post("/trees",checkAuth, createTree, handleValidationErrors, treeValidation);

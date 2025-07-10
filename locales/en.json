@@ -7,10 +7,16 @@
     "email_verified_and_logged_in": "Email successfully verified! You are now logged in.",
     "verification_code_resent": "Verification code has been resent to your email.",
       "category": {
-      "created": "Category created successfully.",
-      "updated": "Category updated successfully.",
-      "deleted": "Category deleted successfully.", 
-      "fetched": "Categories retrieved successfully."
+        "created": "Category created successfully.",
+        "updated": "Category updated successfully.",
+        "deleted": "Category deleted successfully.", 
+        "fetched": "Categories retrieved successfully."
+      },
+      "upload": {
+      "uploaded": "Image uploaded successfully.",
+      "deleted": "Image deleted successfully.",
+      "info_retrieved": "Image information retrieved successfully.",
+      "cleanup_completed": "Cleanup completed. Deleted {{count}} files older than {{days}} days."
     }
   },
   "errors": {
@@ -29,6 +35,18 @@
       "fetch_failed": "Failed to fetch categories.",
       "update_failed": "Failed to update category.",
       "delete_failed": "Failed to delete category."
+    },
+     "upload": {
+      "no_file": "No file received.",
+      "invalid_file_type": "Invalid file type. Only JPG, PNG and JPEG are allowed.",
+      "file_too_large": "File too large. Maximum size is {{maxSize}}.",
+      "too_many_files": "Too many files. Only one file allowed.",
+      "unexpected_field": "Unexpected file field.",
+      "general": "File upload failed.",
+      "invalid_filename": "Invalid filename.",
+      "file_not_found": "File not found.",
+      "delete_failed": "Failed to delete image.",
+      "cleanup_failed": "File cleanup failed."
     }
   },
     "warnings":{
