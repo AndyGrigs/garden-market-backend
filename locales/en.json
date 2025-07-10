@@ -5,8 +5,14 @@
     "reset_code_sent": "Password reset code sent to your email.",
     "password_changed": "Password successfully changed.",
     "email_verified_and_logged_in": "Email successfully verified! You are now logged in.",
-    "verification_code_resent": "Verification code has been resent to your email."
-     },
+    "verification_code_resent": "Verification code has been resent to your email.",
+      "category": {
+      "created": "Category created successfully.",
+      "updated": "Category updated successfully.",
+      "deleted": "Category deleted successfully.", 
+      "fetched": "Categories retrieved successfully."
+    }
+  },
   "errors": {
     "server_error": "Server error. Please try again later.",
     "user_exists": "User with this email already exists.",
@@ -15,7 +21,15 @@
     "invalid_credentials": "Invalid email or password.",
     "invalid_role": "Invalid user role.",
     "login_failed": "Login failed. Please try again later.",
-    "already_verified": "Email already verified"
+    "already_verified": "Email already verified",
+    "category": {
+      "ru_required": "Russian name is required.",
+      "already_exists": "Category with this name already exists.",
+      "not_found": "Category not found.",
+      "fetch_failed": "Failed to fetch categories.",
+      "update_failed": "Failed to update category.",
+      "delete_failed": "Failed to delete category."
+    }
   },
     "warnings":{
       "no_eccess": "No eccess!"

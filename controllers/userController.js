@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcrypt";
 import UserModel from "../models/user.js";
 import EmailService from "../services/emailService.js";
-import crypto from "crypto";
 import { t } from "../localisation.js";
 
 const emailService = new EmailService();

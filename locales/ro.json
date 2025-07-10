@@ -5,7 +5,13 @@
     "reset_code_sent": "Codul de resetare a parolei a fost trimis pe email.",
     "password_changed": "Parola a fost schimbată cu succes.",
     "email_verified_and_logged_in": "Email verificat cu succes! Acum sunteți conectat.",
-    "verification_code_resent": "Codul de verificare a fost retrimis la email-ul dvs."
+    "verification_code_resent": "Codul de verificare a fost retrimis la email-ul dvs.",
+     "category": {
+      "created": "Categoria a fost creată cu succes.",
+      "updated": "Categoria a fost actualizată cu succes.",
+      "deleted": "Categoria a fost ștearsă cu succes.",
+      "fetched": "Categoriile au fost obținute cu succes."
+    }
   },
   "errors": {
     "server_error": "Eroare de server. Vă rugăm să încercați mai târziu.",
@@ -15,7 +21,15 @@
     "invalid_credentials": "Email sau parolă incorectă.",
     "invalid_role": "Rol de utilizator nevalid.",
     "login_failed": "Autentificarea a eșuat. Vă rugăm să încercați mai târziu.",
-    "already_verified": "Email-ul este deja verificat"
+    "already_verified": "Email-ul este deja verificat",
+    "category": {
+      "ru_required": "Numele în rusă este obligatoriu.",
+      "already_exists": "Categoria cu acest nume există deja.",
+      "not_found": "Categoria nu a fost găsită.",
+      "fetch_failed": "Nu s-au putut obține categoriile.",
+      "update_failed": "Nu s-a putut actualiza categoria.",
+      "delete_failed": "Nu s-a putut șterge categoria."
+    }
   },
    "warnings":{
       "no_eccess": "Fără exces!"
