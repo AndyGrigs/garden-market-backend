@@ -8,17 +8,19 @@ export const checkAuth = (req, res, next) => {
     req.cookies.auth_token ||
     (req.headers.authorization || "").replace(/Bearer\s?/, "");
 
-  const userLang = user?.language || req.body.language || "ru";
   if (token) {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      req.userId = decoded._id;
+      req.user = decoded;
+      const userLang = req.user?.language || req.body.language || "ru";
       next();
     } catch (err) {
-      return res.status(403).json({message: t(userLang, "warnings.no_eccess")})
+      const userLang = req.body.language || "ru";
+      return res.status(403).json({ message: t(userLang, "warnings.no_eccess") });
     }
   } else {
-    return res.status(403).json({message: t(userLang, "warnings.no_eccess")})
+    const userLang = req.body.language || "ru";
+    return res.status(403).json({ message: t(userLang, "warnings.no_eccess") });
   }
 };
 

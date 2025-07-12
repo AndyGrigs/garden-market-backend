@@ -1,7 +1,7 @@
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { getUserLanguage } from "../utils/langDetector";
+import { getUserLanguage } from "../utils/langDetector.js";
 
 // Дозволені типи файлів
 const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -190,7 +190,6 @@ export const getImageInfo = (req, res) => {
   });
 };
 
-// Clean up old files controller (bonus feature for maintenance)
 export const cleanupOldFiles = async (req, res) => {
   const userLang = getUserLanguage(req);
   const daysOld = parseInt(req.query.days) || 30; // Default 30 days

@@ -33,7 +33,7 @@ import {
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from './services/emailService.js';
-import { uploadImage, upload } from "./controllers/uploadController.js";
+import { uploadImage, upload, getImageInfo, cleanupOldFiles } from "./controllers/uploadController.js";
 import { deleteImage } from './controllers/uploadController.js';
 import { authenticate } from './utils/authMiddleware.js';
 import { getReviews, createReview, getUserReviews, updateReview, deleteReview } from './controllers/reviewController.js';
@@ -42,8 +42,8 @@ import { treeValidation } from './validations/tree.js';
 import { errorHandler } from './utils/errorHandler.js';
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 5, // limit each IP to 5 requests per windowMs
+  windowMs: 15 * 60 * 1000, 
+  max: 5, 
   message: 'Too many login attempts, please try again later.'
 });
 
