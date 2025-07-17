@@ -17,8 +17,16 @@
       "deleted": "Image deleted successfully.",
       "info_retrieved": "Image information retrieved successfully.",
       "cleanup_completed": "Cleanup completed. Deleted {{count}} files older than {{days}} days."
+    },
+    "review": {
+      "created": "Review created successfully.",
+      "updated": "Review updated successfully.",
+      "deleted": "Review deleted successfully.",
+      "fetched": "Reviews fetched successfully."
     }
   },
+
+  
   "errors": {
     "server_error": "Server error. Please try again later.",
     "user_exists": "User with this email already exists.",
@@ -47,6 +55,18 @@
       "file_not_found": "File not found.",
       "delete_failed": "Failed to delete image.",
       "cleanup_failed": "File cleanup failed."
+    },
+    "review": {
+      "auth_required": "Authentication required to post reviews.",
+      "name_rating_required": "Name and rating are required.",
+      "rating_range": "Rating must be between 1 and 5.",
+      "not_found": "Review not found.",
+      "edit_own_only": "You can only edit your own reviews.",
+      "delete_own_only": "You can only delete your own reviews.",
+      "fetch_failed": "Failed to fetch reviews.",
+      "create_failed": "Failed to create review.",
+      "update_failed": "Failed to update review.",
+      "delete_failed": "Failed to delete review."
     }
   },
     "warnings":{

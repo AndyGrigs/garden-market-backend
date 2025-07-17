@@ -17,6 +17,12 @@
       "deleted": "Imaginea a fost ștearsă cu succes.",
       "info_retrieved": "Informațiile despre imagine au fost obținute.",
       "cleanup_completed": "Curățarea completă. Au fost șterse {{count}} fișiere mai vechi de {{days}} zile."
+    },
+    "review": {
+      "created": "Recenzia a fost creată cu succes.",
+      "updated": "Recenzia a fost actualizată cu succes.",
+      "deleted": "Recenzia a fost ștearsă cu succes.",
+      "fetched": "Recenziile au fost preluate cu succes."
     }
   },
   "errors": {
@@ -47,6 +53,18 @@
       "file_not_found": "Fișierul nu a fost găsit.",
       "delete_failed": "Nu s-a putut șterge imaginea.",
       "cleanup_failed": "Curățarea fișierelor a eșuat."
+    },
+     "review": {
+      "auth_required": "Autentificarea este necesară pentru a posta recenzii.",
+      "name_rating_required": "Numele și evaluarea sunt obligatorii.",
+      "rating_range": "Evaluarea trebuie să fie între 1 și 5.",
+      "not_found": "Recenzia nu a fost găsită.",
+      "edit_own_only": "Puteți edita doar propriile recenzii.",
+      "delete_own_only": "Puteți șterge doar propriile recenzii.",
+      "fetch_failed": "Nu s-au putut prelua recenziile.",
+      "create_failed": "Nu s-a putut crea recenzia.",
+      "update_failed": "Nu s-a putut actualiza recenzia.",
+      "delete_failed": "Nu s-a putut șterge recenzia."
     }
   },
    "warnings":{

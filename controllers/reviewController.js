@@ -1,4 +1,6 @@
 import Review from '../models/review.js';
+import { t } from '../localisation.js';
+import { getUserLanguage } from '../utils/langDetector.js';
 
 
 
@@ -15,17 +17,18 @@ export async function getReviews(req, res) {
 
 export async function createReview(req, res) {
   const { name, rating, comment } = req.body;
+  const userLang = getUserLanguage(req);
   
   if (!req.user) {
-    return res.status(401).json({ error: 'Authentication required to post reviews' });
+    return res.status(401).json({ error: t(userLang, "errors.review.auth_required") });
   }
 
   if (!name || !rating) {
-    return res.status(400).json({ error: 'Name and rating are required' });
+    return res.status(400).json({ error: t(userLang, "errors.review.name_rating_required") });
   }
 
   if (rating < 1 || rating > 5) {
-    return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+    return res.status(400).json({ error: t(userLang, "errors.review.rating_range") });
   }
 
   try {
@@ -64,22 +67,23 @@ export async function getUserReviews(req, res) {
 }
 
 export async function updateReview(req, res) {
+  const userLang = getUserLanguage(req);
   try {
     const review = await Review.findById(req.params.id);
     
     if (!review) {
-      return res.status(404).json({ error: 'Review not found' });
+      return res.status(404).json({ error: t(userLang, 'error.review.not_found') });
     }
     
     
     if (review.user.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ error: 'You can only edit your own reviews' });
+      return res.status(403).json({ error: t(userLang, 'error.review.edit_own_only') });
     }
     
     const { name, rating, comment } = req.body;
     
     if (rating && (rating < 1 || rating > 5)) {
-      return res.status(400).json({ error: 'Rating must be between 1 and 5' });
+      return res.status(400).json({ error: t(userLang, 'error.review.rating_range') });
     }
     
     const updatedReview = await Review.findByIdAndUpdate(
@@ -96,11 +100,13 @@ export async function updateReview(req, res) {
 
 
 export async function deleteReview(req, res) {
+  const userLang = getUserLanguage(req);
+
   try {
     const review = await Review.findById(req.params.id);
     
     if (!review) {
-      return res.status(404).json({ error: 'Review not found' });
+      return res.status(404).json({ error: t(userLang, 'error.review.not_found')});
     }
     
     // Check if user owns this review or is admin
@@ -108,7 +114,7 @@ export async function deleteReview(req, res) {
     const isAdmin = req.user.role === 'admin';
     
     if (!isOwner && !isAdmin) {
-      return res.status(403).json({ error: 'You can only delete your own reviews' });
+      return res.status(403).json({ error: t(userLang, 'error.review.delete_own_only') });
     }
     
     await Review.findByIdAndDelete(req.params.id);
@@ -118,7 +124,7 @@ export async function deleteReview(req, res) {
       $pull: { reviews: req.params.id }
     });
     
-    res.json({ message: 'Review deleted successfully' });
+    res.json({ message: t(userLang, 'success.review.deleted') });
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
