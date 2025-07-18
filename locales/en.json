@@ -57,6 +57,12 @@
       "delete_failed": "Failed to delete image.",
       "cleanup_failed": "File cleanup failed."
     },
+    "tree": {
+      "created": "Tree created successfully.",
+      "updated": "Tree updated successfully.",
+      "deleted": "Tree deleted successfully.",
+      "fetched": "Trees fetched successfully."
+    },
     "review": {
       "auth_required": "Authentication required to post reviews.",
       "name_rating_required": "Name and rating are required.",

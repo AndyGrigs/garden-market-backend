@@ -18,6 +18,12 @@
       "info_retrieved": "Informațiile despre imagine au fost obținute.",
       "cleanup_completed": "Curățarea completă. Au fost șterse {{count}} fișiere mai vechi de {{days}} zile."
     },
+    "tree": {
+      "created": "Pomul a fost creat cu succes.",
+      "updated": "Pomul a fost actualizat cu succes.",
+      "deleted": "Pomul a fost șters cu succes.",
+      "fetched": "Pomii au fost obținuți cu succes."
+    },
     "review": {
       "created": "Recenzia a fost creată cu succes.",
       "updated": "Recenzia a fost actualizată cu succes.",
