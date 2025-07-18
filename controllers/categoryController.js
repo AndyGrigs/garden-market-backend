@@ -1,6 +1,7 @@
 import CategorySchema from "../models/category.js";
 import slugify from "slugify";
 import { getUserLanguage } from "../utils/langDetector.js";
+import { t } from '../localisation.js';
 
 export const createCategory = async (req, res) => {
   try {

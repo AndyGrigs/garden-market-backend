@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import UserModel from "../models/user.js";
 import EmailService from "../services/emailService.js";
 import { t } from "../localisation.js";
+import { getUserLanguage } from '../utils/langDetector.js';
 
 const emailService = new EmailService();
 
@@ -12,7 +13,7 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const userLang = req.body.language || "ru";
+    const userLang = getUserLanguage(req);
 
     const existingUser = await UserModel.findOne({ email: req.body.email });
     if (existingUser) {
@@ -78,7 +79,7 @@ export const login = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await UserModel.findOne({ email });
-    const userLang = user?.language || req.body.language || "ru";
+    const userLang = getUserLanguage(req);
 
     if (!user) {
       return res
@@ -128,6 +129,8 @@ export const login = async (req, res) => {
 };
 
 export const getMe = async (req, res) => {
+    const userLang = getUserLanguage(req);
+
   try {
     const user = await UserModel.findById(req.userId).select("-passwordHash");
 
@@ -158,7 +161,8 @@ export const sendResetCode = async (req, res) => {
     const { email } = req.body;
     const user = await UserModel.findOne({ email, isActive: true });
 
-    const userLang = user?.language || req.body.language || "en";
+    const userLang = getUserLanguage(req);
+    
 
     if (!user) {
       return res.status(404).json({ message: t(userLang, "errors.user_not_found") });
@@ -198,7 +202,8 @@ export const resetPassword = async (req, res) => {
       isActive: true,
     });
 
-    const userLang = user?.language || req.body.language || "ru";
+    const userLang = getUserLanguage(req);
+   
 
     if (!user) {
       return res
@@ -222,12 +227,14 @@ export const resetPassword = async (req, res) => {
 // Додайте цю функцію до userController.js
 
 export const resendVerificationCode = async (req, res) => {
+    const userLang = getUserLanguage(req);
+
   try {
     const { email } = req.body;
 
     if (!email) {
       return res.status(400).json({ 
-        message: "Email обов'язковий" 
+        message: t(userLang, 'error.email_charged') 
       });
     }
 
@@ -236,7 +243,8 @@ export const resendVerificationCode = async (req, res) => {
       isActive: true 
     });
 
-    const userLang = user?.language || req.body.language || "ru";
+    const userLang = getUserLanguage(req);
+    
 
     if (!user) {
       return res.status(404).json({ 
@@ -283,7 +291,7 @@ export const resendVerificationCode = async (req, res) => {
   } catch (error) {
     console.log(error);
     res.status(500).json({ 
-      message: t(req.body.language || "ru", "errors.server_error")
+      message: t(userLang, "errors.server_error")
     });
   }
 };

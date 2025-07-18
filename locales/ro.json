@@ -34,6 +34,7 @@
     "invalid_role": "Rol de utilizator nevalid.",
     "login_failed": "Autentificarea a eșuat. Vă rugăm să încercați mai târziu.",
     "already_verified": "Email-ul este deja verificat",
+    "email_charged": "Adresa de e-mail este obligatorie",
     "category": {
       "ru_required": "Numele în rusă este obligatoriu.",
       "already_exists": "Categoria cu acest nume există deja.",

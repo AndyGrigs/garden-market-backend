@@ -26,7 +26,7 @@
     }
   },
 
-  
+
   "errors": {
     "server_error": "Server error. Please try again later.",
     "user_exists": "User with this email already exists.",
@@ -36,6 +36,7 @@
     "invalid_role": "Invalid user role.",
     "login_failed": "Login failed. Please try again later.",
     "already_verified": "Email already verified",
+    "email_charged": "Email is required",
     "category": {
       "ru_required": "Russian name is required.",
       "already_exists": "Category with this name already exists.",
