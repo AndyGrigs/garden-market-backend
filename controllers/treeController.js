@@ -1,5 +1,7 @@
 import TreeSchema from "../models/tree.js";
 import { t } from "../localisation.js";
+import { getUserLanguage } from "../utils/langDetector.js";
+
 
 export const createTree = async (req, res) => {
   try {

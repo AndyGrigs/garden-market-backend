@@ -25,10 +25,7 @@ export const createCategory = async (req, res) => {
     const doc = new CategorySchema({ name, slug, imageUrl });
     const saved = await doc.save();
 
-    res.status(201).json({
-      ...saved.toObject(),
-      message: t(userLang, "success.category.created"),
-    });
+    res.status(201).json(saved);
   } catch (error) {
     console.error("Create category error:", error);
     const userLang = getUserLanguage(req);
@@ -40,12 +37,9 @@ export const createCategory = async (req, res) => {
 
 export const getCategories = async (req, res) => {
   try {
-    const userLang = getUserLanguage(req);
+   
     const categories = await CategorySchema.find().sort({ name: 1 });
-    res.json({
-      categories,
-      message: t(userLang, "success.category.fetched"),
-    });
+    res.json(categories);
   } catch (error) {
     console.error("Get categories error:", error);
     const userLang = getUserLanguage(req);
