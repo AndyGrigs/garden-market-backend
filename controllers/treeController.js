@@ -14,7 +14,8 @@ export const createTree = async (req, res) => {
     });
 
     await tree.save();
-    res.status(201).json(tree);
+    const populatedTree = await TreeSchema.findById(tree._id).populate('category');
+    res.status(201).json(populatedTree);
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Не вдалося створити товар' });
@@ -23,14 +24,32 @@ export const createTree = async (req, res) => {
 
 
 export const getAllTrees = async (req, res) => {
-    try {
-      const trees = await TreeSchema.find().populate('category');
-      res.json(trees);
-    } catch (err) {
-      console.log(err)
-      res.status(500).json({ message: 'Помилка отримання товарів' });
-    }
-  };
+  try {
+    console.log('Fetching trees with categories...');
+    
+    const trees = await TreeSchema.find().populate('category');
+    
+    console.log('Found trees:', trees.length);
+    console.log('Sample tree with category:', trees[0]);
+    
+    // Перевіримо кожне дерево на наявність категорії
+    trees.forEach((tree, index) => {
+      console.log(`Tree ${index}:`, {
+        id: tree._id,
+        title: tree.title?.ru || 'No title',
+        category: tree.category ? {
+          id: tree.category._id,
+          name: tree.category.name
+        } : 'No category'
+      });
+    });
+    
+    res.json(trees);
+  } catch (err) {
+    console.error('Error fetching trees:', err);
+    res.status(500).json({ message: 'Помилка отримання товарів' });
+  }
+};
 
 // export const getAllTrees = async (req, res) => {
 //   try {
@@ -68,7 +87,7 @@ export const getAllTrees = async (req, res) => {
         id,
         { $set: { title, description, price, imageUrl, category, stock } },
         { new: true }
-      );
+      ).populate('category');
   
       if (!updatedTree) {
         return res.status(404).json({ message: "Tree not found" });
