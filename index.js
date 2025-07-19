@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import path from "path"
+import path from "path";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 
@@ -32,24 +32,32 @@ import {
   updateTree,
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
-import EmailService from './services/emailService.js';
-import { uploadImage, upload, getImageInfo, cleanupOldFiles } from "./controllers/uploadController.js";
-import { deleteImage } from './controllers/uploadController.js';
-import { authenticate } from './utils/authMiddleware.js';
-import { getReviews, createReview, getUserReviews, updateReview, deleteReview } from './controllers/reviewController.js';
-import rateLimit from 'express-rate-limit';
-import { treeValidation } from './validations/tree.js';
-import { errorHandler } from './utils/errorHandler.js';
+import EmailService from "./services/emailService.js";
+import {
+  uploadImage,
+  upload,
+  getImageInfo,
+  cleanupOldFiles,
+} from "./controllers/uploadController.js";
+import { deleteImage } from "./controllers/uploadController.js";
+import { authenticate } from "./utils/authMiddleware.js";
+import {
+  getReviews,
+  createReview,
+  getUserReviews,
+  updateReview,
+  deleteReview,
+} from "./controllers/reviewController.js";
+import rateLimit from "express-rate-limit";
+import { treeValidation } from "./validations/tree.js";
+import { errorHandler } from "./utils/errorHandler.js";
+import { createOrder, getUserOrders, updateOrderStatus } from './controllers/orderController.js';
 
 const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, 
-  max: 5, 
-  message: 'Too many login attempts, please try again later.'
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  message: "Too many login attempts, please try again later.",
 });
-
-
-
-
 
 dotenv.config();
 
@@ -71,15 +79,19 @@ app.use(express.json());
 app.use(errorHandler);
 app.use(
   cors({
-    origin: "http://localhost:5173"  ,
-    // origin: "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
+    ],
+
     credentials: true,
   })
 );
 
 app.use("/uploads", express.static(path.resolve("uploads")));
 
-app.use('/auth/login', authLimiter);
+app.use("/auth/login", authLimiter);
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
 app.post(
   "/auth/register",
@@ -87,12 +99,16 @@ app.post(
   handleValidationErrors,
   register
 );
-app.post("/auth/verify-email", verifyEmail)
+app.post("/auth/verify-email", verifyEmail);
 app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
-app.post('/auth/send-reset-code', sendResetCode);
-app.post('/auth/reset-password', resetPassword);   
+app.post("/auth/send-reset-code", sendResetCode);
+app.post("/auth/reset-password", resetPassword);
 
+//order routes
+app.get("/orders/user/:userId", checkAuth, getUserOrders);
+app.post("/orders", checkAuth, createOrder);
+app.patch("/orders/:id/status", checkAuth, checkAdmin, updateOrderStatus);
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, upload.single("image"), createCategory);
@@ -101,21 +117,33 @@ app.delete("/categories/:id", checkAuth, deleteCategory);
 
 app.post("/upload", uploadImage);
 app.delete("/delete-image/:filename", deleteImage);
-app.get("/image-info/:filename", getImageInfo); 
-app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles); 
+app.get("/image-info/:filename", getImageInfo);
+app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles);
 
 app.get("/trees", getAllTrees);
-app.post("/trees",checkAuth, createTree, handleValidationErrors, treeValidation);
-app.patch("/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors,  updateTree);
+app.post(
+  "/trees",
+  checkAuth,
+  createTree,
+  handleValidationErrors,
+  treeValidation
+);
+app.patch(
+  "/trees/:id",
+  checkAuth,
+  checkAdmin,
+  treeValidation,
+  handleValidationErrors,
+  updateTree
+);
 app.delete("/trees/:id", checkAuth, checkAdmin, deleteTree);
-app.delete("/delete-image/:filename", deleteImage)
+app.delete("/delete-image/:filename", deleteImage);
 
-
-app.get('/api/reviews', getReviews);
-app.post('/api/reviews', authenticate, createReview);
-app.get('/api/reviews/user/:userId', authenticate,  getUserReviews);
-app.patch('/api/reviews/:id', authenticate, updateReview);
-app.delete('/api/reviews/id', authenticate, deleteReview);
+app.get("/api/reviews", getReviews);
+app.post("/api/reviews", authenticate, createReview);
+app.get("/api/reviews/user/:userId", authenticate, getUserReviews);
+app.patch("/api/reviews/:id", authenticate, updateReview);
+app.delete("/api/reviews/id", authenticate, deleteReview);
 
 const emailService = new EmailService();
 
