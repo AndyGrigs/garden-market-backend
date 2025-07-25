@@ -76,29 +76,37 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    const user = await UserModel.findOne({ email });
     const userLang = getUserLanguage(req);
+    
+    const user = await UserModel.findOne({ 
+      email: req.body.email, 
+      isActive: true 
+    });
 
     if (!user) {
-      return res
-        .status(401)
-        .json({ message: t(userLang, "errors.invalid_credentials") });
+      return res.status(404).json({ 
+        message: t(userLang, "errors.user_not_found") 
+      });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
+    const isValidPass = await bcrypt.compare(req.body.password, user.passwordHash);
 
-    if (!isPasswordValid) {
-      return res
-        .status(401)
-        .json({ message: t(userLang, "errors.invalid_credentials") });
+    if (!isValidPass) {
+      return res.status(400).json({ 
+        message: t(userLang, "errors.wrong_login") 
+      });
+    }
+
+    if (!user.isVerified) {
+      return res.status(401).json({ 
+        message: t(userLang, "errors.email_not_verified") 
+      });
     }
 
     if (!["buyer", "seller", "admin"].includes(user.role)) {
-      return res
-        .status(401)
-        .json({ message: t(userLang, "errors.invalid_role") });
+      return res.status(401).json({ 
+        message: t(userLang, "errors.invalid_role") 
+      });
     }
 
     const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
@@ -110,15 +118,15 @@ export const login = async (req, res) => {
     res
       .cookie("auth_token", token, {
         httpOnly: true,
-        //secure: process.env.NODE_ENV === "production", HTTPS only у продакшені
-        secure: false,
+        secure: false, // für localhost
         sameSite: "Strict",
-        maxAge: 30 * 24 * 60 * 60 * 1000,
+        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 Tage
         path: "/",
       })
       .status(200)
       .json({
         ...userData,
+        // ENTFERNE das token aus der response!
         message: t(userLang, "success.login"),
       });
   } catch (error) {

@@ -60,27 +60,10 @@ export const createTree = async (req, res) => {
 
 export const getAllTrees = async (req, res) => {
   try {
-    console.log("Fetching trees with categories...");
+   
     const userLang = getUserLanguage(req);
 
     const trees = await TreeSchema.find().populate("category");
-
-    console.log("Found trees:", trees.length);
-    console.log("Sample tree with category:", trees[0]);
-
-    // Перевіримо кожне дерево на наявність категорії
-    trees.forEach((tree, index) => {
-      console.log(`Tree ${index}:`, {
-        id: tree._id,
-        title: tree.title?.ru || "No title",
-        category: tree.category
-          ? {
-              id: tree.category._id,
-              name: tree.category.name,
-            }
-          : "No category",
-      });
-    });
 
     res.json(trees);
   } catch (err) {
@@ -98,7 +81,6 @@ export const updateTree = async (req, res) => {
     const { title, description, price, imageUrl, category, stock } = req.body;
     const userLang = getUserLanguage(req);
 
-    console.log("Updating tree with category:", category);
 
     // Валідація
     if (price && price <= 0) {
@@ -125,7 +107,6 @@ export const updateTree = async (req, res) => {
       });
     }
 
-    console.log('Updated tree with category:', updatedTree.category);
     res.status(200).json({
       ...updatedTree.toObject(),
       message: t(userLang, "success.tree.updated")
