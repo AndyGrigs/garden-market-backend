@@ -12,11 +12,13 @@ export const checkAuth = (req, res, next) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
-      req.userId = decoded._id; 
+      req.userId = decoded._id;
       next();
     } catch (err) {
       const userLang = req.body.language || "ru";
-      return res.status(403).json({ message: t(userLang, "warnings.no_eccess") });
+      return res
+        .status(403)
+        .json({ message: t(userLang, "warnings.no_eccess") });
     }
   } else {
     const userLang = req.body.language || "ru";
@@ -64,10 +66,13 @@ export const verifyEmail = async (req, res) => {
     user.verificationCodeExpires = null;
     await user.save();
 
-    // Генеруємо JWT токен для автоматичного логіну
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "30d",
-    });
+    const token = jwt.sign(
+      { _id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "30d",
+      }
+    );
 
     // Прибираємо sensitive дані з відповіді
     const {

@@ -22,7 +22,7 @@ export const register = async (req, res) => {
       });
     }
 
-    // Generate verification code and expiry (10 min)
+   
     const code = emailService.generateVerificationCode();
     const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -41,7 +41,6 @@ export const register = async (req, res) => {
     });
     const user = await doc.save();
 
-    // Send email with code
     await emailService.sendVerificationCodeEmail(
       user.email,
       user.fullName,
@@ -52,6 +51,7 @@ export const register = async (req, res) => {
     const token = jwt.sign(
       {
         _id: user._id,
+        role: user.role
       },
       process.env.JWT_SECRET,
       {
@@ -109,7 +109,7 @@ export const login = async (req, res) => {
       });
     }
 
-    const token = jwt.sign({ _id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ _id: user._id, role: user.role }, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
 
@@ -120,13 +120,12 @@ export const login = async (req, res) => {
         httpOnly: true,
         secure: false, // für localhost
         sameSite: "Strict",
-        maxAge: 30 * 24 * 60 * 60 * 1000, // 30 Tage
+        maxAge: 30 * 24 * 60 * 60 * 1000, 
         path: "/",
       })
       .status(200)
       .json({
         ...userData,
-        // ENTFERNE das token aus der response!
         message: t(userLang, "success.login"),
       });
   } catch (error) {
@@ -232,7 +231,6 @@ export const resetPassword = async (req, res) => {
   }
 };
 
-// Додайте цю функцію до userController.js
 
 export const resendVerificationCode = async (req, res) => {
     const userLang = getUserLanguage(req);
