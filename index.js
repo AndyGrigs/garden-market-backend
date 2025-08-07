@@ -136,7 +136,7 @@ app.patch(
   updateTree
 );
 app.delete("/trees/:id", checkAuth, deleteTree);
-app.delete("/delete-image/:filename", deleteImage);
+app.delete("/delete-image/:filename", checkAuth, deleteImage);
 
 app.get("/api/reviews", getReviews);
 app.post("/api/reviews", authenticate, createReview);

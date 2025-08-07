@@ -120,21 +120,82 @@ export const updateTree = async (req, res) => {
   }
 };
 
+// export const deleteTree = async (req, res) => {
+//   try {
+//     const treeId = req.params.id;
+//     const userLang = getUserLanguage(req);
+    
+//     const deleted = await TreeSchema.findByIdAndDelete(treeId);
+    
+//     if (!deleted) {
+//       return res.status(404).json({ message: t(userLang, "errors.tree.not_found") });
+//     }
+    
+//     res.json({message: t(userLang, "success.tree.deleted") });
+//   } catch (err) {
+//     console.log(err);
+//     const userLang = getUserLanguage(req);
+//     res.status(500).json({ message: t(userLang, "errors.tree.delete_failed") });
+//   }
+// };
+
+import fs from "fs";
+import path from "path";
+
 export const deleteTree = async (req, res) => {
   try {
     const treeId = req.params.id;
     const userLang = getUserLanguage(req);
     
+    // ✅ FIX 1: Спочатку знаходимо дерево щоб отримати imageUrl
+    const treeToDelete = await TreeSchema.findById(treeId);
+    
+    if (!treeToDelete) {
+      return res.status(404).json({ 
+        message: t(userLang, "errors.tree.not_found") 
+      });
+    }
+
+    // ✅ FIX 2: Видаляємо фото якщо воно є
+    if (treeToDelete.imageUrl) {
+      try {
+        // Отримуємо ім'я файлу з URL
+        const filename = treeToDelete.imageUrl.replace("/uploads/", "");
+        const filePath = path.resolve("uploads", filename);
+        
+        // Перевіряємо чи існує файл
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath); // Синхронно видаляємо файл
+          console.log(`✅ Фото видалено: ${filename}`);
+        } else {
+          console.log(`⚠️ Файл не знайдено: ${filename}`);
+        }
+      } catch (imageError) {
+        console.error("❌ Помилка видалення фото:", imageError);
+        // Не зупиняємо процес - продовжуємо видаляти дерево
+      }
+    }
+
+    // ✅ FIX 3: Тепер видаляємо дерево з бази
     const deleted = await TreeSchema.findByIdAndDelete(treeId);
     
-    if (!deleted) {
-      return res.status(404).json({ message: t(userLang, "errors.tree.not_found") });
-    }
+    console.log(`✅ Дерево видалено з бази: ${treeId}`);
     
-    res.json({message: t(userLang, "success.tree.deleted") });
+    res.json({
+      message: t(userLang, "success.tree.deleted"),
+      deletedTree: {
+        id: deleted._id,
+        title: deleted.title,
+        imageDeleted: !!treeToDelete.imageUrl
+      }
+    });
+    
   } catch (err) {
-    console.log(err);
+    console.error("❌ Помилка видалення дерева:", err);
     const userLang = getUserLanguage(req);
-    res.status(500).json({ message: t(userLang, "errors.tree.delete_failed") });
+    res.status(500).json({ 
+      message: t(userLang, "errors.tree.delete_failed"),
+      error: err.message 
+    });
   }
 };

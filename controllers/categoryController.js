@@ -2,6 +2,8 @@ import CategorySchema from "../models/category.js";
 import slugify from "slugify";
 import { getUserLanguage } from "../utils/langDetector.js";
 import { t } from '../localisation.js';
+import path from "path";
+import fs from "fs";
 
 export const createCategory = async (req, res) => {
   try {
@@ -97,23 +99,82 @@ export const updateCategory = async (req, res) => {
   }
 };
 
+// export const deleteCategory = async (req, res) => {
+//   try {
+//     const categoryId = req.params.id;
+//     const userLang = getUserLanguage(req);
+//     const deleted = await CategorySchema.findByIdAndDelete(categoryId);
+
+//     if (!deleted) {
+//       return res
+//         .status(404)
+//         .json({ message: t(userLang, "errors.category.not_found") });
+//     }
+
+//     res.json({ message: t(userLang, "success.category.deleted") });
+//   } catch (err) {
+//     res.status(500).json({ message: t(userLang, "errors.category.delete_failed")});
+//   }
+// };
+
 export const deleteCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
     const userLang = getUserLanguage(req);
-    const deleted = await CategorySchema.findByIdAndDelete(categoryId);
-
-    if (!deleted) {
-      return res
-        .status(404)
-        .json({ message: t(userLang, "errors.category.not_found") });
+    
+    // ✅ FIX 1: Erst die Kategorie finden um imageUrl zu bekommen
+    const categoryToDelete = await CategorySchema.findById(categoryId);
+    
+    if (!categoryToDelete) {
+      return res.status(404).json({ 
+        message: t(userLang, "errors.category.not_found") 
+      });
     }
 
-    res.json({ message: t(userLang, "success.category.deleted") });
+    // ✅ FIX 2: Foto löschen falls vorhanden
+    if (categoryToDelete.imageUrl) {
+      try {
+        // Dateiname aus URL extrahieren
+        const filename = categoryToDelete.imageUrl.replace("/uploads/", "");
+        const filePath = path.resolve("uploads", filename);
+        
+        // Prüfen ob Datei existiert und löschen
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath); // Synchron löschen
+          console.log(`✅ Kategorie-Foto gelöscht: ${filename}`);
+        } else {
+          console.log(`⚠️ Foto-Datei nicht gefunden: ${filename}`);
+        }
+      } catch (imageError) {
+        console.error("❌ Fehler beim Löschen des Kategorie-Fotos:", imageError);
+        // Weitermachen - Kategorie trotzdem löschen
+      }
+    }
+
+    // ✅ FIX 3: Kategorie aus Datenbank löschen
+    const deleted = await CategorySchema.findByIdAndDelete(categoryId);
+    
+    console.log(`✅ Kategorie gelöscht: ${categoryId}`);
+    
+    res.json({ 
+      message: t(userLang, "success.category.deleted"),
+      deletedCategory: {
+        id: deleted._id,
+        name: deleted.name,
+        imageDeleted: !!categoryToDelete.imageUrl
+      }
+    });
+    
   } catch (err) {
-    res.status(500).json({ message: t(userLang, "errors.category.delete_failed")});
+    console.error("❌ Fehler beim Löschen der Kategorie:", err);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({ 
+      message: t(userLang, "errors.category.delete_failed"),
+      error: err.message
+    });
   }
 };
+
 
 
 export const getCategoryBySlug = async (req, res) => {
