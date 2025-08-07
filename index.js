@@ -131,12 +131,11 @@ app.post(
 app.patch(
   "/trees/:id",
   checkAuth,
-  checkAdmin,
   treeValidation,
   handleValidationErrors,
   updateTree
 );
-app.delete("/trees/:id", checkAuth, checkAdmin, deleteTree);
+app.delete("/trees/:id", checkAuth, deleteTree);
 app.delete("/delete-image/:filename", deleteImage);
 
 app.get("/api/reviews", getReviews);
