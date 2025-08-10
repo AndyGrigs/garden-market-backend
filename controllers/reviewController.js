@@ -18,15 +18,11 @@ export async function getReviews(req, res) {
 
 
 export async function createReview(req, res) {
-  const { name, rating, comment } = req.body;
+  const { rating, comment } = req.body;
   const userLang = getUserLanguage(req);
   
   if (!req.userId) {
     return res.status(401).json({ error: t(userLang, "errors.review.auth_required") });
-  }
-
-  if (!name || !rating) {
-    return res.status(400).json({ error: t(userLang, "errors.review.name_rating_required") });
   }
 
   if (rating < 1 || rating > 5) {
@@ -34,8 +30,7 @@ export async function createReview(req, res) {
   }
 
   try {
-    const review = new Review({ 
-      name, 
+    const review = new Review({
       rating, 
       comment, 
       user: req.userId
