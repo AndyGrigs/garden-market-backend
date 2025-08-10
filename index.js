@@ -139,10 +139,10 @@ app.delete("/trees/:id", checkAuth, deleteTree);
 app.delete("/delete-image/:filename", checkAuth, deleteImage);
 
 app.get("/api/reviews", getReviews);
-app.post("/api/reviews", authenticate, createReview);
-app.get("/api/reviews/user/:userId", authenticate, getUserReviews);
-app.patch("/api/reviews/:id", authenticate, updateReview);
-app.delete("/api/reviews/id", authenticate, deleteReview);
+app.post("/api/reviews", checkAuth, createReview); 
+app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
+app.patch("/api/reviews/:id", checkAuth, updateReview);
+app.delete("/api/reviews/:id", checkAuth, deleteReview);
 
 const emailService = new EmailService();
 

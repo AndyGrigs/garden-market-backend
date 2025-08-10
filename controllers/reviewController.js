@@ -1,6 +1,7 @@
 import Review from '../models/review.js';
 import { t } from '../localisation.js';
 import { getUserLanguage } from '../utils/langDetector.js';
+import UserModel from '../models/user.js'
 
 
 
@@ -9,6 +10,7 @@ export async function getReviews(req, res) {
    const reviews = await Review.find()
    .populate('user', 'fullname email')
    .sort({createdAt: -1});
+   res.json(reviews)
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -19,7 +21,7 @@ export async function createReview(req, res) {
   const { name, rating, comment } = req.body;
   const userLang = getUserLanguage(req);
   
-  if (!req.user) {
+  if (!req.userId) {
     return res.status(401).json({ error: t(userLang, "errors.review.auth_required") });
   }
 
@@ -36,23 +38,35 @@ export async function createReview(req, res) {
       name, 
       rating, 
       comment, 
-      user: req.user._id 
+      user: req.userId
     });
     
     await review.save();
     
-    req.user.reviews.push(review._id);
-    await req.user.save();
+    // 👈 ВИПРАВЛЕННЯ: Спочатку перевіряємо чи існує користувач
+    const user = await UserModel.findById(req.userId);
+    if (user) {
+      // Перевіряємо чи існує масив reviews, якщо ні - створюємо
+      if (!user.reviews) {
+        user.reviews = [];
+      }
+      user.reviews.push(review._id);
+      await user.save();
+    }
     
     const populatedReview = await Review.findById(review._id)
       .populate('user', 'fullName email');
     
-    res.status(201).json(populatedReview);
+    // 👈 ВАЖЛИВО: Повертаємо успішну відповідь з повідомленням
+    res.status(201).json({
+      ...populatedReview._doc,
+      message: t(userLang, "success.review.created")
+    });
   } catch (e) {
+    console.error('Review creation error:', e); // 👈 Логуємо помилку для дебагу
     res.status(400).json({ error: e.message });
   }
 }
-
 
 export async function getUserReviews(req, res) {
   try {

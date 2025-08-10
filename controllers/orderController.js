@@ -1,6 +1,7 @@
 
 import { t } from '../localisation.js';
 import { getUserLanguage } from '../utils/langDetector.js';
+import OrderSchema from '../models/order.js'
 
 export const getUserOrders = async (req, res) => {
   try {
