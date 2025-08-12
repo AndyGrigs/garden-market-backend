@@ -1,7 +1,8 @@
 import TreeSchema from "../models/tree.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
-
+import fs from "fs";
+import path from "path";
 
 export const createTree = async (req, res) => {
   try {
@@ -32,6 +33,14 @@ export const createTree = async (req, res) => {
       });
     }
 
+    // Для продавців - автоматично додаємо їх ID
+    // Для адмінів - можна вказати конкретного продавця
+    let sellerId = req.userId; // За замовчуванням - поточний користувач
+
+    if (req.userRole === "admin" && req.body.seller) {
+      sellerId = req.body.seller;
+    }
+
     const tree = new TreeSchema({
       title,
       description,
@@ -39,12 +48,13 @@ export const createTree = async (req, res) => {
       imageUrl,
       category,
       stock,
+      seller: sellerId,
     });
 
     await tree.save();
-    const populatedTree = await TreeSchema.findById(tree._id).populate(
-      "category"
-    );
+    const populatedTree = await TreeSchema.findById(tree._id)
+      .populate("category")
+      .populate("seller", "fullName sellerInfo.nurseryName");
 
     res.status(201).json({
       ...populatedTree.toObject(),
@@ -60,7 +70,6 @@ export const createTree = async (req, res) => {
 
 export const getAllTrees = async (req, res) => {
   try {
-   
     const userLang = getUserLanguage(req);
 
     const trees = await TreeSchema.find().populate("category");
@@ -80,7 +89,6 @@ export const updateTree = async (req, res) => {
     const { id } = req.params;
     const { title, description, price, imageUrl, category, stock } = req.body;
     const userLang = getUserLanguage(req);
-
 
     // Валідація
     if (price && price <= 0) {
@@ -102,6 +110,142 @@ export const updateTree = async (req, res) => {
     ).populate("category");
 
     if (!updatedTree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    res.status(200).json({
+      ...updatedTree.toObject(),
+      message: t(userLang, "success.tree.updated"),
+    });
+  } catch (error) {
+    console.error(error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.update_failed"),
+    });
+  }
+};
+
+
+export const deleteTree = async (req, res) => {
+  try {
+    const treeId = req.params.id;
+    const userLang = getUserLanguage(req);
+
+    // ✅ FIX 1: Спочатку знаходимо дерево щоб отримати imageUrl
+    const treeToDelete = await TreeSchema.findById(treeId);
+
+    if (!treeToDelete) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    // ✅ FIX 2: Видаляємо фото якщо воно є
+    if (treeToDelete.imageUrl) {
+      try {
+        // Отримуємо ім'я файлу з URL
+        const filename = treeToDelete.imageUrl.replace("/uploads/", "");
+        const filePath = path.resolve("uploads", filename);
+
+        // Перевіряємо чи існує файл
+        if (fs.existsSync(filePath)) {
+          fs.unlinkSync(filePath); // Синхронно видаляємо файл
+          console.log(`✅ Фото видалено: ${filename}`);
+        } else {
+          console.log(`⚠️ Файл не знайдено: ${filename}`);
+        }
+      } catch (imageError) {
+        console.error("❌ Помилка видалення фото:", imageError);
+        // Не зупиняємо процес - продовжуємо видаляти дерево
+      }
+    }
+
+    // ✅ FIX 3: Тепер видаляємо дерево з бази
+    const deleted = await TreeSchema.findByIdAndDelete(treeId);
+
+    console.log(`✅ Дерево видалено з бази: ${treeId}`);
+
+    res.json({
+      message: t(userLang, "success.tree.deleted"),
+      deletedTree: {
+        id: deleted._id,
+        title: deleted.title,
+        imageDeleted: !!treeToDelete.imageUrl,
+      },
+    });
+  } catch (err) {
+    console.error("❌ Помилка видалення дерева:", err);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.delete_failed"),
+      error: err.message,
+    });
+  }
+};
+
+// Отримати товари конкретного продавця
+export const getSellerTrees = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    
+    const trees = await TreeSchema.find({ 
+      seller: req.userId,
+      isActive: true 
+    })
+    .populate("category")
+    .populate("seller", "fullName sellerInfo.nurseryName")
+    .sort({ createdAt: -1 });
+
+    res.json({
+      trees,
+      message: t(userLang, "success.tree.fetched")
+    });
+  } catch (error) {
+    console.error("Error fetching seller trees:", error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.fetch_failed"),
+    });
+  }
+};
+
+// Оновити товар (тільки власні)
+export const updateSellerTree = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description, price, imageUrl, category, stock } = req.body;
+    const userLang = getUserLanguage(req);
+
+    // Валідація ціни
+    if (price && price <= 0) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.invalid_price"),
+      });
+    }
+
+    // Валідація кількості
+    if (stock && stock < 0) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.invalid_stock"),
+      });
+    }
+
+    // Знаходимо та оновлюємо тільки товари поточного продавця
+    const updatedTree = await TreeSchema.findOneAndUpdate(
+      { 
+        _id: id, 
+        seller: req.userId // ⬅️ ВАЖЛИВО: тільки свої товари
+      },
+      { $set: { title, description, price, imageUrl, category, stock } },
+      { new: true }
+    )
+    .populate("category")
+    .populate("seller", "fullName sellerInfo.nurseryName");
+
+    if (!updatedTree) {
       return res.status(404).json({ 
         message: t(userLang, "errors.tree.not_found") 
       });
@@ -120,82 +264,36 @@ export const updateTree = async (req, res) => {
   }
 };
 
-// export const deleteTree = async (req, res) => {
-//   try {
-//     const treeId = req.params.id;
-//     const userLang = getUserLanguage(req);
-    
-//     const deleted = await TreeSchema.findByIdAndDelete(treeId);
-    
-//     if (!deleted) {
-//       return res.status(404).json({ message: t(userLang, "errors.tree.not_found") });
-//     }
-    
-//     res.json({message: t(userLang, "success.tree.deleted") });
-//   } catch (err) {
-//     console.log(err);
-//     const userLang = getUserLanguage(req);
-//     res.status(500).json({ message: t(userLang, "errors.tree.delete_failed") });
-//   }
-// };
-
-import fs from "fs";
-import path from "path";
-
-export const deleteTree = async (req, res) => {
+// Видалити товар (тільки свій)
+export const deleteSellerTree = async (req, res) => {
   try {
-    const treeId = req.params.id;
+    const { id } = req.params;
     const userLang = getUserLanguage(req);
     
-    // ✅ FIX 1: Спочатку знаходимо дерево щоб отримати imageUrl
-    const treeToDelete = await TreeSchema.findById(treeId);
+    // Знаходимо та видаляємо тільки товари поточного продавця
+    const deletedTree = await TreeSchema.findOneAndUpdate(
+      { 
+        _id: id, 
+        seller: req.userId // ⬅️ ВАЖЛИВО: тільки свої товари
+      },
+      { isActive: false }, // М'яке видалення
+      { new: true }
+    );
     
-    if (!treeToDelete) {
+    if (!deletedTree) {
       return res.status(404).json({ 
         message: t(userLang, "errors.tree.not_found") 
       });
     }
-
-    // ✅ FIX 2: Видаляємо фото якщо воно є
-    if (treeToDelete.imageUrl) {
-      try {
-        // Отримуємо ім'я файлу з URL
-        const filename = treeToDelete.imageUrl.replace("/uploads/", "");
-        const filePath = path.resolve("uploads", filename);
-        
-        // Перевіряємо чи існує файл
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath); // Синхронно видаляємо файл
-          console.log(`✅ Фото видалено: ${filename}`);
-        } else {
-          console.log(`⚠️ Файл не знайдено: ${filename}`);
-        }
-      } catch (imageError) {
-        console.error("❌ Помилка видалення фото:", imageError);
-        // Не зупиняємо процес - продовжуємо видаляти дерево
-      }
-    }
-
-    // ✅ FIX 3: Тепер видаляємо дерево з бази
-    const deleted = await TreeSchema.findByIdAndDelete(treeId);
-    
-    console.log(`✅ Дерево видалено з бази: ${treeId}`);
     
     res.json({
-      message: t(userLang, "success.tree.deleted"),
-      deletedTree: {
-        id: deleted._id,
-        title: deleted.title,
-        imageDeleted: !!treeToDelete.imageUrl
-      }
+      message: t(userLang, "success.tree.deleted")
     });
-    
-  } catch (err) {
-    console.error("❌ Помилка видалення дерева:", err);
+  } catch (error) {
+    console.error(error);
     const userLang = getUserLanguage(req);
     res.status(500).json({ 
-      message: t(userLang, "errors.tree.delete_failed"),
-      error: err.message 
+      message: t(userLang, "errors.tree.delete_failed") 
     });
   }
 };

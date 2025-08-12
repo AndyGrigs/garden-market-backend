@@ -48,6 +48,12 @@ import {
   updateReview,
   deleteReview,
 } from "./controllers/reviewController.js";
+import { checkSeller, checkSellerOrAdmin } from './utils/checkSeller.js';
+import { 
+  getSellerTrees, 
+  updateSellerTree, 
+  deleteSellerTree 
+} from './controllers/treeController.js';
 import rateLimit from "express-rate-limit";
 import { treeValidation } from "./validations/tree.js";
 import { errorHandler } from "./utils/errorHandler.js";
@@ -77,24 +83,24 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(errorHandler);
-// app.use(
-//   cors({
-//     origin: [
-//       "http://localhost:5173",
-//       "http://localhost:5174",
-//       "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
-//     ],
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
+    ],
 
-//     credentials: true,
-//   })
-// );
+    credentials: true,
+  })
+);
 
-app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? process.env.FRONTEND_URL 
-    : "http://localhost:5173",
-  credentials: true,
-}));
+// app.use(cors({
+//   origin: process.env.NODE_ENV === 'production' 
+//     ? process.env.FRONTEND_URL 
+//     : "http://localhost:5173",
+//   credentials: true,
+// }));
 
 app.use("/uploads", express.static(path.resolve("uploads")));
 
@@ -150,6 +156,17 @@ app.post("/api/reviews", checkAuth, createReview);
 app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
 app.patch("/api/reviews/:id", checkAuth, updateReview);
 app.delete("/api/reviews/:id", checkAuth, deleteReview);
+
+// ⬇️ ОНОВЛЕНІ РОУТИ ДЛЯ АДМІНІВ:
+app.post("/admin/trees", checkAuth, checkAdmin, treeValidation, handleValidationErrors, createTree);
+app.patch("/admin/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors, updateTree);
+app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
+
+// ⬇️ НОВІ РОУТИ ДЛЯ ПРОДАВЦІВ:
+app.get("/seller/trees", checkAuth, checkSeller, getSellerTrees);
+app.post("/seller/trees", checkAuth, checkSeller, treeValidation, handleValidationErrors, createTree);
+app.patch("/seller/trees/:id", checkAuth, checkSeller, treeValidation, handleValidationErrors, updateSellerTree);
+app.delete("/seller/trees/:id", checkAuth, checkSeller, deleteSellerTree);
 
 const emailService = new EmailService();
 

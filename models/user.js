@@ -40,9 +40,25 @@ const UserSchema = new mongoose.Schema({
   },
   resetCode: String,
   resetCodeExpires: Date,
-  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Review' }],
+  reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
   buyerInfo: {
     purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+  },
+  sellerInfo: {
+    nurseryName: String,
+    address: String,
+    phoneNumber: String,
+
+    isApproved: {
+      type: Boolean,
+      default: false,
+    },
+    businessLicense: String,
+    description: String,
+    registrationDate: {
+      type: Date,
+      default: Date.now,
+    },
   },
 });
 
