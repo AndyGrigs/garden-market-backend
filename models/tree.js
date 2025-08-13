@@ -27,6 +27,10 @@ const TreeSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 );

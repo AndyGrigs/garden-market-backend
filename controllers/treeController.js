@@ -70,10 +70,11 @@ export const createTree = async (req, res) => {
 
 export const getAllTrees = async (req, res) => {
   try {
-    const userLang = getUserLanguage(req);
 
-    const trees = await TreeSchema.find().populate("category");
-
+    const trees = await TreeSchema.find({ isActive: true })
+      .populate("category")
+      .populate("seller", "fullName sellerInfo.nurseryName");
+    
     res.json(trees);
   } catch (err) {
     console.error("Error fetching trees:", err);
@@ -185,6 +186,8 @@ export const deleteTree = async (req, res) => {
     });
   }
 };
+
+// Додай в кінець файлу controllers/treeController.js
 
 // Отримати товари конкретного продавця
 export const getSellerTrees = async (req, res) => {

@@ -13,6 +13,7 @@ export const checkAuth = (req, res, next) => {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       req.user = decoded;
       req.userId = decoded._id;
+      req.userRole = decoded.role;
       next();
     } catch (err) {
       const userLang = req.body.language || "ru";

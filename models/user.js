@@ -21,13 +21,6 @@ const UserSchema = new mongoose.Schema({
     enum: ["buyer", "seller", "admin"],
     default: "buyer",
   },
-
-  sellerInfo: {
-    nurseryName: String,
-    address: String,
-    phoneNumber: String,
-    treeVarieties: [{ type: String }],
-  },
   isVerified: {
     type: Boolean,
     default: false,

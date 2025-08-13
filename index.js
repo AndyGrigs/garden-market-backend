@@ -134,22 +134,34 @@ app.get("/image-info/:filename", getImageInfo);
 app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles);
 
 app.get("/trees", getAllTrees);
-app.post(
-  "/trees",
-  checkAuth,
-  createTree,
-  handleValidationErrors,
-  treeValidation
-);
-app.patch(
-  "/trees/:id",
-  checkAuth,
-  treeValidation,
-  handleValidationErrors,
-  updateTree
-);
-app.delete("/trees/:id", checkAuth, deleteTree);
-app.delete("/delete-image/:filename", checkAuth, deleteImage);
+// app.post(
+//   "/trees",
+//   checkAuth,
+//   createTree,
+//   handleValidationErrors,
+//   treeValidation
+// );
+// app.patch(
+//   "/trees/:id",
+//   checkAuth,
+//   treeValidation,
+//   handleValidationErrors,
+//   updateTree
+// );
+// app.delete("/trees/:id", checkAuth, deleteTree);
+// app.delete("/delete-image/:filename", checkAuth, deleteImage);
+
+// ⬇️ РОУТИ ДЛЯ АДМІНІВ:
+app.post("/admin/trees", checkAuth, checkAdmin, treeValidation, handleValidationErrors, createTree);
+app.patch("/admin/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors, updateTree);
+app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
+
+// ⬇️ РОУТИ ДЛЯ ПРОДАВЦІВ:
+app.get("/seller/trees", checkAuth, checkSeller, getSellerTrees);
+app.post("/seller/trees", checkAuth, checkSeller, treeValidation, handleValidationErrors, createTree);
+app.patch("/seller/trees/:id", checkAuth, checkSeller, treeValidation, handleValidationErrors, updateSellerTree);
+app.delete("/seller/trees/:id", checkAuth, checkSeller, deleteSellerTree);
+
 
 app.get("/api/reviews", getReviews);
 app.post("/api/reviews", checkAuth, createReview); 
@@ -157,22 +169,10 @@ app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
 app.patch("/api/reviews/:id", checkAuth, updateReview);
 app.delete("/api/reviews/:id", checkAuth, deleteReview);
 
-// ⬇️ ОНОВЛЕНІ РОУТИ ДЛЯ АДМІНІВ:
-app.post("/admin/trees", checkAuth, checkAdmin, treeValidation, handleValidationErrors, createTree);
-app.patch("/admin/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors, updateTree);
-app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
-
-// ⬇️ НОВІ РОУТИ ДЛЯ ПРОДАВЦІВ:
-app.get("/seller/trees", checkAuth, checkSeller, getSellerTrees);
-app.post("/seller/trees", checkAuth, checkSeller, treeValidation, handleValidationErrors, createTree);
-app.patch("/seller/trees/:id", checkAuth, checkSeller, treeValidation, handleValidationErrors, updateSellerTree);
-app.delete("/seller/trees/:id", checkAuth, checkSeller, deleteSellerTree);
-
 const emailService = new EmailService();
 
 emailService.testConnection();
 
-app.use("/uploads", express.static(path.resolve("uploads")));
 
 app.listen(4444, (err) => {
   if (err) {
