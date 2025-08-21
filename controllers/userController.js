@@ -41,6 +41,47 @@ export const register = async (req, res) => {
     });
     const user = await doc.save();
 
+    if (req.body.role === 'seller') {
+      try {
+        // Створюємо сповіщення в базі
+        await createNotification({
+          type: 'new_seller_registration',
+          title: 'Новая регистрация продавца',
+          message: `Пользователь ${req.body.fullName} зарегистрировался"}"`,
+          data: {
+            userId: user._id,
+            sellerInfo: {
+              nurseryName: req.body.sellerInfo?.nurseryName,
+              email: req.body.email,
+              fullName: req.body.fullName,
+            }
+          }
+        });
+
+        // ⬇️ ВІДПРАВЛЯЄМО EMAIL ВСІМ АДМІНАМ
+        const emailResults = await notifyAllAdmins(
+          emailService,
+          'new_seller_registration',
+          {
+            fullName: req.body.fullName,
+            email: req.body.email,
+            sellerInfo: req.body.sellerInfo,
+            registrationTime: new Date().toLocaleString('uk-UA')
+          }
+        );
+
+        console.log("✅ Сповіщення створено:", {
+          database: true,
+          emailsSent: emailResults.filter(r => r.success).length,
+          emailsFailed: emailResults.filter(r => !r.success).length
+        });
+
+      } catch (notificationError) {
+        console.error("❌ Помилка сповіщень:", notificationError);
+        // Не блокуємо реєстрацію через помилку сповіщень
+      }
+          }
+
     await emailService.sendVerificationCodeEmail(
       user.email,
       user.fullName,
