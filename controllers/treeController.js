@@ -3,6 +3,9 @@ import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import fs from "fs";
 import path from "path";
+import { createNotification } from "./notificationController.js";
+import { notifyAllAdmins } from "../config/adminConfig.js"; 
+
 
 export const createTree = async (req, res) => {
   try {
@@ -41,6 +44,26 @@ export const createTree = async (req, res) => {
       sellerId = req.body.seller;
     }
 
+    // ⬇️ СПОВІЩЕННЯ ЯКЩО ПРОДАВЕЦЬ СТВОРЮЄ ТОВАР
+    if (req.userRole === 'seller') {
+      try {
+        const sellerData = await UserModel.findById(req.userId).select('fullName sellerInfo email');
+        
+        // Створюємо сповіщення в базі
+        await createNotification({
+          type: 'new_product_created',
+          title: 'Новьій товар от продавца',
+          message: `Продавец ${sellerData?.fullName} Добавил товар: "${title.ru}". Нужно добавить перевод.`,
+          data: {
+            userId: req.userId,
+            productId: tree._id,
+            sellerInfo: {
+              nurseryName: sellerData?.sellerInfo?.nurseryName,
+              fullName: sellerData?.fullName,
+            }
+          }
+        });
+
     const tree = new TreeSchema({
       title,
       description,
@@ -57,7 +80,7 @@ export const createTree = async (req, res) => {
       .populate("seller", "fullName sellerInfo.nurseryName");
 
     res.status(201).json({
-      ...populatedTree.toObject(),
+      ...populatedTree.toObt(),
       message: t(userLang, "success.tree.created"),
     });
   } catch (error) {
