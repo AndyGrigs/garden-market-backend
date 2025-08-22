@@ -40,7 +40,6 @@ import {
   cleanupOldFiles,
 } from "./controllers/uploadController.js";
 import { deleteImage } from "./controllers/uploadController.js";
-import { authenticate } from "./utils/authMiddleware.js";
 import {
   getReviews,
   createReview,
@@ -86,6 +85,7 @@ app.use(errorHandler);
 app.use(
   cors({
     origin: [
+      process.env.FRONTEND_URL,
       "http://localhost:5173",
       "http://localhost:5174",
       "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",

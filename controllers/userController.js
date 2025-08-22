@@ -4,6 +4,8 @@ import UserModel from "../models/user.js";
 import EmailService from "../services/emailService.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from '../utils/langDetector.js';
+import { createNotification } from "./notificationController.js"; 
+
 
 const emailService = new EmailService();
 
@@ -43,7 +45,7 @@ export const register = async (req, res) => {
 
     if (req.body.role === 'seller') {
       try {
-        // Створюємо сповіщення в базі
+       
         await createNotification({
           type: 'new_seller_registration',
           title: 'Новая регистрация продавца',

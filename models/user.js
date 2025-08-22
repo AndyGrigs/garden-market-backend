@@ -41,7 +41,7 @@ const UserSchema = new mongoose.Schema({
     nurseryName: String,
     address: String,
     phoneNumber: String,
-
+    treeVarieties: [{ type: String }],
     isApproved: {
       type: Boolean,
       default: false,

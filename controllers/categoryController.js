@@ -99,24 +99,6 @@ export const updateCategory = async (req, res) => {
   }
 };
 
-// export const deleteCategory = async (req, res) => {
-//   try {
-//     const categoryId = req.params.id;
-//     const userLang = getUserLanguage(req);
-//     const deleted = await CategorySchema.findByIdAndDelete(categoryId);
-
-//     if (!deleted) {
-//       return res
-//         .status(404)
-//         .json({ message: t(userLang, "errors.category.not_found") });
-//     }
-
-//     res.json({ message: t(userLang, "success.category.deleted") });
-//   } catch (err) {
-//     res.status(500).json({ message: t(userLang, "errors.category.delete_failed")});
-//   }
-// };
-
 export const deleteCategory = async (req, res) => {
   try {
     const categoryId = req.params.id;
@@ -174,8 +156,6 @@ export const deleteCategory = async (req, res) => {
     });
   }
 };
-
-
 
 export const getCategoryBySlug = async (req, res) => {
   try {

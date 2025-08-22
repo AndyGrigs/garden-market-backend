@@ -71,49 +71,171 @@ class emailService {
   return await this.transporter.sendMail(mailOptions);
 }
 
+async sendAdminNotificationEmail(adminEmail, notificationType, data) {
+  try {
+    let subject, htmlContent;
+
+    switch (notificationType) {
+      case 'new_seller_registration':
+        subject = `🔔 Новий продавець зареєструвався - ${data.fullName}`;
+        htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Новий продавець</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+              .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #059669; border-radius: 4px; }
+              .btn { display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+              .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+              .urgent { color: #dc2626; font-weight: bold; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>🌳 Новий продавець на платформі!</h1>
+              </div>
+              
+              <div class="content">
+                <h2>Деталі реєстрації:</h2>
+                
+                <div class="info-box">
+                  <p><strong>👤 Ім'я:</strong> ${data.fullName}</p>
+                  <p><strong>📧 Email:</strong> ${data.email}</p>
+                  <p><strong>🏪 Розсадник:</strong> ${data.sellerInfo?.nurseryName || 'Не вказано'}</p>
+                  <p><strong>📱 Телефон:</strong> ${data.sellerInfo?.phoneNumber || 'Не вказано'}</p>
+                  <p><strong>📍 Адреса:</strong> ${data.sellerInfo?.address || 'Не вказано'}</p>
+                  <p><strong>📄 Ліцензія:</strong> ${data.sellerInfo?.businessLicense || 'Не вказано'}</p>
+                  ${data.sellerInfo?.description ? `<p><strong>📝 Опис:</strong> ${data.sellerInfo.description}</p>` : ''}
+                </div>
+
+                <div class="info-box urgent">
+                  <p><strong>⚠️ Потрібні дії:</strong></p>
+                  <ul>
+                    <li>Перевірити інформацію про продавця</li>
+                    <li>Схвалити або відхилити заявку</li>
+                    <li>При схваленні - активувати акаунт продавця</li>
+                  </ul>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                    🔗 Перейти в адмін панель
+                  </a>
+                </div>
+              </div>
+
+              <div class="footer">
+                <p>Garden Market Admin System | ${new Date().toLocaleDateString('uk-UA')}</p>
+                <p>Це автоматичне повідомлення. Не відповідайте на цей email.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+        break;
+
+      case 'new_product_created':
+        subject = `🌳 Новий товар потребує перекладу - ${data.productName}`;
+        htmlContent = `
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="UTF-8">
+            <title>Новий товар</title>
+            <style>
+              body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+              .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+              .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+              .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+              .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }
+              .btn { display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+              .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+            </style>
+          </head>
+          <body>
+            <div class="container">
+              <div class="header">
+                <h1>📝 Потрібен переклад товару!</h1>
+              </div>
+              
+              <div class="content">
+                <div class="info-box">
+                  <p><strong>🌳 Товар:</strong> ${data.productName}</p>
+                  <p><strong>💰 Ціна:</strong> ${data.price} грн</p>
+                  <p><strong>👤 Продавець:</strong> ${data.sellerInfo?.fullName}</p>
+                  <p><strong>🏪 Розсадник:</strong> ${data.sellerInfo?.nurseryName}</p>
+                  <p><strong>📅 Створено:</strong> ${new Date().toLocaleDateString('uk-UA')}</p>
+                </div>
+
+                <div class="info-box">
+                  <p><strong>⚠️ Потрібні переклади:</strong></p>
+                  <ul>
+                    <li>🇬🇧 Англійською мовою</li>
+                    <li>🇷🇴 Румунською мовою</li>
+                  </ul>
+                  <p><em>Товар буде доступний покупцям після додавання перекладів.</em></p>
+                </div>
+
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                    🔗 Додати переклади
+                  </a>
+                </div>
+              </div>
+
+              <div class="footer">
+                <p>Garden Market Admin System | ${new Date().toLocaleDateString('uk-UA')}</p>
+                <p>Це автоматичне повідомлення. Не відповідайте на цей email.</p>
+              </div>
+            </div>
+          </body>
+          </html>
+        `;
+        break;
+
+      default:
+        subject = '🔔 Нове сповіщення з Garden Market';
+        htmlContent = `
+          <h2>Нове сповіщення</h2>
+          <p>${data.message || 'У вас є нове сповіщення в адмін панелі.'}</p>
+          <p><a href="${process.env.FRONTEND_URL}/admin">Перейти в адмін панель</a></p>
+        `;
+    }
+
+    const mailOptions = {
+      from: {
+        name: 'Garden Market System',
+        address: this.transporter.options.auth.user
+      },
+      to: adminEmail,
+      subject: subject,
+      html: htmlContent,
+    };
+
+    const info = await this.transporter.sendMail(mailOptions);
+    console.log('✅ Admin notification email sent:', info.messageId);
+    
+    return {
+      success: true,
+      messageId: info.messageId,
+      to: adminEmail,
+      subject: subject
+    };
+
+  } catch (error) {
+    console.error('❌ Error sending admin notification email:', error);
+    throw error;
+  }
+}
 
 
-  // Шаблон verification email
-  // getVerificationTemplate(userName, verificationUrl) {
-  //   return `
-  //     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
-  //       <div style="background: linear-gradient(135deg, #2196F3, #1976D2); color: white; padding: 30px; text-align: center;">
-  //         <h1 style="margin: 0; font-size: 28px;">🔐 Підтвердження Email</h1>
-  //       </div>
 
-  //       <div style="padding: 30px;">
-  //         <h2 style="color: #333;">Привіт, ${userName}!</h2>
-  //         <p style="color: #555; line-height: 1.6;">
-  //           Щоб завершити реєстрацію в Garden Market, підтвердьте свій email адрес.
-  //         </p>
-
-  //         <div style="text-align: center; margin: 30px 0;">
-  //           <a href="${verificationUrl}"
-  //             style="background-color: #2196F3; color: white; padding: 15px 30px;
-  //                     text-decoration: none; border-radius: 25px; display: inline-block;
-  //                     font-weight: bold; font-size: 16px;">
-  //             ✓ Підтвердити Email
-  //           </a>
-  //         </div>
-
-  //         <div style="background-color: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0;">
-  //           <p style="color: #856404; margin: 0; font-size: 14px;">
-  //             ⚠️ Посилання дійсне протягом 24 годин
-  //           </p>
-  //         </div>
-
-  //         <p style="color: #666; font-size: 14px;">
-  //           Якщо кнопка не працює, скопіюйте це посилання:<br>
-  //           <span style="word-break: break-all; color: #2196F3;">${verificationUrl}</span>
-  //         </p>
-  //       </div>
-  //     </div>
-  //   `;
-  // }
-
-  // ...existing code...
-
-  // Генерація 6-значного коду
   generateVerificationCode() {
     return Math.floor(100 + Math.random() * 900).toString();
   }
