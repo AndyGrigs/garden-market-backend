@@ -5,6 +5,7 @@ import EmailService from "../services/emailService.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from '../utils/langDetector.js';
 import { createNotification } from "./notificationController.js"; 
+import { notifyAllAdmins } from '../config/adminConfig.js';
 
 
 const emailService = new EmailService();
@@ -79,8 +80,7 @@ export const register = async (req, res) => {
         });
 
       } catch (notificationError) {
-        console.error("❌ Помилка сповіщень:", notificationError);
-        // Не блокуємо реєстрацію через помилку сповіщень
+        console.error("Помилка сповіщень:", notificationError);
       }
           }
 
