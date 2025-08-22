@@ -6,7 +6,7 @@ import path from "path";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js"; 
 
-
+/*
 export const createTree = async (req, res) => {
   try {
     const { title, description, price, imageUrl, category, stock } = req.body;
@@ -84,6 +84,140 @@ export const createTree = async (req, res) => {
       message: t(userLang, "success.tree.created"),
     });
   } catch (error) {
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.create_failed"),
+    });
+  }
+};*/
+
+export const createTree = async (req, res) => {
+  try {
+    const { title, description, price, imageUrl, category, stock } = req.body;
+    const userLang = getUserLanguage(req);
+
+    // Валідація для адмінів (всі мови обов'язкові)
+    if (req.userRole === 'admin') {
+      if (!title || !title.ru || !title.en || !title.ro) {
+        return res.status(400).json({
+          message: t(userLang, "errors.tree.title_required"),
+        });
+      }
+      if (!description || !description.ru || !description.en || !description.ro) {
+        return res.status(400).json({
+          message: t(userLang, "errors.tree.description_required"),
+        });
+      }
+    }
+
+    // Валідація для продавців (тільки російська обов'язкова)
+    if (req.userRole === 'seller') {
+      if (!title || !title.ru) {
+        return res.status(400).json({
+          message: t(userLang, "errors.tree.title_ru_required"),
+        });
+      }
+      if (!description || !description.ru) {
+        return res.status(400).json({
+          message: t(userLang, "errors.tree.description_ru_required"),
+        });
+      }
+    }
+
+    if (!price || price <= 0) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.invalid_price"),
+      });
+    }
+
+    if (!category) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.category_required"),
+      });
+    }
+
+    if (stock && stock < 0) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.invalid_stock"),
+      });
+    }
+
+    // Для продавців - автоматично додаємо їх ID
+    // Для адмінів - можна вказати конкретного продавця
+    let sellerId = req.userId; // За замовчуванням - поточний користувач
+
+    if (req.userRole === "admin" && req.body.seller) {
+      sellerId = req.body.seller;
+    }
+
+    // Створюємо товар
+    const tree = new TreeSchema({
+      title,
+      description,
+      price,
+      imageUrl,
+      category,
+      stock,
+      seller: sellerId,
+    });
+
+    await tree.save();
+
+    // ⬇️ СПОВІЩЕННЯ ЯКЩО ПРОДАВЕЦЬ СТВОРЮЄ ТОВАР
+    if (req.userRole === 'seller') {
+      try {
+        const sellerData = await UserModel.findById(req.userId).select('fullName sellerInfo email');
+        
+        // Створюємо сповіщення в базі
+        await createNotification({
+          type: 'new_product_created',
+          title: 'Новый товар от продавца',
+          message: `Продавец ${sellerData?.fullName} добавил товар: "${title.ru}". Нужно добавить переводы.`,
+          data: {
+            userId: req.userId,
+            productId: tree._id, // ⬅️ ТЕПЕР tree вже існує
+            sellerInfo: {
+              nurseryName: sellerData?.sellerInfo?.nurseryName,
+              fullName: sellerData?.fullName,
+            }
+          }
+        });
+
+        // ⬇️ ВІДПРАВЛЯЄМО EMAIL АДМІНАМ
+        await notifyAllAdmins(
+          emailService, // ⬅️ Переконайся що emailService імпортовано
+          'new_product_created',
+          {
+            productName: title.ru,
+            price: price,
+            sellerInfo: {
+              fullName: sellerData?.fullName,
+              nurseryName: sellerData?.sellerInfo?.nurseryName,
+              email: sellerData?.email
+            },
+            createdTime: new Date().toLocaleString('uk-UA')
+          }
+        );
+
+        console.log("✅ Сповіщення про новий товар створено:", title.ru);
+
+      } catch (notificationError) {
+        console.error("❌ Помилка створення сповіщення:", notificationError);
+        // Не блокуємо створення товару через помилку сповіщення
+      }
+    }
+
+    // Отримуємо повні дані товару з populate
+    const populatedTree = await TreeSchema.findById(tree._id)
+      .populate("category")
+      .populate("seller", "fullName sellerInfo.nurseryName");
+
+    res.status(201).json({
+      ...populatedTree.toObject(), // ⬅️ ВИПРАВЛЕНО: toObject() замість toObt()
+      message: t(userLang, "success.tree.created"),
+    });
+  } catch (error) {
+    console.error("Error creating tree:", error); // ⬅️ ДОДАНО логування помилки
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.create_failed"),
