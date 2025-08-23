@@ -57,6 +57,14 @@ import rateLimit from "express-rate-limit";
 import { treeValidation } from "./validations/tree.js";
 import { errorHandler } from "./utils/errorHandler.js";
 import { createOrder, getUserOrders, updateOrderStatus } from './controllers/orderController.js';
+import {
+  getNotifications,
+  markAsRead,
+  markAllAsRead,
+  deleteNotification,
+  getUnreadCount,
+} from "./controllers/notificationController.js";
+
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -168,6 +176,12 @@ app.post("/api/reviews", checkAuth, createReview);
 app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
 app.patch("/api/reviews/:id", checkAuth, updateReview);
 app.delete("/api/reviews/:id", checkAuth, deleteReview);
+
+app.get("/admin/notifications", checkAuth, checkAdmin, getNotifications);
+app.get("/admin/notifications/unread-count", checkAuth, checkAdmin, getUnreadCount);
+app.patch("/admin/notifications/:id/read", checkAuth, checkAdmin, markAsRead);
+app.patch("/admin/notifications/mark-all-read", checkAuth, checkAdmin, markAllAsRead);
+app.delete("/admin/notifications/:id", checkAuth, checkAdmin, deleteNotification);
 
 const emailService = new EmailService();
 

@@ -8,7 +8,7 @@ import { getUserLanguage } from "../utils/langDetector.js";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js"; 
 
-const emailService = new EmailService();
+
 
 export const createTree = async (req, res) => {
   try {
