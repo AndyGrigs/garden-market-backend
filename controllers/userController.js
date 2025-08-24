@@ -18,6 +18,12 @@ export const register = async (req, res) => {
 
     const userLang = getUserLanguage(req);
 
+    console.log("📥 Отримали дані:", {
+      role: req.body.role,
+      sellerInfo: req.body.sellerInfo
+    }); 
+
+
     const existingUser = await UserModel.findOne({ email: req.body.email });
     if (existingUser) {
       return res.status(409).json({

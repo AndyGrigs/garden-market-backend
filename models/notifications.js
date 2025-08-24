@@ -22,7 +22,7 @@ const NotificationSchema = new mongoose.Schema({
       email: String,
       fullName: String,
     },
-    // Додаткові дані можна додавати тут
+
   },
   isRead: {
     type: Boolean,
@@ -37,7 +37,7 @@ const NotificationSchema = new mongoose.Schema({
   },
 }, { timestamps: true });
 
-// Індекси для оптимізації
+
 NotificationSchema.index({ isRead: 1, createdAt: -1 });
 NotificationSchema.index({ type: 1 });
 NotificationSchema.index({ createdAt: -1 });
