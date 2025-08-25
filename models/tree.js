@@ -3,14 +3,14 @@ import mongoose from "mongoose";
 const TreeSchema = new mongoose.Schema(
   {
     title: {
-      ru: { type: String, required: true },
-      ro: { type: String, required: true },
-      en: { type: String, required: true },
+      ru: { type: String },
+      ro: { type: String},
+      en: { type: String },
     },
     description: {
-      ru: { type: String, required: true },
-      ro: { type: String, required: true },
-      en: { type: String, required: true },
+      ru: { type: String },
+      ro: { type: String },
+      en: { type: String },
     },
     price: { type: Number, required: true },
     category: {

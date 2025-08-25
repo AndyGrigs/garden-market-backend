@@ -17,7 +17,7 @@ export const register = async (req, res) => {
     const hash = await bcrypt.hash(password, salt);
 
     const userLang = getUserLanguage(req);
-
+     console.log("📥 ВЕСЬ req.body:", req.body);
     console.log("📥 Отримали дані:", {
       role: req.body.role,
       sellerInfo: req.body.sellerInfo
