@@ -4,7 +4,7 @@ Content-Type: application/json
  {
   "fullName": "Andrii Grygorov",
   "email": "andygrigs88@gmail.com",
-  "password": "123123",
+  "password": "",
   "role": "",
   "buyerInfo": {}
 }
@@ -16,7 +16,7 @@ POST http://localhost:4444/auth/request-password-reset
 Content-Type: application/json
 
 {
-  "email": "andygrigs88@gmail.com"
+  "email": "paulowniaptz07@gmail.com"
 }
 
 ###
@@ -24,9 +24,11 @@ POST http://localhost:4444/auth/reset-password
 Content-Type: application/json
 
 {
-  "token": "PASTE_YOUR_TOKEN_HERE",
-  "newPassword": "newpassword123"
+  "email": "paulowniaptz07@gmail.com",
+  "code": "", 
+  "newPassword": ""
 }
+
 
 ###
 POST http://localhost:4444/auth/login
@@ -34,7 +36,7 @@ Content-Type: application/json
 
 {
   "email": "paulowniaptz07@gmail.com",
-  "password": "234234"
+  "password": "Andrei0123*"
 }
 
 
@@ -97,7 +99,7 @@ Content-Type: application/json
    "title": {
       "ru": "Дуб",
       "ro": "Fasrte",
-    "en": "Oakoloe"
+      "en": "Oakoloe"
     }
 }
 ###
