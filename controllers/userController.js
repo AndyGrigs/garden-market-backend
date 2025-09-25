@@ -16,13 +16,8 @@ export const register = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
 
-    const userLang = getUserLanguage(req);
-     console.log("📥 ВЕСЬ req.body:", req.body);
-    console.log("📥 Отримали дані:", {
-      role: req.body.role,
-      sellerInfo: req.body.sellerInfo
-    }); 
-
+    let userLang = getUserLanguage(req);
+  
 
     const existingUser = await UserModel.findOne({ email: req.body.email });
     if (existingUser) {
@@ -31,7 +26,7 @@ export const register = async (req, res) => {
       });
     }
 
-   
+    userLang = user.language || 'ru';
     const code = emailService.generateVerificationCode();
     const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
 
@@ -125,7 +120,7 @@ export const register = async (req, res) => {
 
 export const login = async (req, res) => {
   try {
-    const userLang = getUserLanguage(req);
+    let userLang = getUserLanguage(req);
     
     const user = await UserModel.findOne({ 
       email: req.body.email, 
@@ -137,6 +132,8 @@ export const login = async (req, res) => {
         message: t(userLang, "errors.user_not_found") 
       });
     }
+
+    userLang = user.language || 'ru';
 
     const isValidPass = await bcrypt.compare(req.body.password, user.passwordHash);
 
@@ -178,7 +175,7 @@ export const login = async (req, res) => {
         message: t(userLang, "success.login"),
       });
   } catch (error) {
-    const userLang = req.body.language || "en";
+    const userLang = req.body.language || "ru";
     console.log(error);
     res.status(500).json({ message: t(userLang, "errors.login_failed") });
   }
@@ -217,13 +214,13 @@ export const sendResetCode = async (req, res) => {
     const { email } = req.body;
     const user = await UserModel.findOne({ email, isActive: true });
 
-    const userLang = getUserLanguage(req);
+    let userLang = getUserLanguage(req);
     
 
     if (!user) {
       return res.status(404).json({ message: t(userLang, "errors.user_not_found") });
     }
-
+    userLang = user.language || 'ru';
     // Генеруємо 3-значний код
     const code = emailService.generateVerificationCode();
     const resetCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
@@ -242,8 +239,9 @@ export const sendResetCode = async (req, res) => {
 
     res.json({ message: t(userLang, "success.reset_code_sent") });
   } catch (error) {
+    let userLang = user.language || 'ru';
     console.log(error);
-    res.status(500).json({ message: t("en", "errors.server_error") });
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
 

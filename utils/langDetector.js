@@ -1,5 +1,4 @@
-
-const supportedLanguages = ["en", "ru", "ro"];
+const supportedLanguages = ["ru", "ro"];
 
 export const getUserLanguage = (req) => {
   const lang =
