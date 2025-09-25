@@ -2,11 +2,13 @@ import fs from "fs";
 import path from "path";
 import TreeSchema from "../models/tree.js";
 import UserSchema from "../models/user.js";
-import emailService from "../services/emailService.js";
+import EmailService from "../services/emailService.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js";
+
+const emailService = new EmailService(); 
 
 export const createTree = async (req, res) => {
   try {
@@ -337,44 +339,40 @@ export const updateSellerTree = async (req, res) => {
   }
 };
 
-/*
-    const deletedTree = await TreeSchema.findOneAndDelete({
-  _id: id, 
-  seller: req.userId 
-});
-    */
 export const deleteSellerTree = async (req, res) => {
   try {
     const { id } = req.params;
     const userLang = getUserLanguage(req);
 
-    // Знаходимо та видаляємо тільки товари поточного продавця
-    const deletedTree = await TreeSchema.findOneAndUpdate({
+    // ✅ Спочатку знаходимо товар щоб отримати imageUrl
+    const treeToDelete = await TreeSchema.findOne({
       _id: id,
       seller: req.userId,
     });
 
-    if (!deletedTree) {
+    if (!treeToDelete) {
       return res.status(404).json({
         message: t(userLang, "errors.tree.not_found"),
       });
     }
 
+    // Видаляємо фото якщо є
     if (treeToDelete.imageUrl) {
-        try {
+      try {
         const filename = treeToDelete.imageUrl.replace("/uploads/", "");
         const filePath = path.resolve("uploads", filename);
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
           console.log(`✅ Фото видалено: ${filename}`);
-        } else {
-          console.log(`⚠️ Файл не знайдено: ${filename}`);
         }
       } catch (imageError) {
         console.error("❌ Помилка видалення фото:", imageError);
       }
     }
+
+    // Видаляємо товар з бази
+    await TreeSchema.findByIdAndDelete(id);
 
     res.json({
       message: t(userLang, "success.tree.deleted"),

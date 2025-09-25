@@ -125,6 +125,7 @@ app.get("/auth/me", checkAuth, getMe);
 app.post("/auth/logout", logout);
 app.post("/auth/send-reset-code", sendResetCode);
 app.post("/auth/reset-password", resetPassword);
+app.post("/auth/request-password-reset", sendResetCode);
 
 //order routes
 app.get("/orders/user/:userId", checkAuth, getUserOrders);
