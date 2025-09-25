@@ -5,12 +5,12 @@ const TreeSchema = new mongoose.Schema(
     title: {
       ru: { type: String },
       ro: { type: String},
-      en: { type: String },
+      // en: { type: String },
     },
     description: {
       ru: { type: String },
       ro: { type: String },
-      en: { type: String },
+      // en: { type: String },
     },
     price: { type: Number, required: true },
     category: {
