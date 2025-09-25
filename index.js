@@ -142,22 +142,6 @@ app.get("/image-info/:filename", getImageInfo);
 app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles);
 
 app.get("/trees", getAllTrees);
-// app.post(
-//   "/trees",
-//   checkAuth,
-//   createTree,
-//   handleValidationErrors,
-//   treeValidation
-// );
-// app.patch(
-//   "/trees/:id",
-//   checkAuth,
-//   treeValidation,
-//   handleValidationErrors,
-//   updateTree
-// );
-// app.delete("/trees/:id", checkAuth, deleteTree);
-// app.delete("/delete-image/:filename", checkAuth, deleteImage);
 
 // ⬇️ РОУТИ ДЛЯ АДМІНІВ:
 app.post("/admin/trees", checkAuth, checkAdmin, treeValidation, handleValidationErrors, createTree);
