@@ -38,6 +38,7 @@ import {
   upload,
   getImageInfo,
   cleanupOldFiles,
+  cleanupUnusedFiles,
 } from "./controllers/uploadController.js";
 import { deleteImage } from "./controllers/uploadController.js";
 import {
@@ -141,6 +142,7 @@ app.post("/upload", uploadImage);
 app.delete("/delete-image/:filename", deleteImage);
 app.get("/image-info/:filename", getImageInfo);
 app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles);
+app.post("/cleanup-unused-files", checkAuth, checkAdmin, cleanupUnusedFiles);
 
 app.get("/trees", getAllTrees);
 

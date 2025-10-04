@@ -4,6 +4,7 @@ import { getUserLanguage } from "../utils/langDetector.js";
 import { t } from '../localisation.js';
 import path from "path";
 import fs from "fs";
+import { deleteOldImageFile } from "./uploadController.js";
 
 export const createCategory = async (req, res) => {
   try {
@@ -74,6 +75,19 @@ export const updateCategory = async (req, res) => {
       });
     }
 
+    // Get current category to check for old image
+    const currentCategory = await CategorySchema.findById(categoryId);
+    if (!currentCategory) {
+      return res
+        .status(404)
+        .json({ message: t(userLang, "errors.category.not_found") });
+    }
+
+    // If imageUrl is being updated and it's different from current, delete old image
+    if (imageUrl !== undefined && imageUrl !== currentCategory.imageUrl) {
+      deleteOldImageFile(currentCategory.imageUrl);
+    }
+
     const slug = slugify(name.ru, { lower: true });
 
     let updateData = { name, slug };
@@ -87,15 +101,10 @@ export const updateCategory = async (req, res) => {
       { new: true }
     );
 
-    if (!updated) {
-      return res
-        .status(404)
-        .json({ message: t(userLang, "errors.category.not_found") });
-    }
     res.json(updated);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ message: t(userLang, "success.category.updated") });
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
 

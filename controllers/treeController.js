@@ -7,6 +7,7 @@ import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js";
+import { deleteOldImageFile } from "./uploadController.js";
 
 const emailService = new EmailService(); 
 
@@ -181,17 +182,24 @@ export const updateTree = async (req, res) => {
       });
     }
 
+    // Get current tree to check for old image
+    const currentTree = await TreeSchema.findById(id);
+    if (!currentTree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    // If imageUrl is being updated and it's different from current, delete old image
+    if (imageUrl !== undefined && imageUrl !== currentTree.imageUrl) {
+      deleteOldImageFile(currentTree.imageUrl);
+    }
+
     const updatedTree = await TreeSchema.findByIdAndUpdate(
       id,
       { $set: { title, description, price, imageUrl, category, stock } },
       { new: true }
     ).populate("category");
-
-    if (!updatedTree) {
-      return res.status(404).json({
-        message: t(userLang, "errors.tree.not_found"),
-      });
-    }
 
     res.status(200).json({
       ...updatedTree.toObject(),
@@ -308,6 +316,23 @@ export const updateSellerTree = async (req, res) => {
       });
     }
 
+    // Get current tree to check for old image
+    const currentTree = await TreeSchema.findOne({
+      _id: id,
+      seller: req.userId,
+    });
+
+    if (!currentTree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    // If imageUrl is being updated and it's different from current, delete old image
+    if (imageUrl !== undefined && imageUrl !== currentTree.imageUrl) {
+      deleteOldImageFile(currentTree.imageUrl);
+    }
+
     // Знаходимо та оновлюємо тільки товари поточного продавця
     const updatedTree = await TreeSchema.findOneAndUpdate(
       {
@@ -319,12 +344,6 @@ export const updateSellerTree = async (req, res) => {
     )
       .populate("category")
       .populate("seller", "fullName sellerInfo.nurseryName");
-
-    if (!updatedTree) {
-      return res.status(404).json({
-        message: t(userLang, "errors.tree.not_found"),
-      });
-    }
 
     res.status(200).json({
       ...updatedTree.toObject(),

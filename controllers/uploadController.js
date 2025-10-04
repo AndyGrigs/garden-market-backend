@@ -191,31 +191,129 @@ export const getImageInfo = (req, res) => {
   });
 };
 
+// Helper function to delete old image file when replacing with new one
+export const deleteOldImageFile = (oldImageUrl) => {
+  if (!oldImageUrl || !oldImageUrl.includes('/uploads/')) {
+    return;
+  }
+
+  try {
+    const filename = oldImageUrl.replace('/uploads/', '');
+    const filePath = path.resolve('uploads', filename);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+      console.log(`✅ Old image deleted: ${filename}`);
+    }
+  } catch (error) {
+    console.error('❌ Error deleting old image:', error);
+  }
+};
+
+// Helper function to get all used image URLs from database
+export const getAllUsedImages = async () => {
+  try {
+    // Import models dynamically to avoid circular dependencies
+    const { default: TreeSchema } = await import('../models/tree.js');
+    const { default: CategorySchema } = await import('../models/category.js');
+
+    const usedImages = new Set();
+
+    // Get all tree images
+    const trees = await TreeSchema.find({ imageUrl: { $exists: true, $ne: null } }, 'imageUrl');
+    trees.forEach(tree => {
+      if (tree.imageUrl && tree.imageUrl.includes('/uploads/')) {
+        const filename = tree.imageUrl.replace('/uploads/', '');
+        usedImages.add(filename);
+      }
+    });
+
+    // Get all category images
+    const categories = await CategorySchema.find({ imageUrl: { $exists: true, $ne: null } }, 'imageUrl');
+    categories.forEach(category => {
+      if (category.imageUrl && category.imageUrl.includes('/uploads/')) {
+        const filename = category.imageUrl.replace('/uploads/', '');
+        usedImages.add(filename);
+      }
+    });
+
+    return usedImages;
+  } catch (error) {
+    console.error('Error getting used images:', error);
+    return new Set();
+  }
+};
+
+export const cleanupUnusedFiles = async (req, res) => {
+  const userLang = getUserLanguage(req);
+
+  try {
+    const files = fs.readdirSync(uploadDir);
+    const usedImages = await getAllUsedImages();
+
+    let deletedCount = 0;
+    const deletedFiles = [];
+
+    for (const file of files) {
+      // Skip if file is not an image
+      if (!/\.(jpg|jpeg|png)$/i.test(file)) {
+        continue;
+      }
+
+      // If file is not used in database, delete it
+      if (!usedImages.has(file)) {
+        const filePath = path.join(uploadDir, file);
+        try {
+          fs.unlinkSync(filePath);
+          deletedFiles.push(file);
+          deletedCount++;
+          console.log(`✅ Unused file deleted: ${file}`);
+        } catch (deleteError) {
+          console.error(`❌ Error deleting ${file}:`, deleteError);
+        }
+      }
+    }
+
+    res.json({
+      message: t(userLang, "success.upload.cleanup_completed", {
+        count: deletedCount
+      }),
+      deletedFiles: deletedCount,
+      deletedFilesList: deletedFiles
+    });
+  } catch (error) {
+    console.error('Cleanup error:', error);
+    res.status(500).json({
+      message: t(userLang, "errors.upload.cleanup_failed")
+    });
+  }
+};
+
 export const cleanupOldFiles = async (req, res) => {
   const userLang = getUserLanguage(req);
   const daysOld = parseInt(req.query.days) || 30; // Default 30 days
-  
+
   try {
     const files = fs.readdirSync(uploadDir);
     const cutoffDate = new Date();
     cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-    
+
     let deletedCount = 0;
-    
+
     for (const file of files) {
       const filePath = path.join(uploadDir, file);
       const stats = fs.statSync(filePath);
-      
+
       if (stats.birthtime < cutoffDate) {
         fs.unlinkSync(filePath);
         deletedCount++;
       }
     }
-    
+
     res.json({
-      message: t(userLang, "success.upload.cleanup_completed", { 
+      message: t(userLang, "success.upload.cleanup_completed", {
         count: deletedCount,
-        days: daysOld 
+        days: daysOld
       }),
       deletedFiles: deletedCount
     });
