@@ -15,6 +15,7 @@ export const register = async (req, res) => {
     const password = req.body.password;
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
+    const termsAccepted = req.body.termsAccepted;
 
     let userLang = getUserLanguage(req);
   
@@ -26,9 +27,16 @@ export const register = async (req, res) => {
       });
     }
 
-    userLang = user.language || 'ru';
     const code = emailService.generateVerificationCode();
     const verificationCodeExpires = new Date(Date.now() + 10 * 60 * 1000);
+
+    // Перевірка чи прийняті умови
+    if (!termsAccepted) {
+      return res.status(400).json({ 
+        // message: 'Ви повинні прийняти умови використання' 
+        message: t(userLang, "errors.accept_conditions") 
+      });
+}
 
     const doc = new UserModel({
       email: req.body.email,
@@ -42,6 +50,8 @@ export const register = async (req, res) => {
       verificationCode: code,
       verificationCodeExpires,
       isActive: true,
+      termsAccepted: true,
+      termsAcceptedAt: new Date()
     });
     const user = await doc.save();
 

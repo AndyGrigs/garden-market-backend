@@ -53,6 +53,14 @@ const UserSchema = new mongoose.Schema({
       default: Date.now,
     },
   },
+  termsAccepted: {
+    type: Boolean,
+    default: false,
+    required: true
+},
+  termsAcceptedAt: {
+    type: Date
+}
 });
 
 export default mongoose.model("User", UserSchema);

@@ -31,6 +31,7 @@
       "fetched": "Recenziile au fost preluate cu succes."
     }
   },
+
   "errors": {
     "server_error": "Eroare de server. Vă rugăm să încercați mai târziu.",
     "user_exists": "Utilizatorul cu acest email există deja.",
@@ -41,6 +42,7 @@
     "login_failed": "Autentificarea a eșuat. Vă rugăm să încercați mai târziu.",
     "already_verified": "Email-ul este deja verificat",
     "email_charged": "Adresa de e-mail este obligatorie",
+    "accept_conditions": "Trebuie să acceptați termenii și condițiile.",
     "category": {
       "ru_required": "Numele în rusă este obligatoriu.",
       "already_exists": "Categoria cu acest nume există deja.",
