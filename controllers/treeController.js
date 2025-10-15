@@ -15,10 +15,9 @@ export const createTree = async (req, res) => {
   try {
     const { title, description, price, imageUrl, category, stock } = req.body;
     const userLang = getUserLanguage(req);
-
-    // Валідація для адмінів (всі мови обов'язкові)
+    
     if (req.userRole === "admin") {
-      if (!title || !title.ru || !title.en || !title.ro) {
+      if (!title || !title.ru || !title.ro) {
         return res.status(400).json({
           message: t(userLang, "errors.tree.title_required"),
         });
@@ -26,7 +25,6 @@ export const createTree = async (req, res) => {
       if (
         !description ||
         !description.ru ||
-        !description.en ||
         !description.ro
       ) {
         return res.status(400).json({
