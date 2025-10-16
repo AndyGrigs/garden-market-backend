@@ -70,6 +70,12 @@ import {
   rejectSeller
 } from "./controllers/notificationController.js";
 
+import { 
+  createPayment, 
+  getPayment, 
+  updatePaymentStatus 
+} from './controllers/paymentController.js';
+
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -180,6 +186,13 @@ app.get("/admin/sellers/pending", checkAuth, checkAdmin, getPendingSellers);
 app.patch("/admin/sellers/:userId/approve", checkAuth, checkAdmin, approveSeller);
 app.delete("/admin/sellers/:userId/reject", checkAuth, checkAdmin, rejectSeller);
 
+
+
+
+// Payment routes
+app.post('/payments', createPayment); // Створити платіж
+app.get('/payments/:id', checkAuth, getPayment); // Отримати платіж
+app.post('/payments/webhook', updatePaymentStatus); // Webhook від платіжних систем
 const emailService = new EmailService();
 
 emailService.testConnection();

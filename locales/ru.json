@@ -35,6 +35,10 @@
     "seller_rejected": "Продавец отклонен и удален",
     "sellers": {
       "fetched": "Продавцы успешно получены"
+    },
+    "payment": {
+      "created": "Платеж создан",
+      "status_updated": "Статус обновлен"
     }
   },
   "errors": 
@@ -105,7 +109,14 @@
       "delete_failed": "Ошибка удаления уведомления"
     },
     "approve_seller_failed": "Ошибка утверждения продавца",
-    "reject_seller_failed": "Ошибка отклонения продавца"
+    "reject_seller_failed": "Ошибка отклонения продавца",
+    "order": {
+      "not_found": "Заказ не найден"
+    },
+    "payment": {
+      "not_found": "Платеж не найден",
+      "update_failed": "Ошибка обновления"
+    }
   },
   "warnings":{
     "no_eccess": "Нет доступа"

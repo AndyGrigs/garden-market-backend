@@ -41,6 +41,10 @@
     "seller_rejected": "Vânzătorul a fost respins și șters",
     "sellers": {
       "fetched": "Vânzătorii au fost obținuți cu succes"
+    },
+    "payment": {
+      "created": "Plata a fost creată",
+      "status_updated": "Statutul a fost actualizat"
     }
   },
 
@@ -104,7 +108,14 @@
       "delete_failed": "Eroare la ștergerea notificării"
     },
     "approve_seller_failed": "Eroare la aprobarea vânzătorului",
-    "reject_seller_failed": "Eroare la respingerea vânzătorului"
+    "reject_seller_failed": "Eroare la respingerea vânzătorului",
+    "order": {
+      "not_found": "Comanda nu a fost găsită"
+    },
+    "payment": {
+      "not_found": "Plata nu a fost găsită",
+      "update_failed": "Eroare la actualizare"
+    }
   },
    "warnings":{
       "no_eccess": "Fără exces!"
