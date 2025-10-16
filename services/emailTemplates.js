@@ -270,3 +270,252 @@ export const sellerRejectionTemplates = {
   `,
 };
 
+export const adminNotificationTemplates = {
+  new_seller_registration: {
+    ru: (data) => ({
+      subject: `🔔 Новый продавец зарегистрировался - ${data.fullName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Новый продавец</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+            .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #059669; border-radius: 4px; }
+            .btn { display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+            .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+            .urgent { color: #dc2626; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🌳 Новый продавец на платформе!</h1>
+            </div>
+
+            <div class="content">
+              <h2>Детали регистрации:</h2>
+
+              <div class="info-box">
+                <p><strong>👤 Имя:</strong> ${data.fullName}</p>
+                <p><strong>📧 Email:</strong> ${data.email}</p>
+                <p><strong>🏪 Питомник:</strong> ${data.sellerInfo?.nurseryName || "Не указано"}</p>
+                <p><strong>📱 Телефон:</strong> ${data.sellerInfo?.phoneNumber || "Не указано"}</p>
+                <p><strong>📍 Адрес:</strong> ${data.sellerInfo?.address || "Не указано"}</p>
+                <p><strong>📄 Лицензия:</strong> ${data.sellerInfo?.businessLicense || "Не указано"}</p>
+                ${data.sellerInfo?.description ? `<p><strong>📝 Описание:</strong> ${data.sellerInfo.description}</p>` : ""}
+              </div>
+
+              <div class="info-box urgent">
+                <p><strong>⚠️ Требуются действия:</strong></p>
+                <ul>
+                  <li>Проверить информацию о продавце</li>
+                  <li>Утвердить или отклонить заявку</li>
+                  <li>При утверждении - активировать аккаунт продавца</li>
+                </ul>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                  🔗 Перейти в админ панель
+                </a>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>Garden Market Admin System | ${new Date().toLocaleDateString("ru-RU")}</p>
+              <p>Это автоматическое сообщение. Не отвечайте на этот email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }),
+    ro: (data) => ({
+      subject: `🔔 Un nou vânzător s-a înregistrat - ${data.fullName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Vânzător nou</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+            .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #059669; border-radius: 4px; }
+            .btn { display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+            .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+            .urgent { color: #dc2626; font-weight: bold; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🌳 Vânzător nou pe platformă!</h1>
+            </div>
+
+            <div class="content">
+              <h2>Detalii înregistrare:</h2>
+
+              <div class="info-box">
+                <p><strong>👤 Nume:</strong> ${data.fullName}</p>
+                <p><strong>📧 Email:</strong> ${data.email}</p>
+                <p><strong>🏪 Pepinieră:</strong> ${data.sellerInfo?.nurseryName || "Nespecificat"}</p>
+                <p><strong>📱 Telefon:</strong> ${data.sellerInfo?.phoneNumber || "Nespecificat"}</p>
+                <p><strong>📍 Adresă:</strong> ${data.sellerInfo?.address || "Nespecificat"}</p>
+                <p><strong>📄 Licență:</strong> ${data.sellerInfo?.businessLicense || "Nespecificat"}</p>
+                ${data.sellerInfo?.description ? `<p><strong>📝 Descriere:</strong> ${data.sellerInfo.description}</p>` : ""}
+              </div>
+
+              <div class="info-box urgent">
+                <p><strong>⚠️ Acțiuni necesare:</strong></p>
+                <ul>
+                  <li>Verificați informațiile despre vânzător</li>
+                  <li>Aprobați sau respingeți cererea</li>
+                  <li>La aprobare - activați contul vânzătorului</li>
+                </ul>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                  🔗 Accesați panoul admin
+                </a>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>Garden Market Admin System | ${new Date().toLocaleDateString("ro-RO")}</p>
+              <p>Acesta este un mesaj automat. Nu răspundeți la acest email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }),
+  },
+  new_product_created: {
+    ru: (data) => ({
+      subject: `🌳 Новый товар требует перевода - ${data.productName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Новый товар</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+            .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }
+            .btn { display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+            .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📝 Требуется перевод товара!</h1>
+            </div>
+
+            <div class="content">
+              <div class="info-box">
+                <p><strong>🌳 Товар:</strong> ${data.productName}</p>
+                <p><strong>💰 Цена:</strong> ${data.price} грн</p>
+                <p><strong>👤 Продавец:</strong> ${data.sellerInfo?.fullName}</p>
+                <p><strong>🏪 Питомник:</strong> ${data.sellerInfo?.nurseryName}</p>
+                <p><strong>📅 Создано:</strong> ${new Date().toLocaleDateString("ru-RU")}</p>
+              </div>
+
+              <div class="info-box">
+                <p><strong>⚠️ Требуются переводы:</strong></p>
+                <ul>
+                  <li>🇬🇧 На английский язык</li>
+                  <li>🇷🇴 На румынский язык</li>
+                </ul>
+                <p><em>Товар будет доступен покупателям после добавления переводов.</em></p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                  🔗 Добавить переводы
+                </a>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>Garden Market Admin System | ${new Date().toLocaleDateString("ru-RU")}</p>
+              <p>Это автоматическое сообщение. Не отвечайте на этот email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }),
+    ro: (data) => ({
+      subject: `🌳 Produs nou necesită traducere - ${data.productName}`,
+      html: `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Produs nou</title>
+          <style>
+            body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+            .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+            .header { background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+            .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+            .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #f59e0b; border-radius: 4px; }
+            .btn { display: inline-block; background: #f59e0b; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin: 10px 0; }
+            .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>📝 Este necesară traducerea produsului!</h1>
+            </div>
+
+            <div class="content">
+              <div class="info-box">
+                <p><strong>🌳 Produs:</strong> ${data.productName}</p>
+                <p><strong>💰 Preț:</strong> ${data.price} lei</p>
+                <p><strong>👤 Vânzător:</strong> ${data.sellerInfo?.fullName}</p>
+                <p><strong>🏪 Pepinieră:</strong> ${data.sellerInfo?.nurseryName}</p>
+                <p><strong>📅 Creat:</strong> ${new Date().toLocaleDateString("ro-RO")}</p>
+              </div>
+
+              <div class="info-box">
+                <p><strong>⚠️ Traduceri necesare:</strong></p>
+                <ul>
+                  <li>🇬🇧 În limba engleză</li>
+                  <li>🇷🇺 În limba rusă</li>
+                </ul>
+                <p><em>Produsul va fi disponibil pentru cumpărători după adăugarea traducerilor.</em></p>
+              </div>
+
+              <div style="text-align: center; margin: 30px 0;">
+                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                  🔗 Adăugați traduceri
+                </a>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>Garden Market Admin System | ${new Date().toLocaleDateString("ro-RO")}</p>
+              <p>Acesta este un mesaj automat. Nu răspundeți la acest email.</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+    }),
+  },
+};
+
