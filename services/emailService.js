@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { verificationCodeTemplates, resetCodeTemplates, sellerApprovalTemplates } from "./emailTemplates.js";
+import { verificationCodeTemplates, resetCodeTemplates, sellerApprovalTemplates, sellerRejectionTemplates } from "./emailTemplates.js";
 
 dotenv.config();
 
@@ -88,6 +88,28 @@ class emailService {
       return { success: true, messageId: result.messageId };
     } catch (error) {
       console.error("❌ Error sending seller approval email:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async sendSellerRejectionEmail(userEmail, data, userLang = "ru") {
+    try {
+      const lang = ["ru", "ro"].includes(userLang) ? userLang : "ru";
+      const mailOptions = {
+        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
+        to: userEmail,
+        subject: {
+          ru: "❌ Заявка на регистрацию отклонена - Garden Market",
+          ro: "❌ Cererea de înregistrare a fost respinsă - Garden Market",
+        }[lang],
+        html: sellerRejectionTemplates[lang](data),
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      console.log("✅ Seller rejection email sent:", result.messageId);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("❌ Error sending seller rejection email:", error);
       return { success: false, error: error.message };
     }
   }

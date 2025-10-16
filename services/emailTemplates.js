@@ -183,3 +183,90 @@ export const sellerApprovalTemplates = {
   `,
 };
 
+export const sellerRejectionTemplates = {
+  ru: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+        .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #dc2626; border-radius: 4px; }
+        .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Заявка на регистрацию отклонена</h1>
+        </div>
+
+        <div class="content">
+          <h2>Уважаемый(ая) ${data.fullName},</h2>
+
+          <div class="info-box">
+            <p>К сожалению, ваша заявка на регистрацию в качестве продавца на платформе <strong>Garden Market</strong> была отклонена администрацией.</p>
+            ${data.reason ? `<p><strong>Причина:</strong> ${data.reason}</p>` : ''}
+            <p>Ваш аккаунт был удален из системы.</p>
+          </div>
+
+          <p style="color: #666; font-size: 14px; margin-top: 20px;">
+            Если у вас есть вопросы или вы хотите подать заявку повторно, пожалуйста, свяжитесь с нашей службой поддержки.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>Garden Market - Платформа для продажи растений</p>
+          <p>Это автоматическое сообщение. Не отвечайте на этот email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `,
+  ro: (data) => `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #dc2626; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef; }
+        .info-box { background: white; padding: 20px; margin: 20px 0; border-left: 4px solid #dc2626; border-radius: 4px; }
+        .footer { background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>❌ Cererea de înregistrare a fost respinsă</h1>
+        </div>
+
+        <div class="content">
+          <h2>Stimate/Stimată ${data.fullName},</h2>
+
+          <div class="info-box">
+            <p>Din păcate, cererea dvs. de înregistrare ca vânzător pe platforma <strong>Garden Market</strong> a fost respinsă de către administrație.</p>
+            ${data.reason ? `<p><strong>Motiv:</strong> ${data.reason}</p>` : ''}
+            <p>Contul dvs. a fost șters din sistem.</p>
+          </div>
+
+          <p style="color: #666; font-size: 14px; margin-top: 20px;">
+            Dacă aveți întrebări sau doriți să depuneți o nouă cerere, vă rugăm să contactați serviciul nostru de asistență.
+          </p>
+        </div>
+
+        <div class="footer">
+          <p>Garden Market - Platformă pentru vânzarea plantelor</p>
+          <p>Acesta este un mesaj automat. Nu răspundeți la acest email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `,
+};
+

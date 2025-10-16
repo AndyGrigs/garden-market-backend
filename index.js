@@ -17,6 +17,7 @@ import {
   logout,
   sendResetCode,
   resetPassword,
+  getPendingSellers,
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
 import {
@@ -65,7 +66,8 @@ import {
   deleteNotification,
   getUnreadCount,
   createNotificationRoute,
-  approveSeller
+  approveSeller,
+  rejectSeller
 } from "./controllers/notificationController.js";
 
 
@@ -174,7 +176,9 @@ app.patch("/admin/notifications/:id/read", checkAuth, checkAdmin, markAsRead);
 app.patch("/admin/notifications/mark-all-read", checkAuth, checkAdmin, markAllAsRead);
 app.delete("/admin/notifications/:id", checkAuth, checkAdmin, deleteNotification);
 
+app.get("/admin/sellers/pending", checkAuth, checkAdmin, getPendingSellers);
 app.patch("/admin/sellers/:userId/approve", checkAuth, checkAdmin, approveSeller);
+app.delete("/admin/sellers/:userId/reject", checkAuth, checkAdmin, rejectSeller);
 
 const emailService = new EmailService();
 

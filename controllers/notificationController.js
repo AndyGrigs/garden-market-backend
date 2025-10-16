@@ -3,6 +3,7 @@ import UserModel from "../models/user.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import EmailService from '../services/emailService.js';
+import { notifyAllAdmins } from '../config/adminConfig.js';
 
 const emailService = new EmailService();
 
@@ -208,6 +209,17 @@ export const approveSeller = async (req, res) => {
     const { userId } = req.params;
     const userLang = getUserLanguage(req);
 
+    console.log("Approving seller with userId:", userId);
+
+    // Validate userId
+    if (!userId || userId === 'undefined') {
+      return res.status(400).json({
+        message: t(userLang, "errors.invalid_user_id", {
+          defaultValue: "Неверный ID пользователя"
+        }),
+      });
+    }
+
     // Знайти користувача
     const user = await UserModel.findById(userId);
 
@@ -229,7 +241,10 @@ export const approveSeller = async (req, res) => {
 
     // Оновити статус продавця на активний
     user.isActive = true;
-    user.isApproved = true; // Якщо є таке поле
+    if (!user.sellerInfo) {
+      user.sellerInfo = {};
+    }
+    user.sellerInfo.isApproved = true;
     await user.save();
 
     // Створити сповіщення
@@ -293,6 +308,109 @@ export const approveSeller = async (req, res) => {
     res.status(500).json({
       message: t(userLang, "errors.approve_seller_failed", {
         defaultValue: "Ошибка утверждения продавца"
+      }),
+    });
+  }
+};
+
+// Відхилити продавця
+export const rejectSeller = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const { reason } = req.body; // Optional rejection reason
+    const userLang = getUserLanguage(req);
+
+    console.log("Rejecting seller with userId:", userId);
+
+    // Validate userId
+    if (!userId || userId === 'undefined') {
+      return res.status(400).json({
+        message: t(userLang, "errors.invalid_user_id", {
+          defaultValue: "Неверный ID пользователя"
+        }),
+      });
+    }
+
+    // Знайти користувача
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: t(userLang, "errors.user_not_found", {
+          defaultValue: "Пользователь не найден"
+        }),
+      });
+    }
+
+    if (user.role !== 'seller') {
+      return res.status(400).json({
+        message: t(userLang, "errors.not_seller", {
+          defaultValue: "Этот пользователь не является продавцом"
+        }),
+      });
+    }
+
+    // Зберігаємо дані користувача перед видаленням
+    const userData = {
+      fullName: user.fullName,
+      email: user.email,
+      nurseryName: user.sellerInfo?.nurseryName,
+      reason: reason || null
+    };
+
+    // Відправити email про відхилення
+    try {
+      await emailService.sendSellerRejectionEmail(
+        user.email,
+        userData,
+        user.language || userLang
+      );
+      console.log("✅ Rejection email sent to seller");
+    } catch (emailError) {
+      console.error("❌ Error sending rejection email:", emailError);
+      // Продовжуємо видалення навіть якщо email не відправився
+    }
+
+    // Створити сповіщення для адміна про відхилення
+    try {
+      await createNotification({
+        type: 'seller_rejected',
+        title: 'Продавця відхилено',
+        message: `Продавця ${user.fullName} (${user.sellerInfo?.nurseryName}) було відхилено та видалено`,
+        data: {
+          userId: user._id,
+          sellerInfo: {
+            nurseryName: user.sellerInfo?.nurseryName,
+            email: user.email,
+            fullName: user.fullName,
+            reason: reason
+          }
+        }
+      });
+    } catch (notificationError) {
+      console.error("❌ Error creating rejection notification:", notificationError);
+    }
+
+    // Видалити користувача з бази даних
+    await UserModel.findByIdAndDelete(userId);
+    console.log("✅ Seller account deleted:", user.email);
+
+    res.json({
+      message: t(userLang, "success.seller_rejected", {
+        defaultValue: "Продавец отклонен и удален"
+      }),
+      deletedUser: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+      }
+    });
+  } catch (error) {
+    console.error("Error rejecting seller:", error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.reject_seller_failed", {
+        defaultValue: "Ошибка отклонения продавца"
       }),
     });
   }

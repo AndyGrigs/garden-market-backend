@@ -37,7 +37,11 @@
       "all_marked_read": "Toate notificările au fost marcate ca citite",
       "deleted": "Notificarea a fost ștearsă"
     },
-    "seller_approved": "Vânzătorul a fost aprobat cu succes"
+    "seller_approved": "Vânzătorul a fost aprobat cu succes",
+    "seller_rejected": "Vânzătorul a fost respins și șters",
+    "sellers": {
+      "fetched": "Vânzătorii au fost obținuți cu succes"
+    }
   },
 
   "errors": {
@@ -58,6 +62,7 @@
     "email_charged": "Adresa de e-mail este obligatorie",
     "accept_conditions": "Trebuie să acceptați termenii și condițiile.",
     "not_seller": "Acest utilizator nu este vânzător",
+    "invalid_user_id": "ID utilizator invalid",
     "category": {
       "ru_required": "Numele în rusă este obligatoriu.",
       "already_exists": "Categoria cu acest nume există deja.",
@@ -98,7 +103,8 @@
       "mark_all_read_failed": "Eroare la marcarea tuturor ca citite",
       "delete_failed": "Eroare la ștergerea notificării"
     },
-    "approve_seller_failed": "Eroare la aprobarea vânzătorului"
+    "approve_seller_failed": "Eroare la aprobarea vânzătorului",
+    "reject_seller_failed": "Eroare la respingerea vânzătorului"
   },
    "warnings":{
       "no_eccess": "Fără exces!"

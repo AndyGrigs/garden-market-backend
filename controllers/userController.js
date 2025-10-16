@@ -353,7 +353,35 @@ export const resendVerificationCode = async (req, res) => {
 
   } catch (error) {
     console.log(error);
-    res.status(500).json({ 
+    res.status(500).json({
+      message: t(userLang, "errors.server_error")
+    });
+  }
+};
+
+export const getPendingSellers = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+
+    const pendingSellers = await UserModel.find({
+      role: 'seller',
+      'sellerInfo.isApproved': false,
+      isActive: true
+    })
+      .select('-passwordHash -resetCode -resetCodeExpires -verificationCode -verificationCodeExpires')
+      .sort({ 'sellerInfo.registrationDate': -1 });
+
+    res.json({
+      sellers: pendingSellers,
+      count: pendingSellers.length,
+      message: t(userLang, "success.sellers.fetched", {
+        defaultValue: "Продавцы успешно получены"
+      })
+    });
+  } catch (error) {
+    console.log(error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
       message: t(userLang, "errors.server_error")
     });
   }
