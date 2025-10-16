@@ -29,10 +29,24 @@
       "updated": "Recenzia a fost actualizată cu succes.",
       "deleted": "Recenzia a fost ștearsă cu succes.",
       "fetched": "Recenziile au fost preluate cu succes."
-    }
+    },
+    "notifications": {
+      "created": "Notificarea a fost creată",
+      "fetched": "Notificările au fost încărcate",
+      "marked_read": "Notificarea a fost marcată ca citită",
+      "all_marked_read": "Toate notificările au fost marcate ca citite",
+      "deleted": "Notificarea a fost ștearsă"
+    },
+    "seller_approved": "Vânzătorul a fost aprobat cu succes"
   },
 
   "errors": {
+    "title_ru_required": "Trebuie să trimiteți denumirea produsului în limba rusă.",
+    "description_ru_required": "Trebuie să trimiteți descrierea produsului în limba rusă.",
+    "invalid_price": "Prețul trebuie să fie pozitiv.",
+    "category_required": "Categorie obligatorie.",
+    "description_required":"Trebuie să trimiteți descrierea produsului.",
+    "title_required": "Trebuie să trimiteți denumirea produsului.",
     "server_error": "Eroare de server. Vă rugăm să încercați mai târziu.",
     "user_exists": "Utilizatorul cu acest email există deja.",
     "invalid_or_expired_code": "Cod invalid sau expirat.",
@@ -43,6 +57,7 @@
     "already_verified": "Email-ul este deja verificat",
     "email_charged": "Adresa de e-mail este obligatorie",
     "accept_conditions": "Trebuie să acceptați termenii și condițiile.",
+    "not_seller": "Acest utilizator nu este vânzător",
     "category": {
       "ru_required": "Numele în rusă este obligatoriu.",
       "already_exists": "Categoria cu acest nume există deja.",
@@ -74,7 +89,16 @@
       "create_failed": "Nu s-a putut crea recenzia.",
       "update_failed": "Nu s-a putut actualiza recenzia.",
       "delete_failed": "Nu s-a putut șterge recenzia."
-    }
+    },
+    "notifications": {
+      "create_failed": "Eroare la crearea notificării",
+      "fetch_failed": "Eroare la încărcarea notificărilor",
+      "not_found": "Notificarea nu a fost găsită",
+      "mark_read_failed": "Eroare la marcarea ca citită",
+      "mark_all_read_failed": "Eroare la marcarea tuturor ca citite",
+      "delete_failed": "Eroare la ștergerea notificării"
+    },
+    "approve_seller_failed": "Eroare la aprobarea vânzătorului"
   },
    "warnings":{
       "no_eccess": "Fără exces!"

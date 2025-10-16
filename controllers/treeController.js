@@ -19,7 +19,7 @@ export const createTree = async (req, res) => {
     if (req.userRole === "admin") {
       if (!title || !title.ru || !title.ro) {
         return res.status(400).json({
-          message: t(userLang, "errors.tree.title_required"),
+          message: t(userLang, "errors.title_required"),
         });
       }
       if (
@@ -28,7 +28,7 @@ export const createTree = async (req, res) => {
         !description.ro
       ) {
         return res.status(400).json({
-          message: t(userLang, "errors.tree.description_required"),
+          message: t(userLang, "errors.description_required"),
         });
       }
     }
@@ -37,37 +37,35 @@ export const createTree = async (req, res) => {
     if (req.userRole === "seller") {
       if (!title || !title.ru) {
         return res.status(400).json({
-          message: t(userLang, "errors.tree.title_ru_required"),
+          message: t(userLang, "errors.title_ru_required"),
         });
       }
       if (!description || !description.ru) {
         return res.status(400).json({
-          message: t(userLang, "errors.tree.description_ru_required"),
+          message: t(userLang, "errors.description_ru_required"),
         });
       }
     }
 
     if (!price || price <= 0) {
       return res.status(400).json({
-        message: t(userLang, "errors.tree.invalid_price"),
+        message: t(userLang, "errors.invalid_price"),
       });
     }
 
     if (!category) {
       return res.status(400).json({
-        message: t(userLang, "errors.tree.category_required"),
+        message: t(userLang, "errors.category_required"),
       });
     }
 
     if (stock && stock < 0) {
       return res.status(400).json({
-        message: t(userLang, "errors.tree.invalid_stock"),
+        message: t(userLang, "errors.invalid_stock"),
       });
     }
 
-    // Для продавців - автоматично додаємо їх ID
-    // Для адмінів - можна вказати конкретного продавця
-    let sellerId = req.userId; // За замовчуванням - поточний користувач
+    let sellerId = req.userId; 
 
     if (req.userRole === "admin" && req.body.seller) {
       sellerId = req.body.seller;

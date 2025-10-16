@@ -1,6 +1,10 @@
 import NotificationModel from "../models/notifications.js";
+import UserModel from "../models/user.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
+import EmailService from '../services/emailService.js';
+
+const emailService = new EmailService();
 
 // Створити сповіщення
 export const createNotification = async (notificationData) => {
@@ -12,6 +16,30 @@ export const createNotification = async (notificationData) => {
   } catch (error) {
     console.error("❌ Помилка створення сповіщення:", error);
     throw error;
+  }
+};
+
+export const createNotificationRoute = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    const notificationData = req.body;
+
+    const notification = await createNotification(notificationData);
+
+    res.status(201).json({
+      notification,
+      message: t(userLang, "success.notifications.created", {
+        defaultValue: "Уведомление создано"
+      }),
+    });
+  } catch (error) {
+    console.error("Error creating notification:", error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.notifications.create_failed", {
+        defaultValue: "Ошибка создания уведомления("
+      }),
+    });
   }
 };
 
@@ -42,8 +70,8 @@ export const getNotifications = async (req, res) => {
         pages: Math.ceil(total / limit),
       },
       unreadCount,
-      message: t(userLang, "success.notifications.fetched", { 
-        defaultValue: "Сповіщення завантажено" 
+      message: t(userLang, "success.notifications.fetched", {
+        defaultValue: "Уведомления загружены"
       }),
     });
   } catch (error) {
@@ -51,7 +79,7 @@ export const getNotifications = async (req, res) => {
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.fetch_failed", {
-        defaultValue: "Помилка завантаження сповіщень"
+        defaultValue: "Ошибка загрузки уведомлений"
       }),
     });
   }
@@ -75,7 +103,7 @@ export const markAsRead = async (req, res) => {
     if (!notification) {
       return res.status(404).json({
         message: t(userLang, "errors.notifications.not_found", {
-          defaultValue: "Сповіщення не знайдено"
+          defaultValue: "Уведомление не найдено"
         }),
       });
     }
@@ -83,7 +111,7 @@ export const markAsRead = async (req, res) => {
     res.json({
       notification,
       message: t(userLang, "success.notifications.marked_read", {
-        defaultValue: "Сповіщення відмічено як прочитане"
+        defaultValue: "Уведомление отмечено как прочитанное"
       }),
     });
   } catch (error) {
@@ -91,7 +119,7 @@ export const markAsRead = async (req, res) => {
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.mark_read_failed", {
-        defaultValue: "Помилка позначення як прочитане"
+        defaultValue: "Ошибка отметки как прочитанное"
       }),
     });
   }
@@ -112,7 +140,7 @@ export const markAllAsRead = async (req, res) => {
 
     res.json({
       message: t(userLang, "success.notifications.all_marked_read", {
-        defaultValue: "Всі сповіщення відмічено як прочитані"
+        defaultValue: "Все уведомления отмечены как прочитанные"
       }),
     });
   } catch (error) {
@@ -120,7 +148,7 @@ export const markAllAsRead = async (req, res) => {
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.mark_all_read_failed", {
-        defaultValue: "Помилка позначення всіх як прочитані"
+        defaultValue: "Ошибка отметки всех как прочитанные"
       }),
     });
   }
@@ -137,14 +165,14 @@ export const deleteNotification = async (req, res) => {
     if (!notification) {
       return res.status(404).json({
         message: t(userLang, "errors.notifications.not_found", {
-          defaultValue: "Сповіщення не знайдено"
+          defaultValue: "Уведомление не найдено"
         }),
       });
     }
 
     res.json({
       message: t(userLang, "success.notifications.deleted", {
-        defaultValue: "Сповіщення видалено"
+        defaultValue: "Уведомление удалено"
       }),
     });
   } catch (error) {
@@ -152,7 +180,7 @@ export const deleteNotification = async (req, res) => {
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.delete_failed", {
-        defaultValue: "Помилка видалення сповіщення"
+        defaultValue: "Ошибка удаления уведомления"
       }),
     });
   }
@@ -170,6 +198,102 @@ export const getUnreadCount = async (req, res) => {
     console.error("Error getting unread count:", error);
     res.status(500).json({
       unreadCount: 0,
+    });
+  }
+};
+
+// Схвалити продавця
+export const approveSeller = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userLang = getUserLanguage(req);
+
+    // Знайти користувача
+    const user = await UserModel.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: t(userLang, "errors.user_not_found", {
+          defaultValue: "Пользователь не найден"
+        }),
+      });
+    }
+
+    if (user.role !== 'seller') {
+      return res.status(400).json({
+        message: t(userLang, "errors.not_seller", {
+          defaultValue: "Этот пользователь не является продавцом"
+        }),
+      });
+    }
+
+    // Оновити статус продавця на активний
+    user.isActive = true;
+    user.isApproved = true; // Якщо є таке поле
+    await user.save();
+
+    // Створити сповіщення
+    try {
+      await createNotification({
+        type: 'seller_approved',
+        title: 'Продавця схвалено',
+        message: `Продавця ${user.fullName} (${user.sellerInfo?.nurseryName}) було схвалено`,
+        data: {
+          userId: user._id,
+          sellerInfo: {
+            nurseryName: user.sellerInfo?.nurseryName,
+            email: user.email,
+            fullName: user.fullName,
+          }
+        }
+      });
+
+      // Відправити email всім адмінам
+      await notifyAllAdmins(emailService, 'seller_approved', {
+        fullName: user.fullName,
+        email: user.email,
+        nurseryName: user.sellerInfo?.nurseryName,
+        approvedTime: new Date().toLocaleString('uk-UA')
+      });
+
+      console.log("✅ Сповіщення про схвалення продавця створено");
+    } catch (notificationError) {
+      console.error("❌ Помилка створення сповіщення:", notificationError);
+      // Не блокуємо схвалення через помилку сповіщення
+    }
+
+    // Відправити email самому продавцю
+    try {
+      await emailService.sendSellerApprovalEmail(
+        user.email,
+        {
+          fullName: user.fullName,
+          nurseryName: user.sellerInfo?.nurseryName,
+        },
+        userLang
+      );
+    } catch (emailError) {
+      console.error("❌ Помилка відправки email продавцю:", emailError);
+    }
+
+    res.json({
+      message: t(userLang, "success.seller_approved", {
+        defaultValue: "Продавец успешно утвержден"
+      }),
+      user: {
+        _id: user._id,
+        fullName: user.fullName,
+        email: user.email,
+        isActive: user.isActive,
+      }
+    });
+  } catch (error) {
+    console.error("Error approving seller:", error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.approve_seller_failed", {
+        defaultValue: "Ошибка утверждения продавца"
+      }),
     });
   }
 };

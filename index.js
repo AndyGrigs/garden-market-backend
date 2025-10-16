@@ -64,6 +64,8 @@ import {
   markAllAsRead,
   deleteNotification,
   getUnreadCount,
+  createNotificationRoute,
+  approveSeller
 } from "./controllers/notificationController.js";
 
 
@@ -164,11 +166,15 @@ app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
 app.patch("/api/reviews/:id", checkAuth, updateReview);
 app.delete("/api/reviews/:id", checkAuth, deleteReview);
 
+
+app.post("/admin/notifications", checkAuth, checkAdmin, createNotificationRoute);
 app.get("/admin/notifications", checkAuth, checkAdmin, getNotifications);
 app.get("/admin/notifications/unread-count", checkAuth, checkAdmin, getUnreadCount);
 app.patch("/admin/notifications/:id/read", checkAuth, checkAdmin, markAsRead);
 app.patch("/admin/notifications/mark-all-read", checkAuth, checkAdmin, markAllAsRead);
 app.delete("/admin/notifications/:id", checkAuth, checkAdmin, deleteNotification);
+
+app.patch("/admin/sellers/:userId/approve", checkAuth, checkAdmin, approveSeller);
 
 const emailService = new EmailService();
 
