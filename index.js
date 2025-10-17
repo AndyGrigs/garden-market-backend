@@ -49,16 +49,20 @@ import {
   updateReview,
   deleteReview,
 } from "./controllers/reviewController.js";
-import { checkSeller, checkSellerOrAdmin } from './utils/checkSeller.js';
-import { 
-  getSellerTrees, 
-  updateSellerTree, 
-  deleteSellerTree 
-} from './controllers/treeController.js';
+import { checkSeller, checkSellerOrAdmin } from "./utils/checkSeller.js";
+import {
+  getSellerTrees,
+  updateSellerTree,
+  deleteSellerTree,
+} from "./controllers/treeController.js";
 import rateLimit from "express-rate-limit";
 import { treeValidation } from "./validations/tree.js";
 import { errorHandler } from "./utils/errorHandler.js";
-import { createOrder, getUserOrders, updateOrderStatus } from './controllers/orderController.js';
+import {
+  createOrder,
+  getUserOrders,
+  updateOrderStatus,
+} from "./controllers/orderController.js";
 import {
   getNotifications,
   markAsRead,
@@ -67,15 +71,16 @@ import {
   getUnreadCount,
   createNotificationRoute,
   approveSeller,
-  rejectSeller
+  rejectSeller,
 } from "./controllers/notificationController.js";
 
-import { 
-  createPayment, 
-  getPayment, 
-  updatePaymentStatus 
-} from './controllers/paymentController.js';
-
+import {
+  createPayment,
+  getPayment,
+  updatePaymentStatus,
+  createPayPalOrder,
+  capturePayPalPayment,
+} from "./controllers/paymentController.js";
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -115,8 +120,8 @@ app.use(
 );
 
 // app.use(cors({
-//   origin: process.env.NODE_ENV === 'production' 
-//     ? process.env.FRONTEND_URL 
+//   origin: process.env.NODE_ENV === 'production'
+//     ? process.env.FRONTEND_URL
 //     : "http://localhost:5173",
 //   credentials: true,
 // }));
@@ -157,46 +162,104 @@ app.post("/cleanup-unused-files", checkAuth, checkAdmin, cleanupUnusedFiles);
 app.get("/trees", getAllTrees);
 
 // ⬇️ РОУТИ ДЛЯ АДМІНІВ:
-app.post("/admin/trees", checkAuth, checkAdmin, treeValidation, handleValidationErrors, createTree);
-app.patch("/admin/trees/:id", checkAuth, checkAdmin, treeValidation, handleValidationErrors, updateTree);
+app.post(
+  "/admin/trees",
+  checkAuth,
+  checkAdmin,
+  treeValidation,
+  handleValidationErrors,
+  createTree
+);
+app.patch(
+  "/admin/trees/:id",
+  checkAuth,
+  checkAdmin,
+  treeValidation,
+  handleValidationErrors,
+  updateTree
+);
 app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
 
 // ⬇️ РОУТИ ДЛЯ ПРОДАВЦІВ:
 app.get("/seller/trees", checkAuth, checkSeller, getSellerTrees);
-app.post("/seller/trees", checkAuth, checkSeller, treeValidation, handleValidationErrors, createTree);
-app.patch("/seller/trees/:id", checkAuth, checkSeller, treeValidation, handleValidationErrors, updateSellerTree);
+app.post(
+  "/seller/trees",
+  checkAuth,
+  checkSeller,
+  treeValidation,
+  handleValidationErrors,
+  createTree
+);
+app.patch(
+  "/seller/trees/:id",
+  checkAuth,
+  checkSeller,
+  treeValidation,
+  handleValidationErrors,
+  updateSellerTree
+);
 app.delete("/seller/trees/:id", checkAuth, checkSeller, deleteSellerTree);
 
-
 app.get("/api/reviews", getReviews);
-app.post("/api/reviews", checkAuth, createReview); 
+app.post("/api/reviews", checkAuth, createReview);
 app.get("/api/reviews/user/:userId", checkAuth, getUserReviews);
 app.patch("/api/reviews/:id", checkAuth, updateReview);
 app.delete("/api/reviews/:id", checkAuth, deleteReview);
 
-
-app.post("/admin/notifications", checkAuth, checkAdmin, createNotificationRoute);
+app.post(
+  "/admin/notifications",
+  checkAuth,
+  checkAdmin,
+  createNotificationRoute
+);
 app.get("/admin/notifications", checkAuth, checkAdmin, getNotifications);
-app.get("/admin/notifications/unread-count", checkAuth, checkAdmin, getUnreadCount);
+app.get(
+  "/admin/notifications/unread-count",
+  checkAuth,
+  checkAdmin,
+  getUnreadCount
+);
 app.patch("/admin/notifications/:id/read", checkAuth, checkAdmin, markAsRead);
-app.patch("/admin/notifications/mark-all-read", checkAuth, checkAdmin, markAllAsRead);
-app.delete("/admin/notifications/:id", checkAuth, checkAdmin, deleteNotification);
+app.patch(
+  "/admin/notifications/mark-all-read",
+  checkAuth,
+  checkAdmin,
+  markAllAsRead
+);
+app.delete(
+  "/admin/notifications/:id",
+  checkAuth,
+  checkAdmin,
+  deleteNotification
+);
 
 app.get("/admin/sellers/pending", checkAuth, checkAdmin, getPendingSellers);
-app.patch("/admin/sellers/:userId/approve", checkAuth, checkAdmin, approveSeller);
-app.delete("/admin/sellers/:userId/reject", checkAuth, checkAdmin, rejectSeller);
-
-
-
+app.patch(
+  "/admin/sellers/:userId/approve",
+  checkAuth,
+  checkAdmin,
+  approveSeller
+);
+app.delete(
+  "/admin/sellers/:userId/reject",
+  checkAuth,
+  checkAdmin,
+  rejectSeller
+);
 
 // Payment routes
-app.post('/payments', createPayment); // Створити платіж
-app.get('/payments/:id', checkAuth, getPayment); // Отримати платіж
-app.post('/payments/webhook', updatePaymentStatus); // Webhook від платіжних систем
+app.post("/payments", createPayment); // Створити платіж
+app.get("/payments/:id", checkAuth, getPayment); // Отримати платіж
+app.post("/payments/webhook", updatePaymentStatus); // Webhook від платіжних систем
+
+//Paypal routes
+app.post('/payments/paypal/create-order', createPayPalOrder);
+app.post('/payments/paypal/capture', capturePayPalPayment);
+
+
 const emailService = new EmailService();
 
 emailService.testConnection();
-
 
 app.listen(4444, (err) => {
   if (err) {
