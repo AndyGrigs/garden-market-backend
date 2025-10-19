@@ -38,7 +38,8 @@
     },
     "payment": {
       "created": "Платеж создан",
-      "status_updated": "Статус обновлен"
+      "status_updated": "Статус обновлен",
+      "completed": "Оплата успешна"
     }
   },
   "errors": 
@@ -115,7 +116,14 @@
     },
     "payment": {
       "not_found": "Платеж не найден",
-      "update_failed": "Ошибка обновления"
+      "update_failed": "Ошибка обновления",
+      "paypal_creation_failed": "Ошибка создания PayPal заказа",
+      "payment_capture_failed": "Ошибка захвата платежа",
+      "runpay_creation_failed": "Ошибка создания RunPay платежа",
+      "paynet_creation_failed": "Ошибка создания PayNet платежа",
+      "stripe_creation_failed": "Ошибка создания платежа",
+      "stripe_confirmation_failed": "Ошибка подтверждения платежа",
+      "stripe_not_confirmed": "Платеж еще не подтвержден"
     }
   },
   "warnings":{

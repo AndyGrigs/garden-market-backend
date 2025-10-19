@@ -44,7 +44,8 @@
     },
     "payment": {
       "created": "Plata a fost creată",
-      "status_updated": "Statutul a fost actualizat"
+      "status_updated": "Statutul a fost actualizat",
+      "completed": "Plata reușită"
     }
   },
 
@@ -114,7 +115,14 @@
     },
     "payment": {
       "not_found": "Plata nu a fost găsită",
-      "update_failed": "Eroare la actualizare"
+      "update_failed": "Eroare la actualizare",
+      "paypal_creation_failed": "Eroare la crearea comenzii PayPal",
+      "payment_capture_failed": "Eroare la capturarea plății",
+      "runpay_creation_failed": "Eroare la crearea plății RunPay",
+      "paynet_creation_failed": "Eroare la crearea plății PayNet",
+      "stripe_creation_failed": "Eroare la crearea plății",
+      "stripe_confirmation_failed": "Eroare la confirmarea plății",
+      "stripe_not_confirmed": "Plata nu a fost încă confirmată"
     }
   },
    "warnings":{

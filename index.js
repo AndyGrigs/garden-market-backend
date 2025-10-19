@@ -80,6 +80,13 @@ import {
   updatePaymentStatus,
   createPayPalOrder,
   capturePayPalPayment,
+   createRunPayPayment,   
+  createPayNetPayment,    
+  runpayWebhook,         
+  paynetCallback,
+  createStripePaymentIntent,  
+  confirmStripePayment,       
+  stripeWebhook               
 } from "./controllers/paymentController.js";
 
 const authLimiter = rateLimit({
@@ -256,6 +263,19 @@ app.post("/payments/webhook", updatePaymentStatus); // Webhook від платі
 app.post('/payments/paypal/create-order', createPayPalOrder);
 app.post('/payments/paypal/capture', capturePayPalPayment);
 
+
+// RunPay routes
+app.post('/payments/runpay/create', createRunPayPayment);
+app.post('/payments/runpay/webhook', runpayWebhook);
+
+//  PayNet routes
+app.post('/payments/paynet/create', createPayNetPayment);
+app.post('/payments/paynet/callback', paynetCallback);
+
+//  Stripe routes
+app.post('/payments/stripe/create-intent', createStripePaymentIntent);
+app.post('/payments/stripe/confirm', confirmStripePayment);
+app.post('/payments/stripe/webhook', express.raw({type: 'application/json'}), stripeWebhook);
 
 const emailService = new EmailService();
 
