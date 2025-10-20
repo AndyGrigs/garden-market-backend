@@ -18,6 +18,7 @@ import {
   sendResetCode,
   resetPassword,
   getPendingSellers,
+  getSavedAddress 
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
 import {
@@ -149,6 +150,7 @@ app.post("/auth/logout", logout);
 app.post("/auth/send-reset-code", sendResetCode);
 app.post("/auth/reset-password", resetPassword);
 app.post("/auth/request-password-reset", sendResetCode);
+app.get("/user/saved-address", checkAuth, getSavedAddress);
 
 //order routes
 app.get("/orders/user/:userId", checkAuth, getUserOrders);

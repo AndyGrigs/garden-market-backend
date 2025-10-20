@@ -386,3 +386,29 @@ export const getPendingSellers = async (req, res) => {
     });
   }
 };
+
+// ⬇️ ДОДАЙ ЦЮ ФУНКЦІЮ ПЕРЕД ОСТАННІМ EXPORT
+export const getSavedAddress = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    const userId = req.userId; // З middleware checkAuth
+
+    const user = await UserModel.findById(userId).select('buyerInfo.savedAddress');
+
+    if (!user) {
+      return res.status(404).json({ 
+        message: t(userLang, "errors.user_not_found") 
+      });
+    }
+
+    res.json({
+      savedAddress: user.buyerInfo?.savedAddress || null
+    });
+  } catch (error) {
+    console.error("Error fetching saved address:", error);
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.server_error")
+    });
+  }
+};

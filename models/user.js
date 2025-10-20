@@ -36,6 +36,12 @@ const UserSchema = new mongoose.Schema({
   reviews: [{ type: mongoose.Schema.Types.ObjectId, ref: "Review" }],
   buyerInfo: {
     purchaseHistory: [{ type: mongoose.Schema.Types.ObjectId, ref: "Order" }],
+    savedAddress: {
+      street: String,
+      city: String,
+      postalCode: String,
+      country: String,
+    },
   },
   sellerInfo: {
     nurseryName: String,
@@ -56,11 +62,11 @@ const UserSchema = new mongoose.Schema({
   termsAccepted: {
     type: Boolean,
     default: false,
-    required: true
-},
+    required: true,
+  },
   termsAcceptedAt: {
-    type: Date
-}
+    type: Date,
+  },
 });
 
 export default mongoose.model("User", UserSchema);
