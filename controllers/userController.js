@@ -168,7 +168,7 @@ export const login = async (req, res) => {
     res
       .cookie("auth_token", token, {
         httpOnly: true,
-        secure: false, // für localhost
+        secure: true, // für localhost
         sameSite: "Strict",
         maxAge: 30 * 24 * 60 * 60 * 1000, 
         path: "/",
@@ -205,8 +205,7 @@ export const getMe = async (req, res) => {
 export const logout = (req, res) => {
   res.clearCookie("auth_token", {
     httpOnly: true,
-    // secure: process.env.NODE_ENV === 'production',
-    secure: false,
+    secure: true,
     sameSite: "Strict",
     path: "/",
   });
