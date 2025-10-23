@@ -132,9 +132,9 @@ export const deleteCategory = async (req, res) => {
         // Prüfen ob Datei existiert und löschen
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath); // Synchron löschen
-          console.log(`✅ Kategorie-Foto gelöscht: ${filename}`);
+          // console.log(`✅ Kategorie-Foto gelöscht: ${filename}`);
         } else {
-          console.log(`⚠️ Foto-Datei nicht gefunden: ${filename}`);
+          // console.log(`⚠️ Foto-Datei nicht gefunden: ${filename}`);
         }
       } catch (imageError) {
         console.error("❌ Fehler beim Löschen des Kategorie-Fotos:", imageError);
@@ -145,7 +145,6 @@ export const deleteCategory = async (req, res) => {
     // ✅ FIX 3: Kategorie aus Datenbank löschen
     const deleted = await CategorySchema.findByIdAndDelete(categoryId);
     
-    console.log(`✅ Kategorie gelöscht: ${categoryId}`);
     
     res.json({ 
       message: t(userLang, "success.category.deleted"),

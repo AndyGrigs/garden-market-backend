@@ -613,7 +613,7 @@ export const stripeWebhook = async (req, res) => {
         break;
 
       default:
-        console.log(`Unhandled event type: ${event.type}`);
+        console.log(`Unhandld event type: ${event.type}`);
     }
 
     res.json({ received: true });

@@ -24,7 +24,6 @@ class emailService {
   async testConnection() {
     try {
       await this.transporter.verify();
-      console.log("✓ SMTP сервер готовий");
       return true;
     } catch (error) {
       console.error("✗ Помилка SMTP:", error.message);
@@ -40,14 +39,12 @@ class emailService {
         to: userEmail,
         subject: {
           ru: "Ваш код подтверждения - Garden Market",
-          en: "Your verification code - Garden Market",
           ro: "Codul dvs. de verificare - Garden Market",
         }[lang],
         html: verificationCodeTemplates[lang](userName, code),
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log("✓ Verification code email відправлено:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
       console.error("✗ Помилка verification code email:", error);
@@ -61,7 +58,7 @@ class emailService {
       from: `"Garden Market" <${process.env.EMAIL_USER}>`,
       to: userEmail,
       subject: {
-        en: "Password reset code - Garden Market",
+        
         ru: "Код для сброса пароля - Garden Market",
         ro: "Cod de resetare a parolei - Garden Market",
       }[lang],
@@ -84,7 +81,6 @@ class emailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log("✅ Seller approval email sent:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
       console.error("❌ Error sending seller approval email:", error);
@@ -106,7 +102,6 @@ class emailService {
       };
 
       const result = await this.transporter.sendMail(mailOptions);
-      console.log("✅ Seller rejection email sent:", result.messageId);
       return { success: true, messageId: result.messageId };
     } catch (error) {
       console.error("❌ Error sending seller rejection email:", error);

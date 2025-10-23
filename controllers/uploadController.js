@@ -203,7 +203,6 @@ export const deleteOldImageFile = (oldImageUrl) => {
 
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);
-      console.log(`✅ Old image deleted: ${filename}`);
     }
   } catch (error) {
     console.error('❌ Error deleting old image:', error);
@@ -267,7 +266,6 @@ export const cleanupUnusedFiles = async (req, res) => {
           fs.unlinkSync(filePath);
           deletedFiles.push(file);
           deletedCount++;
-          console.log(`✅ Unused file deleted: ${file}`);
         } catch (deleteError) {
           console.error(`❌ Error deleting ${file}:`, deleteError);
         }

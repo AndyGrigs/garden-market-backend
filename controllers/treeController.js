@@ -118,7 +118,6 @@ export const createTree = async (req, res) => {
           createdTime: new Date().toLocaleString("uk-UA"),
         });
 
-        console.log("✅ Сповіщення про новий товар створено:", title.ru);
       } catch (notificationError) {
         console.error("❌ Помилка створення сповіщення:", notificationError);
         // Не блокуємо створення товару через помилку сповіщення
@@ -234,9 +233,9 @@ export const deleteTree = async (req, res) => {
         // Перевіряємо чи існує файл
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath); // Синхронно видаляємо файл
-          console.log(`✅ Фото видалено: ${filename}`);
+          // console.log(`✅ Фото видалено: ${filename}`);
         } else {
-          console.log(`⚠️ Файл не знайдено: ${filename}`);
+          // console.log(`⚠️ Файл не знайдено: ${filename}`);
         }
       } catch (imageError) {
         console.error("❌ Помилка видалення фото:", imageError);
@@ -247,7 +246,6 @@ export const deleteTree = async (req, res) => {
     // ✅ FIX 3: Тепер видаляємо дерево з бази
     const deleted = await TreeSchema.findByIdAndDelete(treeId);
 
-    console.log(`✅ Дерево видалено з бази: ${treeId}`);
 
     res.json({
       message: t(userLang, "success.tree.deleted"),
@@ -379,7 +377,6 @@ export const deleteSellerTree = async (req, res) => {
 
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
-          console.log(`✅ Фото видалено: ${filename}`);
         }
       } catch (imageError) {
         console.error("❌ Помилка видалення фото:", imageError);

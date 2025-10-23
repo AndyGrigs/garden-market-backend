@@ -84,12 +84,6 @@ export const register = async (req, res) => {
           }
         );
 
-        console.log("✅ Сповіщення створено:", {
-          database: true,
-          emailsSent: emailResults.filter(r => r.success).length,
-          emailsFailed: emailResults.filter(r => !r.success).length
-        });
-
       } catch (notificationError) {
         console.error("Помилка сповіщень:", notificationError);
       }

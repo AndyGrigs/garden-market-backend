@@ -26,7 +26,6 @@ export const notifyAllAdmins = async (emailServiceInstance, notificationType, da
       );
       
       results.push({ email, success: true, ...result });
-      console.log(`✅ Email надіслано адміну: ${email}`);
     } catch (error) {
       console.error(`❌ Помилка відправки email адміну ${email}:`, error);
       results.push({ email, success: false, error: error.message });

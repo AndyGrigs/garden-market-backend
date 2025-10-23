@@ -12,7 +12,6 @@ export const createNotification = async (notificationData) => {
   try {
     const notification = new NotificationModel(notificationData);
     await notification.save();
-    console.log("✅ Сповіщення створено:", notification.title);
     return notification;
   } catch (error) {
     console.error("❌ Помилка створення сповіщення:", error);
@@ -209,7 +208,6 @@ export const approveSeller = async (req, res) => {
     const { userId } = req.params;
     const userLang = getUserLanguage(req);
 
-    console.log("Approving seller with userId:", userId);
 
     // Validate userId
     if (!userId || userId === 'undefined') {
@@ -271,7 +269,6 @@ export const approveSeller = async (req, res) => {
         approvedTime: new Date().toLocaleString('uk-UA')
       });
 
-      console.log("✅ Сповіщення про схвалення продавця створено");
     } catch (notificationError) {
       console.error("❌ Помилка створення сповіщення:", notificationError);
       // Не блокуємо схвалення через помилку сповіщення
@@ -320,7 +317,6 @@ export const rejectSeller = async (req, res) => {
     const { reason } = req.body; // Optional rejection reason
     const userLang = getUserLanguage(req);
 
-    console.log("Rejecting seller with userId:", userId);
 
     // Validate userId
     if (!userId || userId === 'undefined') {
@@ -365,7 +361,6 @@ export const rejectSeller = async (req, res) => {
         userData,
         user.language || userLang
       );
-      console.log("✅ Rejection email sent to seller");
     } catch (emailError) {
       console.error("❌ Error sending rejection email:", emailError);
       // Продовжуємо видалення навіть якщо email не відправився
@@ -393,7 +388,6 @@ export const rejectSeller = async (req, res) => {
 
     // Видалити користувача з бази даних
     await UserModel.findByIdAndDelete(userId);
-    console.log("✅ Seller account deleted:", user.email);
 
     res.json({
       message: t(userLang, "success.seller_rejected", {
