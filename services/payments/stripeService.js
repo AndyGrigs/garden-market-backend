@@ -2,14 +2,31 @@ import Stripe from 'stripe';
 
 class StripeService {
   constructor() {
-    this.stripe = new Stripe(process.env.STRIPE_SECRET_KEY, {
-      apiVersion: '2023-10-16',
-    });
+    this.secretKey = process.env.STRIPE_SECRET_KEY;
+    this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
+
+    // Only initialize Stripe if API key is provided
+    if (this.secretKey) {
+      this.stripe = new Stripe(this.secretKey, {
+        apiVersion: '2023-10-16',
+      });
+    } else {
+      this.stripe = null;
+      console.warn('Stripe API key not configured. Stripe payments will not be available.');
+    }
   }
 
   // Створити Payment Intent
   async createPaymentIntent(amount, currency = 'EUR', orderId, customerInfo) {
     try {
+      // Check if Stripe is configured
+      if (!this.stripe) {
+        return {
+          success: false,
+          error: 'Stripe credentials not configured'
+        };
+      }
+
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: Math.round(amount * 100), // Stripe приймає в копійках
         currency: currency.toLowerCase(),
@@ -41,6 +58,14 @@ class StripeService {
   // Підтвердити платіж
   async confirmPayment(paymentIntentId) {
     try {
+      // Check if Stripe is configured
+      if (!this.stripe) {
+        return {
+          success: false,
+          error: 'Stripe credentials not configured'
+        };
+      }
+
       const paymentIntent = await this.stripe.paymentIntents.retrieve(paymentIntentId);
 
       return {
@@ -62,10 +87,18 @@ class StripeService {
   // Webhook обробник
   async handleWebhook(payload, signature) {
     try {
+      // Check if Stripe is configured
+      if (!this.stripe) {
+        return {
+          success: false,
+          error: 'Stripe credentials not configured'
+        };
+      }
+
       const event = this.stripe.webhooks.constructEvent(
         payload,
         signature,
-        process.env.STRIPE_WEBHOOK_SECRET
+        this.webhookSecret
       );
 
       return {
@@ -84,6 +117,14 @@ class StripeService {
   // Повернути кошти (refund)
   async createRefund(paymentIntentId, amount = null) {
     try {
+      // Check if Stripe is configured
+      if (!this.stripe) {
+        return {
+          success: false,
+          error: 'Stripe credentials not configured'
+        };
+      }
+
       const refundData = {
         payment_intent: paymentIntentId
       };
