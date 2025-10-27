@@ -283,10 +283,11 @@ const emailService = new EmailService();
 
 emailService.testConnection();
 
-app.listen(4444, (err) => {
+const port = process.env.PORT || 4444;
+app.listen(port, '127.0.0.1', (err) => {
   if (err) {
     return console.log(err);
   }
 
-  console.log("Server is working");
+  console.log(`Server is running on port ${port}`);
 });
