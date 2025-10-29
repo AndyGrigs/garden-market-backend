@@ -118,6 +118,7 @@ app.use(
   cors({
     origin: [
       process.env.FRONTEND_URL,
+      "https://covaci.md",
       "http://localhost:5173",
       "http://localhost:5174",
       "https://sb1d2sqww-i3ef--5173--10996a95.local-credentialless.webcontainer.io",
