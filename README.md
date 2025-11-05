@@ -73,8 +73,7 @@ cp .env.example .env
 
 ### 1. MongoDB
 Отримайте connection string з MongoDB Atlas та додайте в `.env`:
-```env
-DATABASE_URL='mongodb+srv://username:password@cluster.mongodb.net/database'
+```env'
 ```
 
 ### 2. JWT Secret
