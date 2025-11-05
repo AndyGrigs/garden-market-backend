@@ -3,17 +3,29 @@ import Stripe from 'stripe';
 class StripeService {
   constructor() {
     this.secretKey = process.env.STRIPE_SECRET_KEY;
+    this.publishableKey = process.env.STRIPE_PUBLISHABLE_KEY;
     this.webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
     // Only initialize Stripe if API key is provided
     if (this.secretKey) {
       this.stripe = new Stripe(this.secretKey, {
-        apiVersion: '2023-10-16',
+        apiVersion: '2024-11-20.acacia', // Оновлена версія API
       });
+      console.log('✅ Stripe service initialized successfully');
     } else {
       this.stripe = null;
-      console.warn('Stripe API key not configured. Stripe payments will not be available.');
+      console.warn('⚠️ Stripe API key not configured. Stripe payments will not be available.');
     }
+  }
+
+  // Перевірка чи налаштований Stripe
+  isConfigured() {
+    return this.stripe !== null;
+  }
+
+  // Отримати публічний ключ (для фронтенду)
+  getPublishableKey() {
+    return this.publishableKey;
   }
 
   // Створити Payment Intent

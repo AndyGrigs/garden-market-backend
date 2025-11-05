@@ -7,6 +7,29 @@ import runpayService from '../services/payments/runpayService.js';
 import paynetService from '../services/payments/paynetService.js';
 import stripeService from '../services/payments/stripeService.js';
 
+// ✅ Отримати конфігурацію Stripe для фронтенду
+export const getStripeConfig = async (req, res) => {
+  try {
+    if (!stripeService.isConfigured()) {
+      return res.status(503).json({
+        success: false,
+        message: 'Stripe payments are not configured'
+      });
+    }
+
+    res.json({
+      success: true,
+      publishableKey: stripeService.getPublishableKey()
+    });
+  } catch (error) {
+    console.error('Get Stripe config error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to get Stripe configuration'
+    });
+  }
+};
+
 
 
 // ✅ НОВИЙ: Створити PayPal замовлення

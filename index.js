@@ -81,13 +81,14 @@ import {
   updatePaymentStatus,
   createPayPalOrder,
   capturePayPalPayment,
-   createRunPayPayment,   
-  createPayNetPayment,    
-  runpayWebhook,         
+   createRunPayPayment,
+  createPayNetPayment,
+  runpayWebhook,
   paynetCallback,
-  createStripePaymentIntent,  
-  confirmStripePayment,       
-  stripeWebhook               
+  createStripePaymentIntent,
+  confirmStripePayment,
+  stripeWebhook,
+  getStripeConfig
 } from "./controllers/paymentController.js";
 
 const authLimiter = rateLimit({
@@ -276,6 +277,7 @@ app.post('/payments/paynet/create', createPayNetPayment);
 app.post('/payments/paynet/callback', paynetCallback);
 
 //  Stripe routes
+app.get('/payments/stripe/config', getStripeConfig); // Отримати публічний ключ
 app.post('/payments/stripe/create-intent', createStripePaymentIntent);
 app.post('/payments/stripe/confirm', confirmStripePayment);
 app.post('/payments/stripe/webhook', express.raw({type: 'application/json'}), stripeWebhook);
