@@ -29,7 +29,11 @@
       "fetched": "Уведомления загружены",
       "marked_read": "Уведомление отмечено как прочитанное",
       "all_marked_read": "Все уведомления отмечены как прочитанные",
-      "deleted": "Уведомление удалено"
+      "deleted": "Уведомление удалено",
+      "seller_approved_title": "Продавец утвержден",
+      "seller_approved_message": "Продавец {{fullName}} ({{nurseryName}}) был утвержден",
+      "seller_rejected_title": "Продавец отклонен",
+      "seller_rejected_message": "Продавец {{fullName}} ({{nurseryName}}) был отклонен и удален"
     },
     "seller_approved": "Продавец успешно утвержден",
     "seller_rejected": "Продавец отклонен и удален",

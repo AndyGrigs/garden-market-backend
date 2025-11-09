@@ -35,7 +35,11 @@
       "fetched": "Notificările au fost încărcate",
       "marked_read": "Notificarea a fost marcată ca citită",
       "all_marked_read": "Toate notificările au fost marcate ca citite",
-      "deleted": "Notificarea a fost ștearsă"
+      "deleted": "Notificarea a fost ștearsă",
+      "seller_approved_title": "Vânzător aprobat",
+      "seller_approved_message": "Vânzătorul {{fullName}} ({{nurseryName}}) a fost aprobat",
+      "seller_rejected_title": "Vânzător respins",
+      "seller_rejected_message": "Vânzătorul {{fullName}} ({{nurseryName}}) a fost respins și șters"
     },
     "seller_approved": "Vânzătorul a fost aprobat cu succes",
     "seller_rejected": "Vânzătorul a fost respins și șters",

@@ -249,8 +249,11 @@ export const approveSeller = async (req, res) => {
     try {
       await createNotification({
         type: 'seller_approved',
-        title: 'Продавця схвалено',
-        message: `Продавця ${user.fullName} (${user.sellerInfo?.nurseryName}) було схвалено`,
+        title: t(userLang, 'success.notifications.seller_approved_title'),
+        message: t(userLang, 'success.notifications.seller_approved_message', {
+          fullName: user.fullName,
+          nurseryName: user.sellerInfo?.nurseryName
+        }),
         data: {
           userId: user._id,
           sellerInfo: {
@@ -363,15 +366,18 @@ export const rejectSeller = async (req, res) => {
       );
     } catch (emailError) {
       console.error("❌ Error sending rejection email:", emailError);
-      // Продовжуємо видалення навіть якщо email не відправився
+      
     }
 
     // Створити сповіщення для адміна про відхилення
     try {
       await createNotification({
         type: 'seller_rejected',
-        title: 'Продавця відхилено',
-        message: `Продавця ${user.fullName} (${user.sellerInfo?.nurseryName}) було відхилено та видалено`,
+        title: t(userLang, 'success.notifications.seller_rejected_title'),
+        message: t(userLang, 'success.notifications.seller_rejected_message', {
+          fullName: user.fullName,
+          nurseryName: user.sellerInfo?.nurseryName
+        }),
         data: {
           userId: user._id,
           sellerInfo: {
