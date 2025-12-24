@@ -519,3 +519,142 @@ export const adminNotificationTemplates = {
   },
 };
 
+// ... попередній код ...
+
+export const invoiceEmailTemplates = {
+  ru: (order, invoiceUrl) => `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #388e3c, #2e7d32); color: white; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">📋 Счёт на оплату</h1>
+      </div>
+
+      <div style="padding: 30px;">
+        <h2 style="color: #333;">Благодарим за заказ!</h2>
+
+        <p style="color: #555; line-height: 1.6;">
+          Ваш заказ <strong>#${order.orderNumber}</strong> успешно оформлен.
+        </p>
+
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #388e3c;">Детали заказа:</h3>
+          ${order.items.map(item => `
+            <p style="margin: 5px 0;">
+              ${item.title.ru} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
+            </p>
+          `).join('')}
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
+          <p style="font-size: 18px; font-weight: bold; color: #388e3c; margin: 10px 0;">
+            Всего: ${order.totalAmount.toFixed(2)} MDL
+          </p>
+        </div>
+
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+          <p style="margin: 0; color: #856404;">
+            <strong>⚠️ Внимание!</strong> Для завершения заказа необходимо произвести оплату согласно счёту.
+          </p>
+        </div>
+
+        <h3 style="color: #388e3c;">Реквизиты для оплаты:</h3>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+          <p><strong>Получатель:</strong> Covaci Trees</p>
+          <p><strong>Банк:</strong> Moldova Agroindbank</p>
+          <p><strong>IBAN:</strong> MD00AG000000000000000000</p>
+          <p><strong>SWIFT:</strong> AGRNMD2X</p>
+          <p><strong>Назначение платежа:</strong> Счёт ${order.invoice.number}, Заказ ${order.orderNumber}</p>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${invoiceUrl}"
+             style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            📄 Скачать счёт (PDF)
+          </a>
+        </div>
+
+        <p style="color: #666; font-size: 14px;">
+          После произведения оплаты, пожалуйста, сообщите нам, и мы сразу начнём обработку вашего заказа.
+        </p>
+
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 20px;">
+          <p style="margin: 0; color: #2e7d32;">
+            <strong>📞 Есть вопросы?</strong><br>
+            Телефон: +373 797 481 311<br>
+            Email: info@covacitrees.md
+          </p>
+        </div>
+      </div>
+
+      <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        <p>Covaci Trees © ${new Date().getFullYear()}</p>
+        <p>с. Ришканы, Каушанский район, Молдова</p>
+      </div>
+    </div>
+  `,
+  
+  ro: (order, invoiceUrl) => `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
+      <div style="background: linear-gradient(135deg, #388e3c, #2e7d32); color: white; padding: 30px; text-align: center;">
+        <h1 style="margin: 0; font-size: 28px;">📋 Factură de plată</h1>
+      </div>
+      
+      <div style="padding: 30px;">
+        <h2 style="color: #333;">Mulțumim pentru comandă!</h2>
+        
+        <p style="color: #555; line-height: 1.6;">
+          Comanda dvs. <strong>#${order.orderNumber}</strong> a fost plasată cu succes.
+        </p>
+        
+        <div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+          <h3 style="margin-top: 0; color: #388e3c;">Detalii comandă:</h3>
+          ${order.items.map(item => `
+            <p style="margin: 5px 0;">
+              ${item.title.ro} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
+            </p>
+          `).join('')}
+          <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
+          <p style="font-size: 18px; font-weight: bold; color: #388e3c; margin: 10px 0;">
+            Total: ${order.totalAmount.toFixed(2)} MDL
+          </p>
+        </div>
+        
+        <div style="background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+          <p style="margin: 0; color: #856404;">
+            <strong>⚠️ Atenție!</strong> Pentru finalizarea comenzii este necesar să efectuați plata conform facturii.
+          </p>
+        </div>
+        
+        <h3 style="color: #388e3c;">Detalii de plată:</h3>
+        <div style="background: #f9f9f9; padding: 15px; border-radius: 5px; font-family: monospace; font-size: 12px;">
+          <p><strong>Beneficiar:</strong> Covaci Trees</p>
+          <p><strong>Banca:</strong> Moldova Agroindbank</p>
+          <p><strong>IBAN:</strong> MD00AG000000000000000000</p>
+          <p><strong>SWIFT:</strong> AGRNMD2X</p>
+          <p><strong>Scop plată:</strong> Factură ${order.invoice.number}, Comandă ${order.orderNumber}</p>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${invoiceUrl}" 
+             style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            📄 Descarcă factura (PDF)
+          </a>
+        </div>
+        
+        <p style="color: #666; font-size: 14px;">
+          După efectuarea plății, vă rugăm să ne informați și vom începe imediat procesarea comenzii.
+        </p>
+        
+        <div style="background: #e8f5e9; padding: 15px; border-radius: 5px; margin-top: 20px;">
+          <p style="margin: 0; color: #2e7d32;">
+            <strong>📞 Aveți întrebări?</strong><br>
+            Telefon: +373 797 481 311<br>
+            Email: info@covacitrees.md
+          </p>
+        </div>
+      </div>
+      
+      <div style="background: #f5f5f5; padding: 20px; text-align: center; font-size: 12px; color: #666;">
+        <p>Covaci Trees © ${new Date().getFullYear()}</p>
+        <p>s. Rîșcani, raionul Căușeni, Moldova</p>
+      </div>
+    </div>
+  `
+};
