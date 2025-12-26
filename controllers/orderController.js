@@ -2,15 +2,51 @@ import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import OrderSchema from "../models/order.js";
 import UserSchema from '../models/user.js';
+import invoiceService from '../services/invoiceService.js';
+import EmailService from '../services/emailService.js';
+import { invoiceEmailTemplates } from '../services/emailTemplates.js';
+
+const emailService = new EmailService();
 
 export const getUserOrders = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const { userId, items, totalAmount, shippingAddress, customerNotes, language = 'ru' } = req.body;
     const userLang = getUserLanguage(req);
+    
+    // Валідація
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        message: t(userLang, "errors.order.empty_cart", { defaultValue: "Кошик порожній" })
+      });
+    }
 
-    const orders = await OrderSchema.find({ userId }).sort({ createdAt: -1 });
+    // Розрахунок підсумків для кожного товару
+    const itemsWithSubtotal = items.map(item => ({
+      ...item,
+      subtotal: item.price * item.quantity
+    }));
 
-    res.json(orders);
+    // Створення замовлення
+    const newOrder = new OrderSchema({
+      userId: userId || null,
+      guestEmail: shippingAddress.email || req.body.email,
+      guestName: shippingAddress.name,
+      items: itemsWithSubtotal,
+      totalAmount,
+      currency: 'MDL',
+      status: 'awaiting_payment',
+      paymentStatus: 'unpaid',
+      paymentMethod: 'bank_transfer',
+      shippingAddress,
+      customerNotes
+    });
+
+    await newOrder.save();
+
+    // Генеруємо рахунок (PDF)
+    
+
+    //...to finish 
   } catch (error) {
     console.error("Error fetching orders:", error);
     const userLang = getUserLanguage(req);
