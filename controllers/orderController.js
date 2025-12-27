@@ -44,15 +44,65 @@ export const getUserOrders = async (req, res) => {
     await newOrder.save();
 
     // Генеруємо рахунок (PDF)
-    
+    try{
+      const invoiceResult = await invoiceService.generateInvoice(newOrder, language);
+      
+      newOrder.invoice = {
+        number: `INV-${newOrder.orderNumber}`,
+        pdfUrl: invoiceResult.relativePath,
+        sentAt: new Date(),
+        sentTo: newOrder.guestEmail
+      };
+      await newOrder.save();
 
-    //...to finish 
+      // Відправляємо email з рахунком
+      const invoiceUrl = `${process.env.FRONTEND_URL || 'http://localhost:4000'}${invoiceResult.relativePath}`;
+      const emailTemplate = invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
+      await emailService.sendEmail(
+        newOrder.guestEmail,
+        language === 'ro' ? 'Factura pentru comanda dvs.' : 'Счет на оплату заказа',
+        emailTemplate(newOrder, invoiceUrl),
+        [{ 
+          filename: invoiceResult.fileName, 
+          path: invoiceResult.filePath 
+        }]
+      );
+
+      // Відправляємо сповіщення адміну
+      await emailService.sendEmail(
+        process.env.ADMIN_EMAIL || 'info@covacitrees.md',
+        `Новый заказ #${newOrder.orderNumber}`,
+        `
+          <h2>Новый заказ #${newOrder.orderNumber}</h2>
+          <p>Клиент: ${shippingAddress.name}</p>
+          <p>Email: ${newOrder.guestEmail}</p>
+          <p>Телефон: ${shippingAddress.phone}</p>
+          <p>Сумма: ${totalAmount} MDL</p>
+          <p>Статус: Ожидает оплаты</p>
+        `
+      );
+      res.status(201).json({
+        success: true,
+        order: newOrder,
+        message: language === 'ro' 
+          ? 'Comanda a fost plasată cu succes. Verificați emailul pentru factura de plată.' 
+          : 'Заказ успешно создан. В электронном почтовом ящике пришёл счёт на оплату.'
+      });
+        } catch (invoiceError) {
+      console.error('Invoice generation error:', invoiceError);
+      // Замовлення створено, але рахунок не згенеровано
+      res.status(201).json({
+        success: true,
+        order: newOrder,
+        warning: 'Заказ успешно создан. Если возникла ошибка, пожалуйста, свяжитесь с нами.'
+      });
+    }
+
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    console.error("Error creating order:", error);
     const userLang = getUserLanguage(req);
     res.status(500).json({
-      message:
-        t(userLang, "errors.order.fetch_failed") || "Failed to fetch orders",
+      message: t(userLang, "errors.order.create_failed", { defaultValue: "Помилка створення замовлення" })
     });
   }
 };
