@@ -1,32 +1,31 @@
-import { t } from "../localisation.js";
-import { getUserLanguage } from "../utils/langDetector.js";
-import OrderSchema from "../models/order.js";
-import UserSchema from '../models/user.js';
+import OrderSchema from '../models/order.js';
+import { t } from '../localisation.js';
+import { getUserLanguage } from '../utils/langDetector.js';
 import invoiceService from '../services/invoiceService.js';
 import EmailService from '../services/emailService.js';
 import { invoiceEmailTemplates } from '../services/emailTemplates.js';
 
 const emailService = new EmailService();
 
-export const getUserOrders = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     const { userId, items, totalAmount, shippingAddress, customerNotes, language = 'ru' } = req.body;
     const userLang = getUserLanguage(req);
-    
-    // Валідація
+
+    // Валидация
     if (!items || items.length === 0) {
       return res.status(400).json({
-        message: t(userLang, "errors.order.empty_cart", { defaultValue: "Кошик порожній" })
+        message: t(userLang, "errors.order.empty_cart", { defaultValue: "Корзина пуста" })
       });
     }
 
-    // Розрахунок підсумків для кожного товару
+    // Расчет итогов для каждого товара
     const itemsWithSubtotal = items.map(item => ({
       ...item,
       subtotal: item.price * item.quantity
     }));
 
-    // Створення замовлення
+    // Создание заказа
     const newOrder = new OrderSchema({
       userId: userId || null,
       guestEmail: shippingAddress.email || req.body.email,
@@ -43,8 +42,8 @@ export const getUserOrders = async (req, res) => {
 
     await newOrder.save();
 
-    // Генеруємо рахунок (PDF)
-    try{
+    // Генерируем счет (PDF)
+    try {
       const invoiceResult = await invoiceService.generateInvoice(newOrder, language);
       
       newOrder.invoice = {
@@ -53,11 +52,13 @@ export const getUserOrders = async (req, res) => {
         sentAt: new Date(),
         sentTo: newOrder.guestEmail
       };
+      
       await newOrder.save();
 
-      // Відправляємо email з рахунком
+      // Отправляем email со счетом
       const invoiceUrl = `${process.env.FRONTEND_URL || 'http://localhost:4000'}${invoiceResult.relativePath}`;
       const emailTemplate = invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
+
       await emailService.sendEmail(
         newOrder.guestEmail,
         language === 'ro' ? 'Factura pentru comanda dvs.' : 'Счет на оплату заказа',
@@ -68,7 +69,7 @@ export const getUserOrders = async (req, res) => {
         }]
       );
 
-      // Відправляємо сповіщення адміну
+      // Отправляем уведомление администратору
       await emailService.sendEmail(
         process.env.ADMIN_EMAIL || 'info@covacitrees.md',
         `Новый заказ #${newOrder.orderNumber}`,
@@ -81,20 +82,22 @@ export const getUserOrders = async (req, res) => {
           <p>Статус: Ожидает оплаты</p>
         `
       );
+
       res.status(201).json({
         success: true,
         order: newOrder,
-        message: language === 'ro' 
-          ? 'Comanda a fost plasată cu succes. Verificați emailul pentru factura de plată.' 
-          : 'Заказ успешно создан. В электронном почтовом ящике пришёл счёт на оплату.'
+        message: language === 'ro'
+          ? 'Comanda a fost plasată cu succes. Verificați emailul pentru factura de plată.'
+          : 'Заказ успешно создан. Проверьте email для получения счета на оплату.'
       });
-        } catch (invoiceError) {
+
+    } catch (invoiceError) {
       console.error('Invoice generation error:', invoiceError);
-      // Замовлення створено, але рахунок не згенеровано
+      // Заказ создан, но счет не сгенерирован
       res.status(201).json({
         success: true,
         order: newOrder,
-        warning: 'Заказ успешно создан. Если возникла ошибка, пожалуйста, свяжитесь с нами.'
+        warning: 'Заказ создан, но возникла ошибка при генерации счета. Свяжитесь с нами.'
       });
     }
 
@@ -102,105 +105,113 @@ export const getUserOrders = async (req, res) => {
     console.error("Error creating order:", error);
     const userLang = getUserLanguage(req);
     res.status(500).json({
-      message: t(userLang, "errors.order.create_failed", { defaultValue: "Помилка створення замовлення" })
+      message: t(userLang, "errors.order.create_failed", { defaultValue: "Ошибка создания заказа" })
     });
   }
 };
 
-export const createOrder = async (req, res) => {
+// Получить заказы пользователя
+export const getUserOrders = async (req, res) => {
   try {
-    const { userId, items, totalAmount, shippingAddress } = req.body;
+    const { userId } = req.params;
     const userLang = getUserLanguage(req);
 
-    // Validierung
-    if (!userId || !items || !totalAmount || !shippingAddress) {
-      return res.status(400).json({
-        message:
-          t(userLang, "errors.order.missing_fields") ||
-          "Missing required fields",
-      });
-    }
+    const orders = await OrderSchema.find({ userId })
+      .sort({ createdAt: -1 })
+      .populate('items.treeId');
 
-    if (items.length === 0) {
-      return res.status(400).json({
-        message:
-          t(userLang, "errors.order.empty_cart") || "Cart cannot be empty",
-      });
-    }
-
-    // Berechne totalAmount zur Sicherheit neu
-    const calculatedTotal = items.reduce(
-      (sum, item) => sum + item.price * item.quantity,
-      0
-    );
-
-    const newOrder = new OrderSchema({
-      userId,
-      items,
-      totalAmount: calculatedTotal,
-      shippingAddress,
-      status: "pending",
-    });
-
-    const savedOrder = await newOrder.save();
-    const user = await UserSchema.findById(userId);
-    if (
-      user &&
-      (!user.buyerInfo.savedAddress || !user.buyerInfo.savedAddress.street)
-    ) {
-      user.buyerInfo.savedAddress = shippingAddress;
-      await user.save();
-    }
-
-    res.status(201).json(savedOrder);
+    res.json(orders);
   } catch (error) {
-    console.error("Error creating order:", error);
+    console.error("Error fetching orders:", error);
     const userLang = getUserLanguage(req);
     res.status(500).json({
-      message:
-        t(userLang, "errors.order.create_failed") || "Failed to create order",
+      message: t(userLang, "errors.order.fetch_failed", { defaultValue: "Ошибка загрузки заказов" })
     });
   }
 };
 
+// Обновить статус заказа (АДМИНИСТРАТОР)
 export const updateOrderStatus = async (req, res) => {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status, paymentStatus, adminNotes } = req.body;
     const userLang = getUserLanguage(req);
 
-    const validStatuses = [
-      "pending",
-      "confirmed",
-      "shipped",
-      "delivered",
-      "cancelled",
-    ];
-    if (!validStatuses.includes(status)) {
-      return res.status(400).json({
-        message: t(userLang, "errors.order.invalid_status") || "Invalid status",
-      });
-    }
+    const order = await OrderSchema.findById(id);
 
-    const updatedOrder = await OrderSchema.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
-
-    if (!updatedOrder) {
+    if (!order) {
       return res.status(404).json({
-        message: t(userLang, "errors.order.not_found") || "Order not found",
+        message: t(userLang, "errors.order.not_found", { defaultValue: "Заказ не найден" })
       });
     }
 
-    res.json(updatedOrder);
+    // Обновляем статусы
+    if (status) order.status = status;
+    if (paymentStatus) {
+      order.paymentStatus = paymentStatus;
+      if (paymentStatus === 'paid' && !order.paidAt) {
+        order.paidAt = new Date();
+      }
+    }
+    if (adminNotes) order.adminNotes = adminNotes;
+
+    await order.save();
+
+    // Отправляем email клиенту об изменении статуса
+    if (status === 'paid' || paymentStatus === 'paid') {
+      await emailService.sendEmail(
+        order.guestEmail,
+        'Оплата подтверждена',
+        `
+          <h2>Оплата подтверждена!</h2>
+          <p>Ваш заказ #${order.orderNumber} оплачен.</p>
+          <p>Мы начали обработку вашего заказа.</p>
+        `
+      );
+    }
+
+    res.json({
+      success: true,
+      order,
+      message: 'Статус заказа обновлен'
+    });
+
   } catch (error) {
     console.error("Error updating order:", error);
-    const userLang = getUserLanguage(req);
     res.status(500).json({
-      message:
-        t(userLang, "errors.order.update_failed") || "Failed to update order",
+      message: "Ошибка обновления заказа"
+    });
+  }
+};
+
+// Получить все заказы (АДМИНИСТРАТОР)
+export const getAllOrders = async (req, res) => {
+  try {
+    const { status, paymentStatus, page = 1, limit = 20 } = req.query;
+    
+    const query = {};
+    if (status) query.status = status;
+    if (paymentStatus) query.paymentStatus = paymentStatus;
+
+    const orders = await OrderSchema.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit * 1)
+      .skip((page - 1) * limit)
+      .populate('userId', 'fullName email');
+
+    const count = await OrderSchema.countDocuments(query);
+
+    res.json({
+      orders,
+      totalPages: Math.ceil(count / limit),
+      currentPage: page,
+      total: count
+    });
+
+  } catch (error) {
+    console.error("Error fetching all orders:", error);
+    res.status(500).json({
+      message: "Ошибка загрузки заказов"
     });
   }
 };
