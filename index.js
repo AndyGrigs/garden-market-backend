@@ -63,6 +63,7 @@ import {
   createOrder,
   getUserOrders,
   updateOrderStatus,
+  getAllOrders
 } from "./controllers/orderController.js";
 import {
   getNotifications,
@@ -129,12 +130,6 @@ app.use(
   })
 );
 
-// app.use(cors({
-//   origin: process.env.NODE_ENV === 'production'
-//     ? process.env.FRONTEND_URL
-//     : "http://localhost:5173",
-//   credentials: true,
-// }));
 
 app.use("/uploads", express.static(path.resolve("uploads")));
 
@@ -156,8 +151,11 @@ app.get("/user/saved-address", checkAuth, getSavedAddress);
 
 //order routes
 app.get("/orders/user/:userId", checkAuth, getUserOrders);
-app.post("/orders", checkAuth, createOrder);
+app.post("/orders", createOrder);
 app.patch("/orders/:id/status", checkAuth, checkAdmin, updateOrderStatus);
+app.get("/orders", checkAuth, checkAdmin, getAllOrders);
+
+app.use('/invoices', express.static(path.resolve('invoices')));
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, upload.single("image"), createCategory);
