@@ -2,7 +2,8 @@ import multer from "multer";
 import path from "path";
 import fs from "fs";
 import { getUserLanguage } from "../utils/langDetector.js";
-import {t} from '../localisation.js'
+import { t } from '../localisation.js';
+import cloudinary, { cloudinaryStorage } from '../config/cloudinary.js';
 
 // Дозволені типи файлів
 const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -10,14 +11,14 @@ const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
 // Maximum file size (5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
 
-// Створення папки для збереження фото, якщо її немає
+// Створення папки для збереження фото локально (якщо потрібно для fallback)
 const uploadDir = path.resolve("uploads");
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-// Конфігурація Multer для збереження файлів
-const storage = multer.diskStorage({
+// Конфігурація Multer для збереження файлів локально (fallback)
+const localStorage = multer.diskStorage({
   destination: function (req, file, cb) {
     cb(null, "uploads/");
   },
@@ -26,6 +27,9 @@ const storage = multer.diskStorage({
     cb(null, Date.now() + ext); // Унікальне ім'я файлу
   },
 });
+
+// Вибір сховища: Cloudinary або локальне
+const storage = process.env.CLOUDINARY_CLOUD_NAME ? cloudinaryStorage : localStorage;
 
 // Перевірка типу файлу
 const fileFilter = (req, file, cb) => {
@@ -59,7 +63,11 @@ export const uploadImage = [
         .json({ message: t(userLang, "errors.upload.no_file") });
     }
 
-    const imageUrl = `/uploads/${req.file.filename}`;
+    // Визначаємо URL залежно від того, де зберігається файл
+    const imageUrl = req.file.path // Cloudinary повертає URL в req.file.path
+      ? req.file.path // Cloudinary URL
+      : `/uploads/${req.file.filename}`; // Local storage URL
+
     res.status(200).json({
       imageUrl,
       message: t(userLang, "success.upload.uploaded"),
@@ -67,6 +75,7 @@ export const uploadImage = [
         originalName: req.file.originalname,
         size: req.file.size,
         mimetype: req.file.mimetype,
+        cloudinaryId: req.file.filename, // Public ID в Cloudinary
       },
     });
   },
@@ -110,46 +119,82 @@ export const uploadImage = [
   },
 ];
 
-export const deleteImage = (req, res) => {
+export const deleteImage = async (req, res) => {
   const { filename } = req.params;
   const userLang = getUserLanguage(req);
 
   // Validate filename
   if (!filename || typeof filename !== 'string') {
-    return res.status(400).json({ 
+    return res.status(400).json({
       message: t(userLang, "errors.upload.invalid_filename")
     });
   }
 
-  // Security check: prevent path traversal attacks
-  if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
-    return res.status(400).json({ 
-      message: t(userLang, "errors.upload.invalid_filename")
-    });
-  }
+  try {
+    // Якщо це Cloudinary URL або public_id
+    if (filename.includes('cloudinary.com') || process.env.CLOUDINARY_CLOUD_NAME) {
+      // Витягуємо public_id з URL або використовуємо filename як public_id
+      let publicId = filename;
 
-  const filePath = path.resolve("uploads", filename);
+      if (filename.includes('cloudinary.com')) {
+        // Витягуємо public_id з повного URL
+        const urlParts = filename.split('/');
+        const uploadIndex = urlParts.indexOf('upload');
+        if (uploadIndex !== -1) {
+          publicId = urlParts.slice(uploadIndex + 2).join('/').split('.')[0];
+        }
+      }
 
-  // Check if file exists
-  if (!fs.existsSync(filePath)) {
-    return res.status(404).json({ 
-      message: t(userLang, "errors.upload.file_not_found")
-    });
-  }
+      // Видаляємо з Cloudinary
+      const result = await cloudinary.uploader.destroy(publicId);
 
-  // Delete file
-  fs.unlink(filePath, (err) => {
-    if (err) {
-      console.error("Image deletion error:", err);
-      return res.status(500).json({ 
-        message: t(userLang, "errors.upload.delete_failed")
+      if (result.result === 'ok' || result.result === 'not found') {
+        return res.json({
+          message: t(userLang, "success.upload.deleted")
+        });
+      } else {
+        return res.status(500).json({
+          message: t(userLang, "errors.upload.delete_failed")
+        });
+      }
+    } else {
+      // Локальне видалення файлу
+      // Security check: prevent path traversal attacks
+      if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+        return res.status(400).json({
+          message: t(userLang, "errors.upload.invalid_filename")
+        });
+      }
+
+      const filePath = path.resolve("uploads", filename);
+
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          message: t(userLang, "errors.upload.file_not_found")
+        });
+      }
+
+      // Delete file
+      fs.unlink(filePath, (err) => {
+        if (err) {
+          console.error("Image deletion error:", err);
+          return res.status(500).json({
+            message: t(userLang, "errors.upload.delete_failed")
+          });
+        }
+
+        res.json({
+          message: t(userLang, "success.upload.deleted")
+        });
       });
     }
-
-    res.json({ 
-      message: t(userLang, "success.upload.deleted")
+  } catch (error) {
+    console.error("Error deleting image:", error);
+    return res.status(500).json({
+      message: t(userLang, "errors.upload.delete_failed")
     });
-  });
+  }
 };
 
 
@@ -192,17 +237,29 @@ export const getImageInfo = (req, res) => {
 };
 
 // Helper function to delete old image file when replacing with new one
-export const deleteOldImageFile = (oldImageUrl) => {
-  if (!oldImageUrl || !oldImageUrl.includes('/uploads/')) {
+export const deleteOldImageFile = async (oldImageUrl) => {
+  if (!oldImageUrl) {
     return;
   }
 
   try {
-    const filename = oldImageUrl.replace('/uploads/', '');
-    const filePath = path.resolve('uploads', filename);
+    // Перевіряємо, чи це Cloudinary URL
+    if (oldImageUrl.includes('cloudinary.com')) {
+      // Витягуємо public_id з URL
+      const urlParts = oldImageUrl.split('/');
+      const uploadIndex = urlParts.indexOf('upload');
+      if (uploadIndex !== -1) {
+        const publicId = urlParts.slice(uploadIndex + 2).join('/').split('.')[0];
+        await cloudinary.uploader.destroy(publicId);
+      }
+    } else if (oldImageUrl.includes('/uploads/')) {
+      // Локальне видалення
+      const filename = oldImageUrl.replace('/uploads/', '');
+      const filePath = path.resolve('uploads', filename);
 
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     }
   } catch (error) {
     console.error('❌ Error deleting old image:', error);
