@@ -5,30 +5,30 @@ import { t } from '../localisation.js';
 import paypalService from '../services/payments/paypalService.js';
 import runpayService from '../services/payments/runpayService.js';
 import paynetService from '../services/payments/paynetService.js';
-import stripeService from '../services/payments/stripeService.js';
+// import stripeService from '../services/payments/stripeService.js';
 
 // ✅ Отримати конфігурацію Stripe для фронтенду
-export const getStripeConfig = async (req, res) => {
-  try {
-    if (!stripeService.isConfigured()) {
-      return res.status(503).json({
-        success: false,
-        message: 'Stripe payments are not configured'
-      });
-    }
+// export const getStripeConfig = async (req, res) => {
+//   try {
+//     if (!stripeService.isConfigured()) {
+//       return res.status(503).json({
+//         success: false,
+//         message: 'Stripe payments are not configured'
+//       });
+//     }
 
-    res.json({
-      success: true,
-      publishableKey: stripeService.getPublishableKey()
-    });
-  } catch (error) {
-    console.error('Get Stripe config error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to get Stripe configuration'
-    });
-  }
-};
+//     res.json({
+//       success: true,
+//       publishableKey: stripeService.getPublishableKey()
+//     });
+//   } catch (error) {
+//     console.error('Get Stripe config error:', error);
+//     res.status(500).json({
+//       success: false,
+//       message: 'Failed to get Stripe configuration'
+//     });
+//   }
+// };
 
 
 
@@ -457,192 +457,192 @@ export const paynetCallback = async (req, res) => {
 };
 
 
-// ✅ Створити Stripe Payment Intent
-export const createStripePaymentIntent = async (req, res) => {
-  try {
-    const { orderId, amount, currency = 'EUR', customerInfo } = req.body;
-    const userLang = getUserLanguage(req);
+// // ✅ Створити Stripe Payment Intent
+// export const createStripePaymentIntent = async (req, res) => {
+//   try {
+//     const { orderId, amount, currency = 'EUR', customerInfo } = req.body;
+//     const userLang = getUserLanguage(req);
 
-    // Перевіряємо замовлення
-    const order = await OrderModel.findById(orderId);
-    if (!order) {
-      return res.status(404).json({
-        message: t(userLang, 'errors.order.not_found')
-      });
-    }
+//     // Перевіряємо замовлення
+//     const order = await OrderModel.findById(orderId);
+//     if (!order) {
+//       return res.status(404).json({
+//         message: t(userLang, 'errors.order.not_found')
+//       });
+//     }
 
-    // Створюємо Payment Intent
-    const result = await stripeService.createPaymentIntent(
-      amount,
-      currency,
-      orderId,
-      customerInfo
-    );
+//     // Створюємо Payment Intent
+//     const result = await stripeService.createPaymentIntent(
+//       amount,
+//       currency,
+//       orderId,
+//       customerInfo
+//     );
 
-    if (!result.success) {
-      return res.status(500).json({
-        message: t(userLang, 'errors.payment.stripe_creation_failed'),
-        error: result.error
-      });
-    }
+//     if (!result.success) {
+//       return res.status(500).json({
+//         message: t(userLang, 'errors.payment.stripe_creation_failed'),
+//         error: result.error
+//       });
+//     }
 
-    // Зберігаємо в БД
-    const payment = new PaymentModel({
-      orderId,
-      userId: req.userId || null,
-      amount,
-      currency,
-      paymentMethod: 'card',
-      transactionId: result.paymentIntentId,
-      status: 'pending',
-      paymentDetails: {
-        clientSecret: result.clientSecret
-      }
-    });
+//     // Зберігаємо в БД
+//     const payment = new PaymentModel({
+//       orderId,
+//       userId: req.userId || null,
+//       amount,
+//       currency,
+//       paymentMethod: 'card',
+//       transactionId: result.paymentIntentId,
+//       status: 'pending',
+//       paymentDetails: {
+//         clientSecret: result.clientSecret
+//       }
+//     });
 
-    await payment.save();
+//     await payment.save();
 
-    order.paymentId = payment._id;
-    order.paymentMethod = 'card';
-    await order.save();
+//     order.paymentId = payment._id;
+//     order.paymentMethod = 'card';
+//     await order.save();
 
-    res.json({
-      success: true,
-      clientSecret: result.clientSecret,
-      paymentId: payment._id
-    });
+//     res.json({
+//       success: true,
+//       clientSecret: result.clientSecret,
+//       paymentId: payment._id
+//     });
 
-  } catch (error) {
-    console.error('Create Stripe payment error:', error);
-    const userLang = getUserLanguage(req);
-    res.status(500).json({
-      message: t(userLang, 'errors.server_error')
-    });
-  }
-};
+//   } catch (error) {
+//     console.error('Create Stripe payment error:', error);
+//     const userLang = getUserLanguage(req);
+//     res.status(500).json({
+//       message: t(userLang, 'errors.server_error')
+//     });
+//   }
+// };
 
-// ✅ Підтвердити Stripe платіж
-export const confirmStripePayment = async (req, res) => {
-  try {
-    const { paymentIntentId } = req.body;
-    const userLang = getUserLanguage(req);
+// // ✅ Підтвердити Stripe платіж
+// export const confirmStripePayment = async (req, res) => {
+//   try {
+//     const { paymentIntentId } = req.body;
+//     const userLang = getUserLanguage(req);
 
-    // Знаходимо платіж
-    const payment = await PaymentModel.findOne({ transactionId: paymentIntentId });
-    if (!payment) {
-      return res.status(404).json({
-        message: t(userLang, 'errors.payment.not_found')
-      });
-    }
+//     // Знаходимо платіж
+//     const payment = await PaymentModel.findOne({ transactionId: paymentIntentId });
+//     if (!payment) {
+//       return res.status(404).json({
+//         message: t(userLang, 'errors.payment.not_found')
+//       });
+//     }
 
-    // Перевіряємо статус в Stripe
-    const result = await stripeService.confirmPayment(paymentIntentId);
+//     // Перевіряємо статус в Stripe
+//     const result = await stripeService.confirmPayment(paymentIntentId);
 
-    if (!result.success) {
-      payment.status = 'failed';
-      payment.failureReason = result.error;
-      await payment.save();
+//     if (!result.success) {
+//       payment.status = 'failed';
+//       payment.failureReason = result.error;
+//       await payment.save();
 
-      return res.status(500).json({
-        message: t(userLang, 'errors.payment.stripe_confirmation_failed'),
-        error: result.error
-      });
-    }
+//       return res.status(500).json({
+//         message: t(userLang, 'errors.payment.stripe_confirmation_failed'),
+//         error: result.error
+//       });
+//     }
 
-    // Оновлюємо платіж
-    if (result.status === 'succeeded') {
-      payment.status = 'completed';
-      payment.paidAt = new Date();
-      await payment.save();
+//     // Оновлюємо платіж
+//     if (result.status === 'succeeded') {
+//       payment.status = 'completed';
+//       payment.paidAt = new Date();
+//       await payment.save();
 
-      // Оновлюємо замовлення
-      const order = await OrderModel.findById(payment.orderId);
-      if (order) {
-        order.paymentStatus = 'paid';
-        order.status = 'processing';
-        await order.save();
-      }
+//       // Оновлюємо замовлення
+//       const order = await OrderModel.findById(payment.orderId);
+//       if (order) {
+//         order.paymentStatus = 'paid';
+//         order.status = 'processing';
+//         await order.save();
+//       }
 
-      res.json({
-        success: true,
-        message: t(userLang, 'success.payment.completed'),
-        payment,
-        order
-      });
-    } else {
-      res.json({
-        success: false,
-        status: result.status,
-        message: t(userLang, 'errors.payment.stripe_not_confirmed')
-      });
-    }
+//       res.json({
+//         success: true,
+//         message: t(userLang, 'success.payment.completed'),
+//         payment,
+//         order
+//       });
+//     } else {
+//       res.json({
+//         success: false,
+//         status: result.status,
+//         message: t(userLang, 'errors.payment.stripe_not_confirmed')
+//       });
+//     }
 
-  } catch (error) {
-    console.error('Confirm Stripe payment error:', error);
-    const userLang = getUserLanguage(req);
-    res.status(500).json({
-      message: t(userLang, 'errors.server_error')
-    });
-  }
-};
+//   } catch (error) {
+//     console.error('Confirm Stripe payment error:', error);
+//     const userLang = getUserLanguage(req);
+//     res.status(500).json({
+//       message: t(userLang, 'errors.server_error')
+//     });
+//   }
+// };
 
-// ✅ Stripe Webhook
-export const stripeWebhook = async (req, res) => {
-  try {
-    const signature = req.headers['stripe-signature'];
-    const payload = req.body;
+// // ✅ Stripe Webhook
+// export const stripeWebhook = async (req, res) => {
+//   try {
+//     const signature = req.headers['stripe-signature'];
+//     const payload = req.body;
 
-    const result = await stripeService.handleWebhook(payload, signature);
+//     const result = await stripeService.handleWebhook(payload, signature);
 
-    if (!result.success) {
-      return res.status(400).json({ message: 'Invalid webhook signature' });
-    }
+//     if (!result.success) {
+//       return res.status(400).json({ message: 'Invalid webhook signature' });
+//     }
 
-    const event = result.event;
+//     const event = result.event;
 
-    // Обробляємо різні типи подій
-    switch (event.type) {
-      case 'payment_intent.succeeded':
-        const paymentIntent = event.data.object;
-        const payment = await PaymentModel.findOne({ 
-          transactionId: paymentIntent.id 
-        });
+//     // Обробляємо різні типи подій
+//     switch (event.type) {
+//       case 'payment_intent.succeeded':
+//         const paymentIntent = event.data.object;
+//         const payment = await PaymentModel.findOne({ 
+//           transactionId: paymentIntent.id 
+//         });
 
-        if (payment) {
-          payment.status = 'completed';
-          payment.paidAt = new Date();
-          await payment.save();
+//         if (payment) {
+//           payment.status = 'completed';
+//           payment.paidAt = new Date();
+//           await payment.save();
 
-          const order = await OrderModel.findById(payment.orderId);
-          if (order) {
-            order.paymentStatus = 'paid';
-            order.status = 'processing';
-            await order.save();
-          }
-        }
-        break;
+//           const order = await OrderModel.findById(payment.orderId);
+//           if (order) {
+//             order.paymentStatus = 'paid';
+//             order.status = 'processing';
+//             await order.save();
+//           }
+//         }
+//         break;
 
-      case 'payment_intent.payment_failed':
-        const failedIntent = event.data.object;
-        const failedPayment = await PaymentModel.findOne({ 
-          transactionId: failedIntent.id 
-        });
+//       case 'payment_intent.payment_failed':
+//         const failedIntent = event.data.object;
+//         const failedPayment = await PaymentModel.findOne({ 
+//           transactionId: failedIntent.id 
+//         });
 
-        if (failedPayment) {
-          failedPayment.status = 'failed';
-          failedPayment.failureReason = failedIntent.last_payment_error?.message || 'Payment failed';
-          await failedPayment.save();
-        }
-        break;
+//         if (failedPayment) {
+//           failedPayment.status = 'failed';
+//           failedPayment.failureReason = failedIntent.last_payment_error?.message || 'Payment failed';
+//           await failedPayment.save();
+//         }
+//         break;
 
-      default:
-        console.log(`Unhandld event type: ${event.type}`);
-    }
+//       default:
+//         console.log(`Unhandld event type: ${event.type}`);
+//     }
 
-    res.json({ received: true });
+//     res.json({ received: true });
 
-  } catch (error) {
-    console.error('Stripe webhook error:', error);
-    res.status(500).json({ message: 'Webhook error' });
-  }
-};
+//   } catch (error) {
+//     console.error('Stripe webhook error:', error);
+//     res.status(500).json({ message: 'Webhook error' });
+//   }
+// };
