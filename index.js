@@ -3,6 +3,8 @@ import cors from "cors";
 import path from "path";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import logger from './config/logger.js';
+import { errorLogger, errorResponder } from './middleware/errorLogger.js';
 
 import mongoose from "mongoose";
 
@@ -125,6 +127,8 @@ app.use(
     credentials: true,
   })
 );
+
+
 
 
 app.use("/uploads", express.static(path.resolve("uploads")));
@@ -280,11 +284,17 @@ const emailService = new EmailService();
 
 emailService.testConnection();
 
+// Middleware для логування помилок (має бути після всіх routes)
+   app.use(errorLogger);
+   app.use(errorResponder);
+
+
 const port = process.env.PORT || 4444;
 app.listen(port, '127.0.0.1', (err) => {
   if (err) {
+    logger.error('Failed to start server:', err);
     return console.log(err);
   }
 
-  console.log(`Server is running on port ${port}`);
+  logger.info(`Server is running on port ${port}`);
 });

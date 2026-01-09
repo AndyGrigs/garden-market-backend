@@ -5,6 +5,13 @@ uploads
 .idx
 .vscode
 
+
+
 notifications.http
 
 test.http
+
+# Logs
+   logs/
+   *.log
+   !logs/.gitkeep
