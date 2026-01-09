@@ -4,6 +4,7 @@ import fs from "fs";
 import { getUserLanguage } from "../utils/langDetector.js";
 import { t } from '../localisation.js';
 import cloudinary, { cloudinaryStorage } from '../config/cloudinary.js';
+import logger from '../config/logger.js';
 
 // Дозволені типи файлів
 const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
@@ -112,7 +113,12 @@ export const uploadImage = [
       });
     }
 
-    console.error("Upload error:", error);
+    logger.error("Помилка завантаження файлу", {
+      error: error.message,
+      stack: error.stack,
+      code: error.code,
+      userId: req.userId
+    });
     res.status(500).json({
       message: t(userLang, "errors.server_error"),
     });
@@ -178,7 +184,13 @@ export const deleteImage = async (req, res) => {
       // Delete file
       fs.unlink(filePath, (err) => {
         if (err) {
-          console.error("Image deletion error:", err);
+          logger.error("Помилка видалення локального файлу", {
+            error: err.message,
+            stack: err.stack,
+            filename: filename,
+            filePath: filePath,
+            userId: req.userId
+          });
           return res.status(500).json({
             message: t(userLang, "errors.upload.delete_failed")
           });
@@ -190,7 +202,12 @@ export const deleteImage = async (req, res) => {
       });
     }
   } catch (error) {
-    console.error("Error deleting image:", error);
+    logger.error("Помилка видалення зображення", {
+      error: error.message,
+      stack: error.stack,
+      filename: filename,
+      userId: req.userId
+    });
     return res.status(500).json({
       message: t(userLang, "errors.upload.delete_failed")
     });
@@ -262,7 +279,11 @@ export const deleteOldImageFile = async (oldImageUrl) => {
       }
     }
   } catch (error) {
-    console.error('❌ Error deleting old image:', error);
+    logger.error('Помилка видалення старого зображення', {
+      error: error.message,
+      stack: error.stack,
+      oldImageUrl: oldImageUrl
+    });
   }
 };
 
@@ -295,7 +316,10 @@ export const getAllUsedImages = async () => {
 
     return usedImages;
   } catch (error) {
-    console.error('Error getting used images:', error);
+    logger.error('Помилка отримання списку використовуваних зображень', {
+      error: error.message,
+      stack: error.stack
+    });
     return new Set();
   }
 };
@@ -324,7 +348,12 @@ export const cleanupUnusedFiles = async (req, res) => {
           deletedFiles.push(file);
           deletedCount++;
         } catch (deleteError) {
-          console.error(`❌ Error deleting ${file}:`, deleteError);
+          logger.error('Помилка видалення невикористовуваного файлу', {
+            error: deleteError.message,
+            stack: deleteError.stack,
+            file: file,
+            filePath: filePath
+          });
         }
       }
     }
@@ -337,7 +366,11 @@ export const cleanupUnusedFiles = async (req, res) => {
       deletedFilesList: deletedFiles
     });
   } catch (error) {
-    console.error('Cleanup error:', error);
+    logger.error('Помилка очищення невикористовуваних файлів', {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId
+    });
     res.status(500).json({
       message: t(userLang, "errors.upload.cleanup_failed")
     });
@@ -373,7 +406,12 @@ export const cleanupOldFiles = async (req, res) => {
       deletedFiles: deletedCount
     });
   } catch (error) {
-    console.error('Cleanup error:', error);
+    logger.error('Помилка очищення старих файлів', {
+      error: error.message,
+      stack: error.stack,
+      daysOld: daysOld,
+      userId: req.userId
+    });
     res.status(500).json({
       message: t(userLang, "errors.upload.cleanup_failed")
     });

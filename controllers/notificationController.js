@@ -4,6 +4,7 @@ import { t } from "../localisation.js";
 import { getUserLanguage } from "../utils/langDetector.js";
 import EmailService from '../services/emailService.js';
 import { notifyAllAdmins } from '../config/adminConfig.js';
+import logger from '../config/logger.js';
 
 const emailService = new EmailService();
 
@@ -14,7 +15,12 @@ export const createNotification = async (notificationData) => {
     await notification.save();
     return notification;
   } catch (error) {
-    console.error("❌ Помилка створення сповіщення:", error);
+    logger.error("Помилка створення сповіщення", {
+      error: error.message,
+      stack: error.stack,
+      notificationType: notificationData?.type,
+      notificationTitle: notificationData?.title
+    });
     throw error;
   }
 };
@@ -33,7 +39,12 @@ export const createNotificationRoute = async (req, res) => {
       }),
     });
   } catch (error) {
-    console.error("Error creating notification:", error);
+    logger.error("Помилка створення сповіщення через API", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId,
+      notificationType: req.body?.type
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.create_failed", {
@@ -75,7 +86,12 @@ export const getNotifications = async (req, res) => {
       }),
     });
   } catch (error) {
-    console.error("Error fetching notifications:", error);
+    logger.error("Помилка отримання сповіщень", {
+      error: error.message,
+      stack: error.stack,
+      page: req.query.page,
+      limit: req.query.limit
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.fetch_failed", {
@@ -115,7 +131,11 @@ export const markAsRead = async (req, res) => {
       }),
     });
   } catch (error) {
-    console.error("Error marking notification as read:", error);
+    logger.error("Помилка відмітки сповіщення як прочитане", {
+      error: error.message,
+      stack: error.stack,
+      notificationId: req.params.id
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.mark_read_failed", {
@@ -144,7 +164,11 @@ export const markAllAsRead = async (req, res) => {
       }),
     });
   } catch (error) {
-    console.error("Error marking all notifications as read:", error);
+    logger.error("Помилка відмітки всіх сповіщень як прочитані", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.mark_all_read_failed", {
@@ -176,7 +200,11 @@ export const deleteNotification = async (req, res) => {
       }),
     });
   } catch (error) {
-    console.error("Error deleting notification:", error);
+    logger.error("Помилка видалення сповіщення", {
+      error: error.message,
+      stack: error.stack,
+      notificationId: req.params.id
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.notifications.delete_failed", {
@@ -195,7 +223,10 @@ export const getUnreadCount = async (req, res) => {
       unreadCount,
     });
   } catch (error) {
-    console.error("Error getting unread count:", error);
+    logger.error("Помилка отримання кількості непрочитаних сповіщень", {
+      error: error.message,
+      stack: error.stack
+    });
     res.status(500).json({
       unreadCount: 0,
     });
@@ -273,7 +304,12 @@ export const approveSeller = async (req, res) => {
       });
 
     } catch (notificationError) {
-      console.error("❌ Помилка створення сповіщення:", notificationError);
+      logger.error("Помилка створення сповіщення про схвалення продавця", {
+        error: notificationError.message,
+        stack: notificationError.stack,
+        userId: userId,
+        sellerEmail: user?.email
+      });
       // Не блокуємо схвалення через помилку сповіщення
     }
 
@@ -288,7 +324,12 @@ export const approveSeller = async (req, res) => {
         userLang
       );
     } catch (emailError) {
-      console.error("❌ Помилка відправки email продавцю:", emailError);
+      logger.error("Помилка відправки email про схвалення продавцю", {
+        error: emailError.message,
+        stack: emailError.stack,
+        userId: userId,
+        sellerEmail: user?.email
+      });
     }
 
     res.json({
@@ -303,7 +344,12 @@ export const approveSeller = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Error approving seller:", error);
+    logger.error("Помилка схвалення продавця", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.userId,
+      adminId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.approve_seller_failed", {
@@ -365,8 +411,13 @@ export const rejectSeller = async (req, res) => {
         user.language || userLang
       );
     } catch (emailError) {
-      console.error("❌ Error sending rejection email:", emailError);
-      
+      logger.error("Помилка відправки email про відхилення продавця", {
+        error: emailError.message,
+        stack: emailError.stack,
+        userId: userId,
+        sellerEmail: user?.email
+      });
+
     }
 
     // Створити сповіщення для адміна про відхилення
@@ -389,7 +440,12 @@ export const rejectSeller = async (req, res) => {
         }
       });
     } catch (notificationError) {
-      console.error("❌ Error creating rejection notification:", notificationError);
+      logger.error("Помилка створення сповіщення про відхилення продавця", {
+        error: notificationError.message,
+        stack: notificationError.stack,
+        userId: userId,
+        sellerEmail: user?.email
+      });
     }
 
     // Видалити користувача з бази даних
@@ -406,7 +462,13 @@ export const rejectSeller = async (req, res) => {
       }
     });
   } catch (error) {
-    console.error("Error rejecting seller:", error);
+    logger.error("Помилка відхилення продавця", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.userId,
+      adminId: req.userId,
+      reason: req.body?.reason
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.reject_seller_failed", {

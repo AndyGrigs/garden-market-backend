@@ -1,7 +1,8 @@
 import Review from '../models/review.js';
 import { t } from '../localisation.js';
 import { getUserLanguage } from '../utils/langDetector.js';
-import UserModel from '../models/user.js'
+import UserModel from '../models/user.js';
+import logger from '../config/logger.js';
 
 
 
@@ -12,6 +13,10 @@ export async function getReviews(req, res) {
    .sort({createdAt: -1});
    res.json(reviews)
   } catch (e) {
+    logger.error("Помилка отримання відгуків", {
+      error: e.message,
+      stack: e.stack
+    });
     res.status(500).json({ error: e.message });
   }
 }
@@ -58,7 +63,12 @@ export async function createReview(req, res) {
       message: t(userLang, "success.review.created")
     });
   } catch (e) {
-    console.error('Review creation error:', e); // 👈 Логуємо помилку для дебагу
+    logger.error('Помилка створення відгуку', {
+      error: e.message,
+      stack: e.stack,
+      userId: req.userId,
+      rating: req.body.rating
+    });
     res.status(400).json({ error: e.message });
   }
 }
@@ -68,9 +78,14 @@ export async function getUserReviews(req, res) {
     const reviews = await Review.find({ user: req.params.userId })
       .populate('user', 'fullName email')
       .sort({ createdAt: -1 });
-    
+
     res.json(reviews);
   } catch (e) {
+    logger.error("Помилка отримання відгуків користувача", {
+      error: e.message,
+      stack: e.stack,
+      userId: req.params.userId
+    });
     res.status(500).json({ error: e.message });
   }
 }
@@ -103,6 +118,12 @@ export async function updateReview(req, res) {
     
     res.json(updatedReview);
   } catch (e) {
+    logger.error("Помилка оновлення відгуку", {
+      error: e.message,
+      stack: e.stack,
+      reviewId: req.params.id,
+      userId: req.user?._id
+    });
     res.status(400).json({ error: e.message });
   }
 }
@@ -132,9 +153,15 @@ export async function deleteReview(req, res) {
     await req.user.updateOne({
       $pull: { reviews: req.params.id }
     });
-    
+
     res.json({ message: t(userLang, 'success.review.deleted') });
   } catch (e) {
+    logger.error("Помилка видалення відгуку", {
+      error: e.message,
+      stack: e.stack,
+      reviewId: req.params.id,
+      userId: req.user?._id
+    });
     res.status(500).json({ error: e.message });
   }
 }

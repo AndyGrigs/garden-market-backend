@@ -5,6 +5,7 @@ import { t } from '../localisation.js';
 import paypalService from '../services/payments/paypalService.js';
 import runpayService from '../services/payments/runpayService.js';
 import paynetService from '../services/payments/paynetService.js';
+import logger from '../config/logger.js';
 // import stripeService from '../services/payments/stripeService.js';
 
 // ✅ Отримати конфігурацію Stripe для фронтенду
@@ -82,7 +83,13 @@ export const createPayPalOrder = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Create PayPal order error:', error);
+    logger.error('Помилка створення PayPal замовлення', {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.body.orderId,
+      amount: req.body.amount,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -140,7 +147,11 @@ export const capturePayPalPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Capture PayPal payment error:', error);
+    logger.error('Помилка підтвердження PayPal платежу', {
+      error: error.message,
+      stack: error.stack,
+      paypalOrderId: req.body.paypalOrderId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -185,7 +196,14 @@ export const createPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Create payment error:', error);
+    logger.error('Помилка створення платежу', {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.body.orderId,
+      paymentMethod: req.body.paymentMethod,
+      amount: req.body.amount,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -210,7 +228,11 @@ export const getPayment = async (req, res) => {
 
     res.json(payment);
   } catch (error) {
-    console.error('Get payment error:', error);
+    logger.error('Помилка отримання платежу', {
+      error: error.message,
+      stack: error.stack,
+      paymentId: req.params.id
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -253,7 +275,12 @@ export const updatePaymentStatus = async (req, res) => {
       payment
     });
   } catch (error) {
-    console.error('Update payment error:', error);
+    logger.error('Помилка оновлення статусу платежу', {
+      error: error.message,
+      stack: error.stack,
+      transactionId: req.body.transactionId,
+      status: req.body.status
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.payment.update_failed')
@@ -316,7 +343,13 @@ export const createRunPayPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Create RunPay payment error:', error);
+    logger.error('Помилка створення RunPay платежу', {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.body.orderId,
+      amount: req.body.amount,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -373,7 +406,13 @@ export const createPayNetPayment = async (req, res) => {
     });
 
   } catch (error) {
-    console.error('Create PayNet payment error:', error);
+    logger.error('Помилка створення PayNet платежу', {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.body.orderId,
+      amount: req.body.amount,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, 'errors.server_error')
@@ -413,7 +452,11 @@ export const runpayWebhook = async (req, res) => {
 
     res.json({ success: true });
   } catch (error) {
-    console.error('RunPay webhook error:', error);
+    logger.error('Помилка RunPay webhook', {
+      error: error.message,
+      stack: error.stack,
+      webhookData: req.body
+    });
     res.status(500).json({ message: 'Webhook error' });
   }
 };
@@ -451,7 +494,11 @@ export const paynetCallback = async (req, res) => {
     // Редірект на success сторінку
     res.redirect(`${process.env.FRONTEND_URL}/payment/success?orderId=${result.orderId}`);
   } catch (error) {
-    console.error('PayNet callback error:', error);
+    logger.error('Помилка PayNet callback', {
+      error: error.message,
+      stack: error.stack,
+      callbackData: req.body
+    });
     res.redirect(`${process.env.FRONTEND_URL}/payment/cancel`);
   }
 };

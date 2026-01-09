@@ -5,6 +5,7 @@ import { t } from '../localisation.js';
 import path from "path";
 import fs from "fs";
 import { deleteOldImageFile } from "./uploadController.js";
+import logger from '../config/logger.js';
 
 export const createCategory = async (req, res) => {
   try {
@@ -30,7 +31,12 @@ export const createCategory = async (req, res) => {
 
     res.status(201).json(saved);
   } catch (error) {
-    console.error("Create category error:", error);
+    logger.error("Помилка створення категорії", {
+      error: error.message,
+      stack: error.stack,
+      categoryName: req.body.name?.ru,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.server_error"),
@@ -44,7 +50,10 @@ export const getCategories = async (req, res) => {
     const categories = await CategorySchema.find().sort({ name: 1 });
     res.json(categories);
   } catch (error) {
-    console.error("Get categories error:", error);
+    logger.error("Помилка отримання категорій", {
+      error: error.message,
+      stack: error.stack
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.category.fetch_failed"),
@@ -103,7 +112,13 @@ export const updateCategory = async (req, res) => {
 
     res.json(updated);
   } catch (err) {
-    console.error(err);
+    logger.error("Помилка оновлення категорії", {
+      error: err.message,
+      stack: err.stack,
+      categoryId: req.params.id,
+      userId: req.userId
+    });
+    const userLang = getUserLanguage(req);
     res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
@@ -137,7 +152,12 @@ export const deleteCategory = async (req, res) => {
           // console.log(`⚠️ Foto-Datei nicht gefunden: ${filename}`);
         }
       } catch (imageError) {
-        console.error("❌ Fehler beim Löschen des Kategorie-Fotos:", imageError);
+        logger.error("Помилка видалення фото категорії", {
+          error: imageError.message,
+          stack: imageError.stack,
+          categoryId: categoryId,
+          imageUrl: categoryToDelete.imageUrl
+        });
         // Weitermachen - Kategorie trotzdem löschen
       }
     }
@@ -156,9 +176,13 @@ export const deleteCategory = async (req, res) => {
     });
     
   } catch (err) {
-    console.error("❌ Fehler beim Löschen der Kategorie:", err);
+    logger.error("Помилка видалення категорії", {
+      error: err.message,
+      stack: err.stack,
+      categoryId: req.params.id
+    });
     const userLang = getUserLanguage(req);
-    res.status(500).json({ 
+    res.status(500).json({
       message: t(userLang, "errors.category.delete_failed"),
       error: err.message
     });
@@ -183,9 +207,13 @@ export const getCategoryBySlug = async (req, res) => {
       message: t(userLang, "success.category.fetched")
     });
   } catch (error) {
-    console.error('Get category by slug error:', error);
+    logger.error('Помилка отримання категорії за slug', {
+      error: error.message,
+      stack: error.stack,
+      slug: req.params.slug
+    });
     const userLang = getUserLanguage(req);
-    res.status(500).json({ 
+    res.status(500).json({
       message: t(userLang, "errors.server_error")
     });
   }

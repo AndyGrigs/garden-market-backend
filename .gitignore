@@ -12,6 +12,6 @@ notifications.http
 test.http
 
 # Logs
-   logs/
-   *.log
-   !logs/.gitkeep
+logs/
+*.log
+!logs/.gitkeep

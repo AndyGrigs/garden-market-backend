@@ -8,6 +8,7 @@ import { getUserLanguage } from "../utils/langDetector.js";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js";
 import { deleteOldImageFile } from "./uploadController.js";
+import logger from '../config/logger.js';
 
 const emailService = new EmailService(); 
 
@@ -119,7 +120,13 @@ export const createTree = async (req, res) => {
         });
 
       } catch (notificationError) {
-        console.error("❌ Помилка створення сповіщення:", notificationError);
+        logger.error("Помилка створення сповіщення про новий товар", {
+          error: notificationError.message,
+          stack: notificationError.stack,
+          userId: req.userId,
+          productId: tree._id,
+          productTitle: title.ru
+        });
         // Не блокуємо створення товару через помилку сповіщення
       }
     }
@@ -134,7 +141,13 @@ export const createTree = async (req, res) => {
       message: t(userLang, "success.tree.created"),
     });
   } catch (error) {
-    console.error("Error creating tree:", error); // ⬅️ ДОДАНО логування помилки
+    logger.error("Помилка створення товару", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId,
+      userRole: req.userRole,
+      title: req.body.title?.ru
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.create_failed"),
@@ -150,7 +163,10 @@ export const getAllTrees = async (req, res) => {
 
     res.json(trees);
   } catch (err) {
-    console.error("Error fetching trees:", err);
+    logger.error("Помилка отримання всіх товарів", {
+      error: err.message,
+      stack: err.stack
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.fetch_failed"),
@@ -201,7 +217,12 @@ export const updateTree = async (req, res) => {
       message: t(userLang, "success.tree.updated"),
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Помилка оновлення товару (admin)", {
+      error: error.message,
+      stack: error.stack,
+      treeId: req.params.id,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.update_failed"),
@@ -238,7 +259,12 @@ export const deleteTree = async (req, res) => {
           // console.log(`⚠️ Файл не знайдено: ${filename}`);
         }
       } catch (imageError) {
-        console.error("❌ Помилка видалення фото:", imageError);
+        logger.error("Помилка видалення фото при видаленні товару", {
+          error: imageError.message,
+          stack: imageError.stack,
+          treeId: treeId,
+          imageUrl: treeToDelete.imageUrl
+        });
         // Не зупиняємо процес - продовжуємо видаляти дерево
       }
     }
@@ -256,7 +282,11 @@ export const deleteTree = async (req, res) => {
       },
     });
   } catch (err) {
-    console.error("❌ Помилка видалення дерева:", err);
+    logger.error("Помилка видалення товару", {
+      error: err.message,
+      stack: err.stack,
+      treeId: req.params.id
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.delete_failed"),
@@ -282,7 +312,11 @@ export const getSellerTrees = async (req, res) => {
       message: t(userLang, "success.tree.fetched"),
     });
   } catch (error) {
-    console.error("Error fetching seller trees:", error);
+    logger.error("Помилка отримання товарів продавця", {
+      error: error.message,
+      stack: error.stack,
+      sellerId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.fetch_failed"),
@@ -344,7 +378,12 @@ export const updateSellerTree = async (req, res) => {
       message: t(userLang, "success.tree.updated"),
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Помилка оновлення товару продавцем", {
+      error: error.message,
+      stack: error.stack,
+      treeId: req.params.id,
+      sellerId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.update_failed"),
@@ -379,7 +418,13 @@ export const deleteSellerTree = async (req, res) => {
           fs.unlinkSync(filePath);
         }
       } catch (imageError) {
-        console.error("❌ Помилка видалення фото:", imageError);
+        logger.error("Помилка видалення фото при видаленні товару продавця", {
+          error: imageError.message,
+          stack: imageError.stack,
+          treeId: id,
+          sellerId: req.userId,
+          imageUrl: treeToDelete.imageUrl
+        });
       }
     }
 
@@ -390,7 +435,12 @@ export const deleteSellerTree = async (req, res) => {
       message: t(userLang, "success.tree.deleted"),
     });
   } catch (error) {
-    console.error(error);
+    logger.error("Помилка видалення товару продавця", {
+      error: error.message,
+      stack: error.stack,
+      treeId: req.params.id,
+      sellerId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.delete_failed"),

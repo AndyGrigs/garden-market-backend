@@ -4,6 +4,7 @@ import { getUserLanguage } from '../utils/langDetector.js';
 import invoiceService from '../services/invoiceService.js';
 import EmailService from '../services/emailService.js';
 import { invoiceEmailTemplates } from '../services/emailTemplates.js';
+import logger from '../config/logger.js';
 
 const emailService = new EmailService();
 
@@ -92,7 +93,13 @@ export const createOrder = async (req, res) => {
       });
 
     } catch (invoiceError) {
-      console.error('Invoice generation error:', invoiceError);
+      logger.error('Помилка генерації рахунку', {
+        error: invoiceError.message,
+        stack: invoiceError.stack,
+        orderId: newOrder._id,
+        orderNumber: newOrder.orderNumber,
+        email: newOrder.guestEmail
+      });
       // Заказ создан, но счет не сгенерирован
       res.status(201).json({
         success: true,
@@ -102,7 +109,13 @@ export const createOrder = async (req, res) => {
     }
 
   } catch (error) {
-    console.error("Error creating order:", error);
+    logger.error("Помилка створення замовлення", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.body.userId,
+      email: req.body.email || req.body.shippingAddress?.email,
+      totalAmount: req.body.totalAmount
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.order.create_failed", { defaultValue: "Ошибка создания заказа" })
@@ -122,7 +135,11 @@ export const getUserOrders = async (req, res) => {
 
     res.json(orders);
   } catch (error) {
-    console.error("Error fetching orders:", error);
+    logger.error("Помилка отримання замовлень користувача", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.order.fetch_failed", { defaultValue: "Ошибка загрузки заказов" })
@@ -177,7 +194,13 @@ export const updateOrderStatus = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error updating order:", error);
+    logger.error("Помилка оновлення статусу замовлення", {
+      error: error.message,
+      stack: error.stack,
+      orderId: req.params.id,
+      status: req.body.status,
+      paymentStatus: req.body.paymentStatus
+    });
     res.status(500).json({
       message: "Ошибка обновления заказа"
     });
@@ -209,7 +232,15 @@ export const getAllOrders = async (req, res) => {
     });
 
   } catch (error) {
-    console.error("Error fetching all orders:", error);
+    logger.error("Помилка отримання всіх замовлень (admin)", {
+      error: error.message,
+      stack: error.stack,
+      filters: {
+        status: req.query.status,
+        paymentStatus: req.query.paymentStatus,
+        page: req.query.page
+      }
+    });
     res.status(500).json({
       message: "Ошибка загрузки заказов"
     });

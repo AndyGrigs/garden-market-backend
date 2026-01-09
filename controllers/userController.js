@@ -4,8 +4,9 @@ import UserModel from "../models/user.js";
 import EmailService from "../services/emailService.js";
 import { t } from "../localisation.js";
 import { getUserLanguage } from '../utils/langDetector.js';
-import { createNotification } from "./notificationController.js"; 
+import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from '../config/adminConfig.js';
+import logger from '../config/logger.js';
 
 
 const emailService = new EmailService();
@@ -85,7 +86,12 @@ export const register = async (req, res) => {
         );
 
       } catch (notificationError) {
-        console.error("Помилка сповіщень:", notificationError);
+        logger.error("Помилка сповіщень про реєстрацію продавця", {
+          error: notificationError.message,
+          stack: notificationError.stack,
+          userId: user._id,
+          email: req.body.email
+        });
       }
           }
 
@@ -115,7 +121,12 @@ export const register = async (req, res) => {
       message: t(userLang, "success.register"),
     });
   } catch (error) {
-    console.log(error);
+    logger.error("Помилка під час реєстрації користувача", {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email,
+      role: req.body.role
+    });
     res.status(500).json({
       message: t(req.body.language || "ru", "errors.server_error"),
     });
@@ -180,7 +191,11 @@ export const login = async (req, res) => {
       });
   } catch (error) {
     const userLang = req.body.language || "ru";
-    console.log(error);
+    logger.error("Помилка під час входу користувача", {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email
+    });
     res.status(500).json({ message: t(userLang, "errors.login_failed") });
   }
 };
@@ -197,7 +212,11 @@ export const getMe = async (req, res) => {
 
     res.json(user);
   } catch (err) {
-    console.log(err);
+    logger.error("Помилка отримання даних користувача", {
+      error: err.message,
+      stack: err.stack,
+      userId: req.userId
+    });
     res.status(500).json({ message: t(userLang, 'errors.server_error') });
   }
 };
@@ -242,8 +261,12 @@ export const sendResetCode = async (req, res) => {
 
     res.json({ message: t(userLang, "success.reset_code_sent") });
   } catch (error) {
-    let userLang = user.language || 'ru';
-    console.log(error);
+    let userLang = 'ru';
+    logger.error("Помилка відправки коду відновлення пароля", {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email
+    });
     res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
@@ -276,7 +299,12 @@ export const resetPassword = async (req, res) => {
 
     res.json({ message: t(userLang, "success.password_changed") });
   } catch (error) {
-    console.log(error);
+    const userLang = getUserLanguage(req);
+    logger.error("Помилка скидання пароля", {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email
+    });
     res.status(500).json({ message: t(userLang, "errors.server_error") });
   }
 };
@@ -345,7 +373,12 @@ export const resendVerificationCode = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
+    const userLang = getUserLanguage(req);
+    logger.error("Помилка повторної відправки коду верифікації", {
+      error: error.message,
+      stack: error.stack,
+      email: req.body.email
+    });
     res.status(500).json({
       message: t(userLang, "errors.server_error")
     });
@@ -372,7 +405,11 @@ export const getPendingSellers = async (req, res) => {
       })
     });
   } catch (error) {
-    console.log(error);
+    logger.error("Помилка отримання списку продавців на модерації", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.server_error")
@@ -398,7 +435,11 @@ export const getSavedAddress = async (req, res) => {
       savedAddress: user.buyerInfo?.savedAddress || null
     });
   } catch (error) {
-    console.error("Error fetching saved address:", error);
+    logger.error("Помилка отримання збереженої адреси", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId
+    });
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.server_error")
