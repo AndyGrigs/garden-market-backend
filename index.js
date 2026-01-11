@@ -1,10 +1,14 @@
 import express from "express";
 import cors from "cors";
 import path from "path";
+import { fileURLToPath } from 'url';
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
 import logger from './config/logger.js';
 import { errorLogger, errorResponder } from './middleware/errorLogger.js';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 import mongoose from "mongoose";
 
@@ -131,7 +135,7 @@ app.use(
 
 
 
-app.use("/uploads", express.static(path.resolve("uploads")));
+app.use("/uploads", express.static(path.resolve(__dirname, "uploads")));
 
 app.use("/auth/login", authLimiter);
 app.post("/auth/login", loginValidation, handleValidationErrors, login);
@@ -155,7 +159,7 @@ app.post("/orders", createOrder);
 app.patch("/orders/:id/status", checkAuth, checkAdmin, updateOrderStatus);
 app.get("/orders", checkAuth, checkAdmin, getAllOrders);
 
-app.use('/invoices', express.static(path.resolve('invoices')));
+app.use('/invoices', express.static(path.resolve(__dirname, 'invoices')));
 
 app.get("/categories", getCategories);
 app.post("/categories", checkAuth, upload.single("image"), createCategory);
