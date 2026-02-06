@@ -38,6 +38,7 @@ import {
   deleteTree,
   getAllTrees,
   updateTree,
+  getTreeById
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from "./services/emailService.js";
@@ -173,6 +174,7 @@ app.post("/cleanup-files", checkAuth, checkAdmin, cleanupOldFiles);
 app.post("/cleanup-unused-files", checkAuth, checkAdmin, cleanupUnusedFiles);
 
 app.get("/trees", getAllTrees);
+app.get("/trees/:id", getTreeById);
 
 // ⬇️ РОУТИ ДЛЯ АДМІНІВ:
 app.post(

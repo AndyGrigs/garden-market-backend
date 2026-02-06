@@ -447,3 +447,32 @@ export const deleteSellerTree = async (req, res) => {
     });
   }
 };
+
+export const getTreeById = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userLang = getUserLanguage(req);
+
+    const tree = await TreeSchema.findById(id)
+      .populate("category")
+      .populate("seller", "fullName sellerInfo.nurseryName");
+
+    if (!tree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    res.json(tree);
+  } catch (err) {
+    logger.error("Помилка отримання дерева за ID", {
+      error: err.message,
+      stack: err.stack,
+      treeId: req.params.id
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.fetch_failed"),
+    });
+  }
+};
