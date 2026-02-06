@@ -98,7 +98,7 @@ const OrderSchema = new mongoose.Schema({
 });
 
 // Генерація номера замовлення
-OrderSchema.pre('save', async function(next) {
+OrderSchema.pre('validate', async function(next) {
   if (!this.orderNumber) {
     const date = new Date();
     const year = date.getFullYear();
