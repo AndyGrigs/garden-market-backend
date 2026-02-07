@@ -4,7 +4,7 @@ import { verificationCodeTemplates, resetCodeTemplates, sellerApprovalTemplates,
 
 dotenv.config();
 
-class emailService {
+class EmailService {
   constructor() {
     this.transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST,
@@ -168,9 +168,30 @@ class emailService {
     }
   }
 
+  async sendEmail(to, subject, html, attachments = []) {
+    try {
+      const mailOptions = {
+        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
+        to,
+        subject,
+        html,
+      };
+
+      if (attachments.length > 0) {
+        mailOptions.attachments = attachments;
+      }
+
+      const result = await this.transporter.sendMail(mailOptions);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("❌ Error sending email:", error);
+      return { success: false, error: error.message };
+    }
+  }
+
   generateVerificationCode() {
     return Math.floor(100 + Math.random() * 900).toString();
   }
 }
 
-export default emailService;
+export default EmailService;

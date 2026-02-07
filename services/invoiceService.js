@@ -9,7 +9,8 @@ const __dirname = path.dirname(__filename);
 class InvoiceService {
   constructor() {
     this.invoicesDir = path.resolve('invoices');
-    
+    this.fontsDir = path.join(__dirname, '..', 'fonts');
+
     // Створюємо папку для рахунків якщо її немає
     if (!fs.existsSync(this.invoicesDir)) {
       fs.mkdirSync(this.invoicesDir, { recursive: true });
@@ -74,26 +75,29 @@ class InvoiceService {
         const fileName = `${invoiceNumber}.pdf`;
         const filePath = path.join(this.invoicesDir, fileName);
         
-        const doc = new PDFDocument({ 
+        const doc = new PDFDocument({
           size: 'A4',
           margin: 50,
           bufferPages: true
         });
-        
+
+        doc.registerFont('Roboto', path.join(this.fontsDir, 'Roboto-Regular.ttf'));
+        doc.registerFont('Roboto-Bold', path.join(this.fontsDir, 'Roboto-Bold.ttf'));
+
         const stream = fs.createWriteStream(filePath);
         doc.pipe(stream);
 
         // === HEADER ===
         doc
           .fontSize(24)
-          .font('Helvetica-Bold')
+          .font('Roboto-Bold')
           .text(t.invoice, { align: 'center' })
           .moveDown(0.5);
 
         // Номер і дата
         doc
           .fontSize(10)
-          .font('Helvetica')
+          .font('Roboto')
           .text(`${t.invoiceNumber}: ${invoiceNumber}`, { align: 'right' })
           .text(`${t.date}: ${new Date().toLocaleDateString('ro-RO')}`, { align: 'right' })
           .text(`${t.orderNumber}: ${order.orderNumber}`, { align: 'right' })
@@ -102,10 +106,10 @@ class InvoiceService {
         // === ПРОДАВЕЦЬ ===
         doc
           .fontSize(12)
-          .font('Helvetica-Bold')
+          .font('Roboto-Bold')
           .text(t.seller)
           .fontSize(10)
-          .font('Helvetica')
+          .font('Roboto')
           .text('Covaci Trees')
           .text('IDNO: 1234567890') // Твій IDNO
           .text('Адреса: с. Ришканы, Каушанский район, Молдова')
@@ -116,10 +120,10 @@ class InvoiceService {
         // === ПОКУПЕЦЬ ===
         doc
           .fontSize(12)
-          .font('Helvetica-Bold')
+          .font('Roboto-Bold')
           .text(t.buyer)
           .fontSize(10)
-          .font('Helvetica')
+          .font('Roboto')
           .text(order.shippingAddress.name)
           .text(`${order.shippingAddress.address}, ${order.shippingAddress.city}`)
           .text(`Телефон: ${order.shippingAddress.phone}`)
@@ -138,7 +142,7 @@ class InvoiceService {
         // Заголовки таблиці
         doc
           .fontSize(10)
-          .font('Helvetica-Bold');
+          .font('Roboto-Bold');
         
         tableHeaders.forEach(header => {
           doc.text(header.label, header.x, tableTop, { 
@@ -155,7 +159,7 @@ class InvoiceService {
 
         // Товари
         let yPosition = tableTop + 30;
-        doc.font('Helvetica').fontSize(9);
+        doc.font('Roboto').fontSize(9);
 
         order.items.forEach((item, index) => {
           const title = item.title[language] || item.title.ru || item.title.ro;
@@ -179,7 +183,7 @@ class InvoiceService {
         // === ПІДСУМОК ===
         doc
           .fontSize(12)
-          .font('Helvetica-Bold')
+          .font('Roboto-Bold')
           .text(t.totalAmount, 300, yPosition)
           .text(`${order.totalAmount.toFixed(2)} MDL`, 440, yPosition, { 
             width: 100, 
@@ -191,13 +195,13 @@ class InvoiceService {
         // === РЕКВІЗИТИ ДЛЯ ОПЛАТИ ===
         doc
           .fontSize(12)
-          .font('Helvetica-Bold')
+          .font('Roboto-Bold')
           .text(t.paymentDetails, 50, yPosition)
           .moveDown(0.5);
 
         doc
           .fontSize(10)
-          .font('Helvetica')
+          .font('Roboto')
           .text(`${t.beneficiary}: Covaci Trees`)
           .text(`${t.bankName}: Moldova Agroindbank`)
           .text(`${t.accountNumber}: MD00AG000000000000000000`)
@@ -215,7 +219,7 @@ class InvoiceService {
         // Footer
         doc
           .fontSize(8)
-          .font('Helvetica')
+          .font('Roboto')
           .text('Covaci Trees - www.covacitrees.md', 50, doc.page.height - 50, {
             align: 'center',
             width: 500

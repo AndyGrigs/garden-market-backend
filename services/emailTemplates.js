@@ -564,7 +564,7 @@ export const invoiceEmailTemplates = {
         </div>
 
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${invoiceUrl}"
+          <a href="${invoiceUrl}" download
              style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
             📄 Скачать счёт (PDF)
           </a>
@@ -632,7 +632,7 @@ export const invoiceEmailTemplates = {
         </div>
         
         <div style="text-align: center; margin: 30px 0;">
-          <a href="${invoiceUrl}" 
+          <a href="${invoiceUrl}" download
              style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
             📄 Descarcă factura (PDF)
           </a>

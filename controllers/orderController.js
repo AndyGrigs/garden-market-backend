@@ -57,7 +57,7 @@ export const createOrder = async (req, res) => {
       await newOrder.save();
 
       // Отправляем email со счетом
-      const invoiceUrl = `${process.env.FRONTEND_URL || 'http://localhost:4000'}${invoiceResult.relativePath}`;
+      const invoiceUrl = `${process.env.BACKEND_URL || 'http://localhost:4444'}${invoiceResult.relativePath}`;
       const emailTemplate = invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
 
       await emailService.sendEmail(
