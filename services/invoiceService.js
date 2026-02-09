@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import cloudinary from '../config/cloudinary.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -227,13 +228,33 @@ class InvoiceService {
 
         doc.end();
 
-        stream.on('finish', () => {
-          resolve({
-            success: true,
-            fileName: fileName,
-            filePath: filePath,
-            relativePath: `/invoices/${fileName}`
-          });
+        stream.on('finish', async () => {
+          try {
+            const result = await cloudinary.uploader.upload(filePath, {
+              resource_type: 'raw',
+              folder: 'garden-market/invoices',
+              public_id: invoiceNumber
+            });
+
+            // Видаляємо локальний файл після завантаження
+            fs.unlink(filePath, () => {});
+
+            resolve({
+              success: true,
+              fileName: fileName,
+              filePath: filePath,
+              cloudinaryUrl: result.secure_url,
+              relativePath: result.secure_url
+            });
+          } catch (uploadError) {
+            // Якщо Cloudinary недоступний, повертаємо локальний шлях
+            resolve({
+              success: true,
+              fileName: fileName,
+              filePath: filePath,
+              relativePath: `/invoices/${fileName}`
+            });
+          }
         });
 
         stream.on('error', (error) => {
