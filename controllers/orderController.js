@@ -57,17 +57,25 @@ export const createOrder = async (req, res) => {
       await newOrder.save();
 
       // Отправляем email со счетом
-      const invoiceUrl = `${process.env.BACKEND_URL || 'http://localhost:4444'}${invoiceResult.relativePath}`;
+      const invoiceUrl = invoiceResult.relativePath.startsWith('http')
+        ? invoiceResult.relativePath
+        : `${process.env.BACKEND_URL || 'http://localhost:4444'}${invoiceResult.relativePath}`;
       const emailTemplate = invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
+
+      // Только прикрепляем файл, если это локальный путь (не Cloudinary)
+      const isCloudinaryUrl = invoiceResult.relativePath.startsWith('http');
+      const attachments = !isCloudinaryUrl && invoiceResult.filePath
+        ? [{
+            filename: invoiceResult.fileName,
+            path: invoiceResult.filePath
+          }]
+        : [];
 
       await emailService.sendEmail(
         newOrder.guestEmail,
         language === 'ro' ? 'Factura pentru comanda dvs.' : 'Счет на оплату заказа',
         emailTemplate(newOrder, invoiceUrl),
-        [{ 
-          filename: invoiceResult.fileName, 
-          path: invoiceResult.filePath 
-        }]
+        attachments
       );
 
       // Отправляем уведомление администратору
