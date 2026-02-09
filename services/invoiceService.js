@@ -27,6 +27,9 @@ class InvoiceService {
         orderNumber: 'Заказ №',
         seller: 'ПРОДАВЕЦ',
         buyer: 'ПОКУПАТЕЛЬ',
+        address: 'Адрес',
+        phone: 'Телефон',
+        email: 'Эл. почта',
         product: 'Товар',
         quantity: 'Количество',
         price: 'Цена',
@@ -50,6 +53,9 @@ class InvoiceService {
         orderNumber: 'Comandă Nr.',
         seller: 'VÂNZĂTOR',
         buyer: 'CUMPĂRĂTOR',
+        address: 'Adresa',
+        phone: 'Telefon',
+        email: 'Email',
         product: 'Produs',
         quantity: 'Cantitate',
         price: 'Preț',
@@ -112,10 +118,10 @@ class InvoiceService {
           .fontSize(10)
           .font('Roboto')
           .text('Covaci Trees')
-          .text('IDNO: 1234567890') // Твій IDNO
-          .text('Адреса: с. Ришканы, Каушанский район, Молдова')
-          .text('Телефон: +373 797 481 311')
-          .text('Email: info@covacitrees.md')
+          .text('IDNO: 1234567890')
+          .text(`${t.address}: с. Ришканы, Каушанский район, Молдова`)
+          .text(`${t.phone}: +373 797 481 311`)
+          .text(`${t.email}: info@covacitrees.md`)
           .moveDown(1.5);
 
         // === ПОКУПЕЦЬ ===
@@ -126,9 +132,9 @@ class InvoiceService {
           .fontSize(10)
           .font('Roboto')
           .text(order.shippingAddress.name)
-          .text(`${order.shippingAddress.address}, ${order.shippingAddress.city}`)
-          .text(`Телефон: ${order.shippingAddress.phone}`)
-          .text(`Email: ${order.guestEmail || order.userId?.email || ''}`)
+          .text(`${t.address}: ${order.shippingAddress.address}, ${order.shippingAddress.city}`)
+          .text(`${t.phone}: ${order.shippingAddress.phone}`)
+          .text(`${t.email}: ${order.guestEmail || order.userId?.email || ''}`)
           .moveDown(2);
 
         // === ТАБЛИЦЯ ТОВАРІВ ===
