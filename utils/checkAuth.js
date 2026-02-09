@@ -3,6 +3,25 @@ import jwt from "jsonwebtoken";
 import UserModel from "../models/user.js";
 import { t } from "../localisation.js";
 
+// Extracts user from token if present, but allows guests through
+export const optionalAuth = (req, res, next) => {
+  const token =
+    req.cookies.auth_token ||
+    (req.headers.authorization || "").replace(/Bearer\s?/, "");
+
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      req.user = decoded;
+      req.userId = decoded._id;
+      req.userRole = decoded.role;
+    } catch (err) {
+      // Token invalid — treat as guest
+    }
+  }
+  next();
+};
+
 export const checkAuth = (req, res, next) => {
   const token =
     req.cookies.auth_token ||

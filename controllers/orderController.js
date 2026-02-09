@@ -10,7 +10,7 @@ const emailService = new EmailService();
 
 export const createOrder = async (req, res) => {
   try {
-    const { userId, items, totalAmount, shippingAddress, customerNotes, language = 'ru' } = req.body;
+    const { items, totalAmount, shippingAddress, customerNotes, language = 'ru' } = req.body;
     const userLang = getUserLanguage(req);
 
     // Валидация
@@ -26,9 +26,9 @@ export const createOrder = async (req, res) => {
       subtotal: item.price * item.quantity
     }));
 
-    // Создание заказа
+    // Создание заказа — userId берётся из токена (optionalAuth middleware)
     const newOrder = new OrderSchema({
-      userId: userId || null,
+      userId: req.userId || null,
       guestEmail: shippingAddress.email || req.body.email,
       guestName: shippingAddress.name,
       items: itemsWithSubtotal,

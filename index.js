@@ -15,7 +15,7 @@ import mongoose from "mongoose";
 import { registerValidation } from "./validations/auth.js";
 import { loginValidation } from "./validations/login.js";
 
-import { checkAuth, verifyEmail } from "./utils/checkAuth.js";
+import { checkAuth, optionalAuth, verifyEmail } from "./utils/checkAuth.js";
 import {
   register,
   login,
@@ -156,7 +156,7 @@ app.get("/user/saved-address", checkAuth, getSavedAddress);
 
 //order routes
 app.get("/orders/user/:userId", checkAuth, getUserOrders);
-app.post("/orders", createOrder);
+app.post("/orders", optionalAuth, createOrder);
 app.patch("/orders/:id/status", checkAuth, checkAdmin, updateOrderStatus);
 app.get("/orders", checkAuth, checkAdmin, getAllOrders);
 
