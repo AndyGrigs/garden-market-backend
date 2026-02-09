@@ -169,13 +169,13 @@ class InvoiceService {
         doc.font('Roboto').fontSize(9);
 
         order.items.forEach((item, index) => {
-          const title = item.title[language] || item.title.ru || item.title.ro;
-          
+          const title = item.title && (item.title[language] || item.title.ru || item.title.ro) || 'Товар/Produs';
+
           doc.text(title, 50, yPosition, { width: 240 });
           doc.text(item.quantity.toString(), 300, yPosition, { width: 60, align: 'right' });
           doc.text(`${item.price.toFixed(2)} MDL`, 360, yPosition, { width: 80, align: 'right' });
           doc.text(`${item.subtotal.toFixed(2)} MDL`, 440, yPosition, { width: 100, align: 'right' });
-          
+
           yPosition += 25;
         });
 

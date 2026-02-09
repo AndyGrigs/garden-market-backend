@@ -539,7 +539,7 @@ export const invoiceEmailTemplates = {
           <h3 style="margin-top: 0; color: #388e3c;">Детали заказа:</h3>
           ${order.items.map(item => `
             <p style="margin: 5px 0;">
-              ${item.title.ru} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
+              ${(item.title && item.title.ru) || 'Товар'} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
             </p>
           `).join('')}
           <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">
@@ -607,7 +607,7 @@ export const invoiceEmailTemplates = {
           <h3 style="margin-top: 0; color: #388e3c;">Detalii comandă:</h3>
           ${order.items.map(item => `
             <p style="margin: 5px 0;">
-              ${item.title.ro} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
+              ${(item.title && item.title.ro) || 'Produs'} × ${item.quantity} = ${item.subtotal.toFixed(2)} MDL
             </p>
           `).join('')}
           <hr style="border: none; border-top: 1px solid #ddd; margin: 15px 0;">

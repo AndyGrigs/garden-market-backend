@@ -23,6 +23,10 @@ export const createOrder = async (req, res) => {
     // Расчет итогов для каждого товара
     const itemsWithSubtotal = items.map(item => ({
       ...item,
+      // Ensure title has language-specific structure for emails
+      title: typeof item.title === 'string' 
+        ? { ru: item.title, ro: item.title } 
+        : item.title || { ru: 'Товар', ro: 'Produs' }, // fallback if title is missing
       subtotal: item.price * item.quantity
     }));
 
