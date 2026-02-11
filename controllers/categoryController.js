@@ -2,8 +2,6 @@ import CategorySchema from "../models/category.js";
 import slugify from "slugify";
 import { getUserLanguage } from "../utils/langDetector.js";
 import { t } from '../localisation.js';
-import path from "path";
-import fs from "fs";
 import { deleteOldImageFile } from "./uploadController.js";
 import logger from '../config/logger.js';
 
@@ -137,30 +135,8 @@ export const deleteCategory = async (req, res) => {
       });
     }
 
-    // ✅ FIX 2: Foto löschen falls vorhanden
-    if (categoryToDelete.imageUrl) {
-      try {
-        // Dateiname aus URL extrahieren
-        const filename = categoryToDelete.imageUrl.replace("/uploads/", "");
-        const filePath = path.resolve("uploads", filename);
-        
-        // Prüfen ob Datei existiert und löschen
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath); // Synchron löschen
-          // console.log(`✅ Kategorie-Foto gelöscht: ${filename}`);
-        } else {
-          // console.log(`⚠️ Foto-Datei nicht gefunden: ${filename}`);
-        }
-      } catch (imageError) {
-        logger.error("Помилка видалення фото категорії", {
-          error: imageError.message,
-          stack: imageError.stack,
-          categoryId: categoryId,
-          imageUrl: categoryToDelete.imageUrl
-        });
-        // Weitermachen - Kategorie trotzdem löschen
-      }
-    }
+    // Видаляємо фото (Cloudinary або локальне)
+    await deleteOldImageFile(categoryToDelete.imageUrl);
 
     // ✅ FIX 3: Kategorie aus Datenbank löschen
     const deleted = await CategorySchema.findByIdAndDelete(categoryId);

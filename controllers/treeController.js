@@ -1,5 +1,3 @@
-import fs from "fs";
-import path from "path";
 import TreeSchema from "../models/tree.js";
 import UserSchema from "../models/user.js";
 import EmailService from "../services/emailService.js";
@@ -244,30 +242,8 @@ export const deleteTree = async (req, res) => {
       });
     }
 
-    // ✅ FIX 2: Видаляємо фото якщо воно є
-    if (treeToDelete.imageUrl) {
-      try {
-        // Отримуємо ім'я файлу з URL
-        const filename = treeToDelete.imageUrl.replace("/uploads/", "");
-        const filePath = path.resolve("uploads", filename);
-
-        // Перевіряємо чи існує файл
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath); // Синхронно видаляємо файл
-          // console.log(`✅ Фото видалено: ${filename}`);
-        } else {
-          // console.log(`⚠️ Файл не знайдено: ${filename}`);
-        }
-      } catch (imageError) {
-        logger.error("Помилка видалення фото при видаленні товару", {
-          error: imageError.message,
-          stack: imageError.stack,
-          treeId: treeId,
-          imageUrl: treeToDelete.imageUrl
-        });
-        // Не зупиняємо процес - продовжуємо видаляти дерево
-      }
-    }
+    // Видаляємо фото (Cloudinary або локальне)
+    await deleteOldImageFile(treeToDelete.imageUrl);
 
     // ✅ FIX 3: Тепер видаляємо дерево з бази
     const deleted = await TreeSchema.findByIdAndDelete(treeId);
@@ -408,25 +384,8 @@ export const deleteSellerTree = async (req, res) => {
       });
     }
 
-    // Видаляємо фото якщо є
-    if (treeToDelete.imageUrl) {
-      try {
-        const filename = treeToDelete.imageUrl.replace("/uploads/", "");
-        const filePath = path.resolve("uploads", filename);
-
-        if (fs.existsSync(filePath)) {
-          fs.unlinkSync(filePath);
-        }
-      } catch (imageError) {
-        logger.error("Помилка видалення фото при видаленні товару продавця", {
-          error: imageError.message,
-          stack: imageError.stack,
-          treeId: id,
-          sellerId: req.userId,
-          imageUrl: treeToDelete.imageUrl
-        });
-      }
-    }
+    // Видаляємо фото (Cloudinary або локальне)
+    await deleteOldImageFile(treeToDelete.imageUrl);
 
     // Видаляємо товар з бази
     await TreeSchema.findByIdAndDelete(id);
