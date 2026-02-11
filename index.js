@@ -95,6 +95,10 @@ import {
   paynetCallback,
 } from "./controllers/paymentController.js";
 
+import {
+  sendContactMessage
+} from "./controllers/contactController.js";
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 5,
@@ -285,6 +289,9 @@ app.post('/payments/paynet/callback', paynetCallback);
 // app.post('/payments/stripe/create-intent', createStripePaymentIntent);
 // app.post('/payments/stripe/confirm', confirmStripePayment);
 // app.post('/payments/stripe/webhook', express.raw({type: 'application/json'}), stripeWebhook);
+
+// Contact form route
+app.post("/contact", sendContactMessage);
 
 const emailService = new EmailService();
 
