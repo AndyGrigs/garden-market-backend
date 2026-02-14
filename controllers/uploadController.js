@@ -56,98 +56,98 @@ export const upload = multer({
 });
 
 // Контролер для завантаження файлу
-// export const uploadImage = [
-//   upload.single("image"),
-//   (req, res) => {
-//     const userLang = getUserLanguage(req);
-//     if (!req.file) {
-//       return res
-//         .status(400)
-//         .json({ message: t(userLang, "errors.upload.no_file") });
-//     }
-
 export const uploadImage = [
-  (req, res, next) => {
-    // 🔍 ДІАГНОСТИКА ЗАПИТУ
-    console.log('📤 Upload Request:');
-    console.log('Content-Type:', req.headers['content-type']);
-    console.log('Body:', req.body);
-    console.log('Files:', req.files);
-    next();
-  },
   upload.single("image"),
   (req, res) => {
-    // 🔍 ДІАГНОСТИКА ПІСЛЯ MULTER
-    console.log('📤 After Multer:');
-    console.log('req.file:', req.file);
-    
     const userLang = getUserLanguage(req);
     if (!req.file) {
-      console.log('❌ NO FILE UPLOADED');
       return res
         .status(400)
         .json({ message: t(userLang, "errors.upload.no_file") });
     }
-    // Визначаємо URL залежно від того, де зберігається файл
-    const imageUrl = req.file.path // Cloudinary повертає URL в req.file.path
-      ? req.file.path // Cloudinary URL
-      : `/uploads/${req.file.filename}`; // Local storage URL
 
-    res.status(200).json({
-      imageUrl,
-      message: t(userLang, "success.upload.uploaded"),
-      fileInfo: {
-        originalName: req.file.originalname,
-        size: req.file.size,
-        mimetype: req.file.mimetype,
-        cloudinaryId: req.file.filename, // Public ID в Cloudinary
-      },
-    });
-  },
+// export const uploadImage = [
+//   (req, res, next) => {
+//     // 🔍 ДІАГНОСТИКА ЗАПИТУ
+//     console.log('📤 Upload Request:');
+//     console.log('Content-Type:', req.headers['content-type']);
+//     console.log('Body:', req.body);
+//     console.log('Files:', req.files);
+//     next();
+//   },
+//   upload.single("image"),
+//   (req, res) => {
+//     // 🔍 ДІАГНОСТИКА ПІСЛЯ MULTER
+//     console.log('📤 After Multer:');
+//     console.log('req.file:', req.file);
+    
+//     const userLang = getUserLanguage(req);
+//     if (!req.file) {
+//       console.log('❌ NO FILE UPLOADED');
+//       return res
+//         .status(400)
+//         .json({ message: t(userLang, "errors.upload.no_file") });
+//     }
+//     // Визначаємо URL залежно від того, де зберігається файл
+//     const imageUrl = req.file.path // Cloudinary повертає URL в req.file.path
+//       ? req.file.path // Cloudinary URL
+//       : `/uploads/${req.file.filename}`; // Local storage URL
 
-  (error, req, res, next) => {
-    const userLang = getUserLanguage(req);
+//     res.status(200).json({
+//       imageUrl,
+//       message: t(userLang, "success.upload.uploaded"),
+//       fileInfo: {
+//         originalName: req.file.originalname,
+//         size: req.file.size,
+//         mimetype: req.file.mimetype,
+//         cloudinaryId: req.file.filename, // Public ID в Cloudinary
+//       },
+//     });
+//   },
 
-    if (error instanceof multer.MulterError) {
-      switch (error.code) {
-        case "LIMIT_FILE_SIZE":
-          return res.status(400).json({
-            message: t(userLang, "errors.upload.file_too_large", {
-              maxSize: `${MAX_FILE_SIZE / (1024 * 1024)}MB`,
-            }),
-          });
-        case "LIMIT_FILE_COUNT":
-          return res.status(400).json({
-            message: t(userLang, "errors.upload.too_many_files"),
-          });
-        case "LIMIT_UNEXPECTED_FILE":
-          return res.status(400).json({
-            message: t(userLang, "errors.upload.unexpected_field"),
-          });
-        default:
-          return res.status(400).json({
-            message: t(userLang, "errors.upload.general"),
-          });
-      }
-    }
+//   (error, req, res, next) => {
+//     const userLang = getUserLanguage(req);
 
-    if (error.code === "INVALID_FILE_TYPE") {
-      return res.status(400).json({
-        message: error.message,
-      });
-    }
+//     if (error instanceof multer.MulterError) {
+//       switch (error.code) {
+//         case "LIMIT_FILE_SIZE":
+//           return res.status(400).json({
+//             message: t(userLang, "errors.upload.file_too_large", {
+//               maxSize: `${MAX_FILE_SIZE / (1024 * 1024)}MB`,
+//             }),
+//           });
+//         case "LIMIT_FILE_COUNT":
+//           return res.status(400).json({
+//             message: t(userLang, "errors.upload.too_many_files"),
+//           });
+//         case "LIMIT_UNEXPECTED_FILE":
+//           return res.status(400).json({
+//             message: t(userLang, "errors.upload.unexpected_field"),
+//           });
+//         default:
+//           return res.status(400).json({
+//             message: t(userLang, "errors.upload.general"),
+//           });
+//       }
+//     }
 
-    logger.error("Помилка завантаження файлу", {
-      error: error.message,
-      stack: error.stack,
-      code: error.code,
-      userId: req.userId
-    });
-    res.status(500).json({
-      message: t(userLang, "errors.server_error"),
-    });
-  },
-];
+//     if (error.code === "INVALID_FILE_TYPE") {
+//       return res.status(400).json({
+//         message: error.message,
+//       });
+//     }
+
+//     logger.error("Помилка завантаження файлу", {
+//       error: error.message,
+//       stack: error.stack,
+//       code: error.code,
+//       userId: req.userId
+//     });
+//     res.status(500).json({
+//       message: t(userLang, "errors.server_error"),
+//     });
+//   },
+// ];
 
 export const deleteImage = async (req, res) => {
   const { filename } = req.params;
