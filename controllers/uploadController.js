@@ -30,6 +30,8 @@ const localStorage = multer.diskStorage({
 });
 
 // Вибір сховища: Cloudinary або локальне
+// const storage = process.env.CLOUDINARY_CLOUD_NAME ? cloudinaryStorage : localStorage;
+
 const storage = process.env.CLOUDINARY_CLOUD_NAME ? cloudinaryStorage : localStorage;
 
 // Перевірка типу файлу
@@ -54,16 +56,38 @@ export const upload = multer({
 });
 
 // Контролер для завантаження файлу
+// export const uploadImage = [
+//   upload.single("image"),
+//   (req, res) => {
+//     const userLang = getUserLanguage(req);
+//     if (!req.file) {
+//       return res
+//         .status(400)
+//         .json({ message: t(userLang, "errors.upload.no_file") });
+//     }
+
 export const uploadImage = [
+  (req, res, next) => {
+    // 🔍 ДІАГНОСТИКА ЗАПИТУ
+    console.log('📤 Upload Request:');
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Body:', req.body);
+    console.log('Files:', req.files);
+    next();
+  },
   upload.single("image"),
   (req, res) => {
+    // 🔍 ДІАГНОСТИКА ПІСЛЯ MULTER
+    console.log('📤 After Multer:');
+    console.log('req.file:', req.file);
+    
     const userLang = getUserLanguage(req);
     if (!req.file) {
+      console.log('❌ NO FILE UPLOADED');
       return res
         .status(400)
         .json({ message: t(userLang, "errors.upload.no_file") });
     }
-
     // Визначаємо URL залежно від того, де зберігається файл
     const imageUrl = req.file.path // Cloudinary повертає URL в req.file.path
       ? req.file.path // Cloudinary URL
