@@ -6,26 +6,30 @@ import { getUserLanguage } from "../utils/langDetector.js";
 import { createNotification } from "./notificationController.js";
 import { notifyAllAdmins } from "../config/adminConfig.js";
 import { deleteOldImageFile } from "./uploadController.js";
-import logger from '../config/logger.js';
+import logger from "../config/logger.js";
+import user from "../models/user.js";
 
-const emailService = new EmailService(); 
+const emailService = new EmailService();
 
 export const createTree = async (req, res) => {
   try {
-    const { title, description, price, imageUrl, category, stock } = req.body;
+    const {
+      title,
+      description,
+      price,
+      imageUrl,
+      category,
+      stock
+    } = req.body;
     const userLang = getUserLanguage(req);
-    
+
     if (req.userRole === "admin") {
       if (!title || !title.ru || !title.ro) {
         return res.status(400).json({
           message: t(userLang, "errors.title_required"),
         });
       }
-      if (
-        !description ||
-        !description.ru ||
-        !description.ro
-      ) {
+      if (!description || !description.ru || !description.ro) {
         return res.status(400).json({
           message: t(userLang, "errors.description_required"),
         });
@@ -64,7 +68,7 @@ export const createTree = async (req, res) => {
       });
     }
 
-    let sellerId = req.userId; 
+    let sellerId = req.userId;
 
     if (req.userRole === "admin" && req.body.seller) {
       sellerId = req.body.seller;
@@ -79,6 +83,7 @@ export const createTree = async (req, res) => {
       category,
       stock,
       seller: sellerId,
+      isApproved: req.userRole === "admin" ? true : false
     });
 
     await tree.save();
@@ -87,7 +92,7 @@ export const createTree = async (req, res) => {
     if (req.userRole === "seller") {
       try {
         const sellerData = await UserSchema.findById(req.userId).select(
-          "fullName sellerInfo email"
+          "fullName sellerInfo email",
         );
 
         // Створюємо сповіщення в базі
@@ -116,14 +121,13 @@ export const createTree = async (req, res) => {
           },
           createdTime: new Date().toLocaleString("uk-UA"),
         });
-
       } catch (notificationError) {
         logger.error("Помилка створення сповіщення про новий товар", {
           error: notificationError.message,
           stack: notificationError.stack,
           userId: req.userId,
           productId: tree._id,
-          productTitle: title.ru
+          productTitle: title.ru,
         });
         // Не блокуємо створення товару через помилку сповіщення
       }
@@ -144,7 +148,7 @@ export const createTree = async (req, res) => {
       stack: error.stack,
       userId: req.userId,
       userRole: req.userRole,
-      title: req.body.title?.ru
+      title: req.body.title?.ru,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -155,7 +159,7 @@ export const createTree = async (req, res) => {
 
 export const getAllTrees = async (req, res) => {
   try {
-    const trees = await TreeSchema.find({ isActive: true })
+    const trees = await TreeSchema.find({ isActive: true, isApproved: true })
       .populate("category")
       .populate("seller", "fullName sellerInfo.nurseryName");
 
@@ -163,7 +167,35 @@ export const getAllTrees = async (req, res) => {
   } catch (err) {
     logger.error("Помилка отримання всіх товарів", {
       error: err.message,
-      stack: err.stack
+      stack: err.stack,
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.fetch_failed"),
+    });
+  }
+};
+
+export const getPendingTrees = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    
+    const trees = await TreeSchema.find({ 
+      isApproved: false,
+      isActive: true
+    })
+      .populate("category")
+      .populate("seller", "fullName email sellerInfo.nurseryName")
+      .sort({ createdAt: -1 });
+
+    res.json({
+      trees,
+      message: t(userLang, "success.tree.fetched"),
+    });
+  } catch (error) {
+    logger.error("Помилка отримання товарів на модерації", {
+      error: error.message,
+      stack: error.stack
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -207,7 +239,7 @@ export const updateTree = async (req, res) => {
     const updatedTree = await TreeSchema.findByIdAndUpdate(
       id,
       { $set: { title, description, price, imageUrl, category, stock } },
-      { new: true }
+      { new: true },
     ).populate("category");
 
     res.status(200).json({
@@ -219,7 +251,7 @@ export const updateTree = async (req, res) => {
       error: error.message,
       stack: error.stack,
       treeId: req.params.id,
-      userId: req.userId
+      userId: req.userId,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -248,7 +280,6 @@ export const deleteTree = async (req, res) => {
     // ✅ FIX 3: Тепер видаляємо дерево з бази
     const deleted = await TreeSchema.findByIdAndDelete(treeId);
 
-
     res.json({
       message: t(userLang, "success.tree.deleted"),
       deletedTree: {
@@ -261,7 +292,7 @@ export const deleteTree = async (req, res) => {
     logger.error("Помилка видалення товару", {
       error: err.message,
       stack: err.stack,
-      treeId: req.params.id
+      treeId: req.params.id,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -291,7 +322,7 @@ export const getSellerTrees = async (req, res) => {
     logger.error("Помилка отримання товарів продавця", {
       error: error.message,
       stack: error.stack,
-      sellerId: req.userId
+      sellerId: req.userId,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -344,7 +375,7 @@ export const updateSellerTree = async (req, res) => {
         seller: req.userId, // ⬅️ ВАЖЛИВО: тільки свої товари
       },
       { $set: { title, description, price, imageUrl, category, stock } },
-      { new: true }
+      { new: true },
     )
       .populate("category")
       .populate("seller", "fullName sellerInfo.nurseryName");
@@ -358,7 +389,7 @@ export const updateSellerTree = async (req, res) => {
       error: error.message,
       stack: error.stack,
       treeId: req.params.id,
-      sellerId: req.userId
+      sellerId: req.userId,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -398,7 +429,7 @@ export const deleteSellerTree = async (req, res) => {
       error: error.message,
       stack: error.stack,
       treeId: req.params.id,
-      sellerId: req.userId
+      sellerId: req.userId,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
@@ -427,7 +458,7 @@ export const getTreeById = async (req, res) => {
     logger.error("Помилка отримання дерева за ID", {
       error: err.message,
       stack: err.stack,
-      treeId: req.params.id
+      treeId: req.params.id,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({

@@ -6,7 +6,7 @@ const locales = { ru, ro };
 
 export function t(lang = 'ru', key, params = {}) {
   const keys = key.split('.');
-  let result = locales[lang] || locales.en;
+  let result = locales[lang] || locales.ru;
   for (let k of keys) {
     result = result?.[k];
     if (!result) break;

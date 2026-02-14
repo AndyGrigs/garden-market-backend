@@ -31,6 +31,19 @@ const TreeSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    isApproved: {
+      type: Boolean,
+      default: function(){
+        return false;
+      }
+    },
+    approvedBy:{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User"
+    },
+    approvedAt:{
+      type: Date
+    }
   },
   { timestamps: true }
 );
