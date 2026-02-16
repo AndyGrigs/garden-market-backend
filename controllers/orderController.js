@@ -1,90 +1,122 @@
-import OrderSchema from '../models/order.js';
-import { t } from '../localisation.js';
-import { getUserLanguage } from '../utils/langDetector.js';
-import invoiceService from '../services/invoiceService.js';
-import EmailService from '../services/emailService.js';
-import { invoiceEmailTemplates } from '../services/emailTemplates.js';
-import logger from '../config/logger.js';
+import OrderSchema from "../models/order.js";
+import { t } from "../localisation.js";
+import { getUserLanguage } from "../utils/langDetector.js";
+import invoiceService from "../services/invoiceService.js";
+import EmailService from "../services/emailService.js";
+import { invoiceEmailTemplates } from "../services/emailTemplates.js";
+import logger from "../config/logger.js";
+import User from "../models/user.js";
 
 const emailService = new EmailService();
 
 export const createOrder = async (req, res) => {
   try {
-    const { items, totalAmount, shippingAddress, customerNotes, language = 'ru' } = req.body;
+    const {
+      items,
+      totalAmount,
+      shippingAddress,
+      customerNotes,
+      language = "ru",
+    } = req.body;
     const userLang = getUserLanguage(req);
 
     // Валидация
     if (!items || items.length === 0) {
       return res.status(400).json({
-        message: t(userLang, "errors.order.empty_cart", { defaultValue: "Корзина пуста" })
+        message: t(userLang, "errors.order.empty_cart", {
+          defaultValue: "Корзина пуста",
+        }),
       });
     }
 
     // Расчет итогов для каждого товара
-    const itemsWithSubtotal = items.map(item => ({
+    const itemsWithSubtotal = items.map((item) => ({
       ...item,
       // Ensure title has language-specific structure for emails
-      title: typeof item.title === 'string' 
-        ? { ru: item.title, ro: item.title } 
-        : item.title || { ru: 'Товар', ro: 'Produs' }, // fallback if title is missing
-      subtotal: item.price * item.quantity
+      title:
+        typeof item.title === "string"
+          ? { ru: item.title, ro: item.title }
+          : item.title || { ru: "Товар", ro: "Produs" }, // fallback if title is missing
+      subtotal: item.price * item.quantity,
     }));
 
     // Создание заказа — userId берётся из токена (optionalAuth middleware)
+    // Якщо користувач авторизований, беремо email з бази даних як fallback
+    let customerEmail = shippingAddress.email || req.body.email;
+    if (!customerEmail && req.userId) {
+      const user = await User.findById(req.userId).select("email");
+      if (user) customerEmail = user.email;
+    }
+
     const newOrder = new OrderSchema({
       userId: req.userId || null,
-      guestEmail: shippingAddress.email || req.body.email,
+      guestEmail: customerEmail,
       guestName: shippingAddress.name,
       items: itemsWithSubtotal,
       totalAmount,
-      currency: 'MDL',
-      status: 'awaiting_payment',
-      paymentStatus: 'unpaid',
-      paymentMethod: 'bank_transfer',
+      currency: "MDL",
+      status: "awaiting_payment",
+      paymentStatus: "unpaid",
+      paymentMethod: "bank_transfer",
       shippingAddress,
-      customerNotes
+      customerNotes,
     });
 
     await newOrder.save();
 
     // Генерируем счет (PDF)
     try {
-      const invoiceResult = await invoiceService.generateInvoice(newOrder, language);
-      
+      const invoiceResult = await invoiceService.generateInvoice(
+        newOrder,
+        language,
+      );
+
       newOrder.invoice = {
         number: `INV-${newOrder.orderNumber}`,
         pdfUrl: invoiceResult.relativePath,
         sentAt: new Date(),
-        sentTo: newOrder.guestEmail
+        sentTo: newOrder.guestEmail,
       };
-      
+
       await newOrder.save();
 
-      // Отправляем email со счетом
-      const invoiceUrl = invoiceResult.relativePath.startsWith('http')
-        ? invoiceResult.relativePath
-        : `${process.env.BACKEND_URL || 'http://localhost:4444'}${invoiceResult.relativePath}`;
-      const emailTemplate = invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
+      // Після рядка: await newOrder.save();
 
-      // Только прикрепляем файл, если это локальный путь (не Cloudinary)
-      const isCloudinaryUrl = invoiceResult.relativePath.startsWith('http');
-      const attachments = !isCloudinaryUrl && invoiceResult.filePath
-        ? [{
-            filename: invoiceResult.fileName,
-            path: invoiceResult.filePath
-          }]
-        : [];
+      // Якщо є userId, додаємо замовлення в історію покупок
+      if (req.userId) {
+        await User.findByIdAndUpdate(
+          req.userId,
+          { $push: { "buyerInfo.purchaseHistory": newOrder._id } },
+          { new: true },
+        );
+      }
+
+      // Отправляем email со счетом
+      const invoiceUrl = invoiceResult.relativePath;
+      const emailTemplate =
+        invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
+
+      // Прикріплюємо PDF напряму з буфера (без повторного завантаження з Cloudinary)
+      const attachments = [
+        {
+          filename: invoiceResult.fileName,
+          content: invoiceResult.pdfBuffer,
+          contentType: "application/pdf",
+        },
+      ];
 
       await emailService.sendEmail(
         newOrder.guestEmail,
-        language === 'ro' ? 'Factura pentru comanda dvs.' : 'Счет на оплату заказа',
+        language === "ro"
+          ? "Factura pentru comanda dvs."
+          : "Счет на оплату заказа",
         emailTemplate(newOrder, invoiceUrl),
-        attachments
+        attachments,
       );
 
       // Отправляем уведомление администратору
       await emailService.sendEmail(
-        process.env.ADMIN_EMAIL || 'info@covacitrees.md',
+        process.env.ADMIN_EMAIL || "info@covacitrees.md",
         `Новый заказ #${newOrder.orderNumber}`,
         `
           <h2>Новый заказ #${newOrder.orderNumber}</h2>
@@ -93,44 +125,46 @@ export const createOrder = async (req, res) => {
           <p>Телефон: ${shippingAddress.phone}</p>
           <p>Сумма: ${totalAmount} MDL</p>
           <p>Статус: Ожидает оплаты</p>
-        `
+        `,
       );
 
       res.status(201).json({
         success: true,
         order: newOrder,
-        message: language === 'ro'
-          ? 'Comanda a fost plasată cu succes. Verificați emailul pentru factura de plată.'
-          : 'Заказ успешно создан. Проверьте email для получения счета на оплату.'
+        message:
+          language === "ro"
+            ? "Comanda a fost plasată cu succes. Verificați emailul pentru factura de plată."
+            : "Заказ успешно создан. Проверьте email для получения счета на оплату.",
       });
-
     } catch (invoiceError) {
-      logger.error('Помилка генерації рахунку', {
+      logger.error("Помилка генерації рахунку", {
         error: invoiceError.message,
         stack: invoiceError.stack,
         orderId: newOrder._id,
         orderNumber: newOrder.orderNumber,
-        email: newOrder.guestEmail
+        email: newOrder.guestEmail,
       });
       // Заказ создан, но счет не сгенерирован
       res.status(201).json({
         success: true,
         order: newOrder,
-        warning: 'Заказ создан, но возникла ошибка при генерации счета. Свяжитесь с нами.'
+        warning:
+          "Заказ создан, но возникла ошибка при генерации счета. Свяжитесь с нами.",
       });
     }
-
   } catch (error) {
     logger.error("Помилка створення замовлення", {
       error: error.message,
       stack: error.stack,
       userId: req.body.userId,
       email: req.body.email || req.body.shippingAddress?.email,
-      totalAmount: req.body.totalAmount
+      totalAmount: req.body.totalAmount,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
-      message: t(userLang, "errors.order.create_failed", { defaultValue: "Ошибка создания заказа" })
+      message: t(userLang, "errors.order.create_failed", {
+        defaultValue: "Ошибка создания заказа",
+      }),
     });
   }
 };
@@ -143,18 +177,20 @@ export const getUserOrders = async (req, res) => {
 
     const orders = await OrderSchema.find({ userId })
       .sort({ createdAt: -1 })
-      .populate('items.treeId');
+      .populate("items.treeId");
 
     res.json(orders);
   } catch (error) {
     logger.error("Помилка отримання замовлень користувача", {
       error: error.message,
       stack: error.stack,
-      userId: req.params.userId
+      userId: req.params.userId,
     });
     const userLang = getUserLanguage(req);
     res.status(500).json({
-      message: t(userLang, "errors.order.fetch_failed", { defaultValue: "Ошибка загрузки заказов" })
+      message: t(userLang, "errors.order.fetch_failed", {
+        defaultValue: "Ошибка загрузки заказов",
+      }),
     });
   }
 };
@@ -170,7 +206,9 @@ export const updateOrderStatus = async (req, res) => {
 
     if (!order) {
       return res.status(404).json({
-        message: t(userLang, "errors.order.not_found", { defaultValue: "Заказ не найден" })
+        message: t(userLang, "errors.order.not_found", {
+          defaultValue: "Заказ не найден",
+        }),
       });
     }
 
@@ -178,7 +216,7 @@ export const updateOrderStatus = async (req, res) => {
     if (status) order.status = status;
     if (paymentStatus) {
       order.paymentStatus = paymentStatus;
-      if (paymentStatus === 'paid' && !order.paidAt) {
+      if (paymentStatus === "paid" && !order.paidAt) {
         order.paidAt = new Date();
       }
     }
@@ -186,35 +224,48 @@ export const updateOrderStatus = async (req, res) => {
 
     await order.save();
 
+    // Після збереження замовлення: await order.save();
+
+    // Якщо оплачено і є userId, додаємо в історію покупок
+    if (paymentStatus === "paid" && order.userId) {
+      const user = await User.findById(order.userId);
+      if (user && !user.buyerInfo.purchaseHistory.includes(order._id)) {
+        await User.findByIdAndUpdate(
+          order.userId,
+          { $push: { "buyerInfo.purchaseHistory": order._id } },
+          { new: true },
+        );
+      }
+    }
+
     // Отправляем email клиенту об изменении статуса
-    if (status === 'paid' || paymentStatus === 'paid') {
+    if (status === "paid" || paymentStatus === "paid") {
       await emailService.sendEmail(
         order.guestEmail,
-        'Оплата подтверждена',
+        "Оплата подтверждена",
         `
           <h2>Оплата подтверждена!</h2>
           <p>Ваш заказ #${order.orderNumber} оплачен.</p>
           <p>Мы начали обработку вашего заказа.</p>
-        `
+        `,
       );
     }
 
     res.json({
       success: true,
       order,
-      message: 'Статус заказа обновлен'
+      message: "Статус заказа обновлен",
     });
-
   } catch (error) {
     logger.error("Помилка оновлення статусу замовлення", {
       error: error.message,
       stack: error.stack,
       orderId: req.params.id,
       status: req.body.status,
-      paymentStatus: req.body.paymentStatus
+      paymentStatus: req.body.paymentStatus,
     });
     res.status(500).json({
-      message: "Ошибка обновления заказа"
+      message: "Ошибка обновления заказа",
     });
   }
 };
@@ -223,7 +274,7 @@ export const updateOrderStatus = async (req, res) => {
 export const getAllOrders = async (req, res) => {
   try {
     const { status, paymentStatus, page = 1, limit = 20 } = req.query;
-    
+
     const query = {};
     if (status) query.status = status;
     if (paymentStatus) query.paymentStatus = paymentStatus;
@@ -232,7 +283,7 @@ export const getAllOrders = async (req, res) => {
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit)
-      .populate('userId', 'fullName email');
+      .populate("userId", "fullName email");
 
     const count = await OrderSchema.countDocuments(query);
 
@@ -240,9 +291,8 @@ export const getAllOrders = async (req, res) => {
       orders,
       totalPages: Math.ceil(count / limit),
       currentPage: page,
-      total: count
+      total: count,
     });
-
   } catch (error) {
     logger.error("Помилка отримання всіх замовлень (admin)", {
       error: error.message,
@@ -250,11 +300,11 @@ export const getAllOrders = async (req, res) => {
       filters: {
         status: req.query.status,
         paymentStatus: req.query.paymentStatus,
-        page: req.query.page
-      }
+        page: req.query.page,
+      },
     });
     res.status(500).json({
-      message: "Ошибка загрузки заказов"
+      message: "Ошибка загрузки заказов",
     });
   }
 };
