@@ -296,6 +296,46 @@ export const approveTree = async (req, res) => {
   }
 };
 
+export const addTranslations = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { title, description } = req.body;
+    const userLang = getUserLanguage(req);
+
+    const tree = await TreeSchema.findById(id);
+    if (!tree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    // Оновлюємо тільки переклади
+    if (title?.ro) tree.title.ro = title.ro;
+    if (description?.ro) tree.description.ro = description.ro;
+
+    await tree.save();
+
+    const populatedTree = await TreeSchema.findById(id)
+      .populate("category")
+      .populate("seller", "fullName sellerInfo.nurseryName");
+
+    res.json({
+      ...populatedTree.toObject(),
+      message: t(userLang, "success.tree.updated"),
+    });
+  } catch (error) {
+    logger.error("Помилка додавання перекладів", {
+      error: error.message,
+      stack: error.stack,
+      treeId: req.params.id,
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.update_failed"),
+    });
+  }
+};
+
 export const updateTree = async (req, res) => {
   try {
     const { id } = req.params;

@@ -43,7 +43,8 @@ import {
   updateTree,
   getTreeById,
   getPendingTrees,
-  approveTree
+  approveTree,
+  addTranslations
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from "./services/emailService.js";
@@ -204,6 +205,7 @@ app.patch(
 );
 app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
 app.get("/admin/trees/pending", checkAuth, checkAdmin, getPendingTrees);
+app.patch("/admin/trees/:id/translations", checkAuth, checkAdmin, addTranslations);
 app.patch("/admin/trees/:id/approve", checkAuth, checkAdmin, approveTree);
 
 // ⬇️ РОУТИ ДЛЯ ПРОДАВЦІВ:

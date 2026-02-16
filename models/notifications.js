@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const NotificationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['new_seller_registration', 'new_product_created', 'seller_approved', 'seller_rejected', 'other'],
+    enum: ['new_seller_registration', 'new_product_created', 'product_approved', 'seller_approved', 'seller_rejected', 'other'],
     required: true,
   },
   title: {

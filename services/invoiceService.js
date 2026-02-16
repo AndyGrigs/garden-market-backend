@@ -242,15 +242,17 @@ class InvoiceService {
               public_id: invoiceNumber
             });
 
-            // Видаляємо локальний файл після завантаження
+            // Додаємо fl_attachment для коректного скачування PDF
+            const downloadUrl = result.secure_url.replace('/raw/upload/', '/raw/upload/fl_attachment/');
+
+            // Видаляємо локальний файл після успішного завантаження
             fs.unlink(filePath, () => {});
 
             resolve({
               success: true,
               fileName: fileName,
-              filePath: filePath,
               cloudinaryUrl: result.secure_url,
-              relativePath: result.secure_url
+              relativePath: downloadUrl
             });
           } catch (uploadError) {
             // Якщо Cloudinary недоступний, повертаємо локальний шлях

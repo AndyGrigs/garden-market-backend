@@ -103,8 +103,13 @@ OrderSchema.pre('validate', async function(next) {
     const date = new Date();
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
-    const count = await mongoose.model('Order').countDocuments();
-    this.orderNumber = `ORD-${year}${month}-${String(count + 1).padStart(4, '0')}`;
+    const lastOrder = await mongoose.model('Order').findOne().sort({ orderNumber: -1 }).select('orderNumber');
+    let nextNum = 1;
+    if (lastOrder?.orderNumber) {
+      const lastNum = parseInt(lastOrder.orderNumber.split('-').pop(), 10);
+      if (!isNaN(lastNum)) nextNum = lastNum + 1;
+    }
+    this.orderNumber = `ORD-${year}${month}-${String(nextNum).padStart(4, '0')}`;
   }
   next();
 });
