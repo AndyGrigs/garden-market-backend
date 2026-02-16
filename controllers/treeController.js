@@ -113,6 +113,7 @@ export const createTree = async (req, res) => {
         // ⬇️ ВІДПРАВЛЯЄМО EMAIL АДМІНАМ
         await notifyAllAdmins(emailService, "new_product_created", {
           productName: title.ru,
+          productId: tree._id,
           price: price,
           sellerInfo: {
             fullName: sellerData?.fullName,
@@ -200,6 +201,97 @@ export const getPendingTrees = async (req, res) => {
     const userLang = getUserLanguage(req);
     res.status(500).json({
       message: t(userLang, "errors.tree.fetch_failed"),
+    });
+  }
+};
+
+export const approveTree = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userLang = getUserLanguage(req);
+
+    const tree = await TreeSchema.findById(id).populate("seller", "fullName email sellerInfo.nurseryName");
+
+    if (!tree) {
+      return res.status(404).json({
+        message: t(userLang, "errors.tree.not_found"),
+      });
+    }
+
+    if (tree.isApproved) {
+      return res.status(400).json({
+        message: t(userLang, "errors.tree.already_approved", {
+          defaultValue: "Товар уже одобрен"
+        }),
+      });
+    }
+
+    // Схвалюємо товар
+    tree.isApproved = true;
+    tree.approvedBy = req.userId;
+    tree.approvedAt = new Date();
+    await tree.save();
+
+    // Створюємо сповіщення
+    try {
+      await createNotification({
+        type: "product_approved",
+        title: "Товар схвалено",
+        message: `Товар "${tree.title.ru}" від продавця ${tree.seller.fullName} було схвалено`,
+        data: {
+          productId: tree._id,
+          userId: tree.seller._id,
+          sellerInfo: {
+            nurseryName: tree.seller.sellerInfo?.nurseryName,
+            email: tree.seller.email,
+            fullName: tree.seller.fullName,
+          }
+        }
+      });
+    } catch (notificationError) {
+      logger.error("Помилка створення сповіщення про схвалення товару", {
+        error: notificationError.message,
+        stack: notificationError.stack,
+        treeId: id
+      });
+    }
+
+    // Відправляємо email продавцю
+    try {
+      await emailService.sendProductApprovalEmail(
+        tree.seller.email,
+        {
+          fullName: tree.seller.fullName,
+          productTitle: tree.title.ru,
+          nurseryName: tree.seller.sellerInfo?.nurseryName,
+        },
+        tree.seller.language || 'ru'
+      );
+    } catch (emailError) {
+      logger.error("Помилка відправки email про схвалення товару", {
+        error: emailError.message,
+        stack: emailError.stack,
+        sellerEmail: tree.seller.email
+      });
+    }
+
+    res.json({
+      message: t(userLang, "success.tree.approved", {
+        defaultValue: "Товар успешно одобрен"
+      }),
+      tree,
+    });
+  } catch (error) {
+    logger.error("Помилка схвалення товару", {
+      error: error.message,
+      stack: error.stack,
+      treeId: req.params.id
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({
+      message: t(userLang, "errors.tree.approve_failed", {
+        defaultValue: "Ошибка одобрения товара"
+      }),
     });
   }
 };

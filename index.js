@@ -41,7 +41,9 @@ import {
   deleteTree,
   getAllTrees,
   updateTree,
-  getTreeById
+  getTreeById,
+  getPendingTrees,
+  approveTree
 } from "./controllers/treeController.js";
 import { checkAdmin } from "./utils/checkAdmin.js";
 import EmailService from "./services/emailService.js";
@@ -201,6 +203,8 @@ app.patch(
   updateTree
 );
 app.delete("/admin/trees/:id", checkAuth, checkAdmin, deleteTree);
+app.get("/admin/trees/pending", checkAuth, checkAdmin, getPendingTrees);
+app.patch("/admin/trees/:id/approve", checkAuth, checkAdmin, approveTree);
 
 // ⬇️ РОУТИ ДЛЯ ПРОДАВЦІВ:
 app.get("/seller/trees", checkAuth, checkSeller, getSellerTrees);

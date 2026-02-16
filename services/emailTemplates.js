@@ -427,7 +427,7 @@ export const adminNotificationTemplates = {
             <div class="content">
               <div class="info-box">
                 <p><strong>🌳 Товар:</strong> ${data.productName}</p>
-                <p><strong>💰 Цена:</strong> ${data.price} грн</p>
+                <p><strong>💰 Цена:</strong> ${data.price} MDL</p>
                 <p><strong>👤 Продавец:</strong> ${data.sellerInfo?.fullName}</p>
                 <p><strong>🏪 Питомник:</strong> ${data.sellerInfo?.nurseryName}</p>
                 <p><strong>📅 Создано:</strong> ${new Date().toLocaleDateString("ru-RU")}</p>
@@ -443,7 +443,7 @@ export const adminNotificationTemplates = {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                <a href="${process.env.BASE_URL || process.env.FRONTEND_URL}/admin/trees/${data.productId}/translate" class="btn">
                   🔗 Добавить переводы
                 </a>
               </div>
@@ -501,7 +501,7 @@ export const adminNotificationTemplates = {
               </div>
 
               <div style="text-align: center; margin: 30px 0;">
-                <a href="${process.env.FRONTEND_URL}/admin" class="btn">
+                <a href="${process.env.BASE_URL || process.env.FRONTEND_URL}/admin/trees/${data.productId}/translate" class="btn">
                   🔗 Adăugați traduceri
                 </a>
               </div>
@@ -519,7 +519,72 @@ export const adminNotificationTemplates = {
   },
 };
 
-// ... попередній код ...
+export const productApprovalTemplates = {
+  ru: (data) => ({
+    subject: `✅ Ваш товар одобрен - ${data.productTitle}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Товар одобрен</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1>✅ Ваш товар одобрен!</h1>
+          </div>
+          <div style="background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef;">
+            <p>Здравствуйте, <strong>${data.fullName}</strong>!</p>
+            <p>Ваш товар <strong>"${data.productTitle}"</strong> был проверен и одобрен администратором.</p>
+            <p>Теперь он доступен покупателям на сайте.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.BASE_URL || process.env.FRONTEND_URL}/dashboard" style="display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                🛒 Перейти в личный кабинет
+              </a>
+            </div>
+          </div>
+          <div style="background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px;">
+            <p>Garden Market | ${new Date().toLocaleDateString("ru-RU")}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  }),
+  ro: (data) => ({
+    subject: `✅ Produsul dvs. a fost aprobat - ${data.productTitle}`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <title>Produs aprobat</title>
+      </head>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+          <div style="background: #059669; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+            <h1>✅ Produsul dvs. a fost aprobat!</h1>
+          </div>
+          <div style="background: #f8f9fa; padding: 30px; border: 1px solid #e9ecef;">
+            <p>Bună ziua, <strong>${data.fullName}</strong>!</p>
+            <p>Produsul dvs. <strong>"${data.productTitle}"</strong> a fost verificat și aprobat de administrator.</p>
+            <p>Acum este disponibil pentru cumpărători pe site.</p>
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${process.env.BASE_URL || process.env.FRONTEND_URL}/dashboard" style="display: inline-block; background: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px;">
+                🛒 Accesați contul personal
+              </a>
+            </div>
+          </div>
+          <div style="background: #6b7280; color: white; padding: 15px; text-align: center; border-radius: 0 0 8px 8px; font-size: 14px;">
+            <p>Garden Market | ${new Date().toLocaleDateString("ro-RO")}</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `,
+  }),
+};
 
 export const invoiceEmailTemplates = {
   ru: (order, invoiceUrl) => `

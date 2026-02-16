@@ -1,6 +1,6 @@
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
-import { verificationCodeTemplates, resetCodeTemplates, sellerApprovalTemplates, sellerRejectionTemplates, adminNotificationTemplates } from "./emailTemplates.js";
+import { verificationCodeTemplates, resetCodeTemplates, sellerApprovalTemplates, sellerRejectionTemplates, adminNotificationTemplates, productApprovalTemplates } from "./emailTemplates.js";
 
 dotenv.config();
 
@@ -165,6 +165,25 @@ class EmailService {
     } catch (error) {
       console.error("❌ Error sending admin notification email:", error);
       throw error;
+    }
+  }
+
+  async sendProductApprovalEmail(sellerEmail, data, userLang = "ru") {
+    try {
+      const lang = ["ru", "ro"].includes(userLang) ? userLang : "ru";
+      const template = productApprovalTemplates[lang](data);
+      const mailOptions = {
+        from: `"Garden Market" <${process.env.EMAIL_USER}>`,
+        to: sellerEmail,
+        subject: template.subject,
+        html: template.html,
+      };
+
+      const result = await this.transporter.sendMail(mailOptions);
+      return { success: true, messageId: result.messageId };
+    } catch (error) {
+      console.error("❌ Error sending product approval email:", error);
+      return { success: false, error: error.message };
     }
   }
 
