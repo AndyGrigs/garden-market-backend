@@ -6,6 +6,7 @@ import EmailService from "../services/emailService.js";
 import { invoiceEmailTemplates } from "../services/emailTemplates.js";
 import logger from "../config/logger.js";
 import User from "../models/user.js";
+import { createNotification } from "./notificationController.js";
 
 const emailService = new EmailService();
 
@@ -127,6 +128,25 @@ export const createOrder = async (req, res) => {
           <p>Статус: Ожидает оплаты</p>
         `,
       );
+
+      // Створюємо сповіщення для адмін-панелі
+      try {
+        await createNotification({
+          type: "new_order",
+          title: `Нове замовлення #${newOrder.orderNumber}`,
+          message: `Клієнт ${shippingAddress.name} оформив замовлення на суму ${totalAmount} MDL`,
+          data: {
+            orderId: newOrder._id,
+            userId: req.userId || null,
+          },
+        });
+      } catch (notificationError) {
+        logger.error("Помилка створення сповіщення про замовлення", {
+          error: notificationError.message,
+          stack: notificationError.stack,
+          orderId: newOrder._id,
+        });
+      }
 
       res.status(201).json({
         success: true,

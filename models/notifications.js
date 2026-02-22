@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 const NotificationSchema = new mongoose.Schema({
   type: {
     type: String,
-    enum: ['new_seller_registration', 'new_product_created', 'product_approved', 'seller_approved', 'seller_rejected', 'other'],
+    enum: ['new_seller_registration', 'new_product_created', 'product_approved', 'seller_approved', 'seller_rejected', 'new_order', 'other'],
     required: true,
   },
   title: {
@@ -17,6 +17,7 @@ const NotificationSchema = new mongoose.Schema({
   data: {
     userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     productId: { type: mongoose.Schema.Types.ObjectId, ref: 'Tree' },
+    orderId: { type: mongoose.Schema.Types.ObjectId, ref: 'Order' },
     sellerInfo: {
       nurseryName: String,
       email: String,

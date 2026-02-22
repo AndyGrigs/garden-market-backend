@@ -69,6 +69,7 @@ const OrderSchema = new mongoose.Schema({
   // Адреса доставки
   shippingAddress: {
     name: String,
+    email: String,
     phone: String,
     address: String,
     city: String,
