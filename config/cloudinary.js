@@ -17,7 +17,7 @@ export const cloudinaryStorage = new CloudinaryStorage({
   cloudinary: cloudinary,
   params: {
     folder: 'garden-market', // Folder name in Cloudinary
-    allowed_formats: ['jpg', 'jpeg', 'png'], // Allowed formats
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'], // Allowed formats
     transformation: [
       {
         width: 1200,

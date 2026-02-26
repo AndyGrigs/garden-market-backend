@@ -7,7 +7,7 @@ import cloudinary, { cloudinaryStorage } from '../config/cloudinary.js';
 import logger from '../config/logger.js';
 
 // Дозволені типи файлів
-const allowedTypes = ["image/jpeg", "image/png", "image/jpg"];
+const allowedTypes = ["image/jpeg", "image/png", "image/jpg", "image/webp"];
 
 // Maximum file size (5MB)
 const MAX_FILE_SIZE = 5 * 1024 * 1024;
@@ -351,7 +351,7 @@ export const cleanupUnusedFiles = async (req, res) => {
 
     for (const file of files) {
       // Skip if file is not an image
-      if (!/\.(jpg|jpeg|png)$/i.test(file)) {
+      if (!/\.(jpg|jpeg|png|webp)$/i.test(file)) {
         continue;
       }
 
