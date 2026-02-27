@@ -128,7 +128,6 @@ const app = express();
 
 app.use(cookieParser());
 app.use(express.json());
-app.use(errorHandler);
 app.use(
   cors({
     origin: [
@@ -307,8 +306,15 @@ const emailService = new EmailService();
 emailService.testConnection();
 
 // Middleware для логування помилок (має бути після всіх routes)
-   app.use(errorLogger);
-   app.use(errorResponder);
+app.use((err, req, res, next) => {
+  if (err.type === 'entity.parse.failed') {
+    return res.status(400).json({ message: 'Invalid JSON or wrong Content-Type' });
+  }
+  next(err);
+});
+app.use(errorHandler);
+app.use(errorLogger);
+app.use(errorResponder);
 
 
 const port = process.env.PORT || 4444;
