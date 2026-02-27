@@ -385,6 +385,76 @@ export const resendVerificationCode = async (req, res) => {
   }
 };
 
+export const getAllSellers = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+
+    const sellers = await UserModel.find({ role: 'seller', isActive: true })
+      .select('-passwordHash -resetCode -resetCodeExpires -verificationCode -verificationCodeExpires')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      sellers,
+      count: sellers.length,
+    });
+  } catch (error) {
+    logger.error("Помилка отримання списку продавців", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.userId
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
+  }
+};
+
+export const getSellerById = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    const { userId } = req.params;
+
+    const seller = await UserModel.findOne({ _id: userId, role: 'seller', isActive: true })
+      .select('-passwordHash -resetCode -resetCodeExpires -verificationCode -verificationCodeExpires');
+
+    if (!seller) {
+      return res.status(404).json({ message: t(userLang, "errors.user_not_found") });
+    }
+
+    res.json({ seller });
+  } catch (error) {
+    logger.error("Помилка отримання даних продавця", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.userId
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
+  }
+};
+
+export const deleteSeller = async (req, res) => {
+  try {
+    const userLang = getUserLanguage(req);
+    const { userId } = req.params;
+
+    const seller = await UserModel.findOneAndDelete({ _id: userId, role: 'seller' });
+
+    if (!seller) {
+      return res.status(404).json({ message: t(userLang, "errors.user_not_found") });
+    }
+
+    res.json({ message: "Seller deleted", id: userId });
+  } catch (error) {
+    logger.error("Помилка видалення продавця", {
+      error: error.message,
+      stack: error.stack,
+      userId: req.params.userId
+    });
+    const userLang = getUserLanguage(req);
+    res.status(500).json({ message: t(userLang, "errors.server_error") });
+  }
+};
+
 export const getPendingSellers = async (req, res) => {
   try {
     const userLang = getUserLanguage(req);

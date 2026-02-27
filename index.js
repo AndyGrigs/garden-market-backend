@@ -27,7 +27,10 @@ import {
   sendResetCode,
   resetPassword,
   getPendingSellers,
-  getSavedAddress 
+  getAllSellers,
+  getSellerById,
+  deleteSeller,
+  getSavedAddress
 } from "./controllers/userController.js";
 import handleValidationErrors from "./utils/handleValidationErrors.js";
 import {
@@ -260,7 +263,10 @@ app.delete(
   deleteNotification
 );
 
+app.get("/admin/sellers", checkAuth, checkAdmin, getAllSellers);
 app.get("/admin/sellers/pending", checkAuth, checkAdmin, getPendingSellers);
+app.get("/admin/sellers/:userId", checkAuth, checkAdmin, getSellerById);
+app.delete("/admin/sellers/:userId", checkAuth, checkAdmin, deleteSeller);
 app.patch(
   "/admin/sellers/:userId/approve",
   checkAuth,
