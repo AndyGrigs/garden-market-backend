@@ -74,63 +74,71 @@ class InvoiceService {
 
     // Генеруємо PDF в буфер (без запису на диск)
     const pdfBuffer = await this._generatePdfBuffer(doc => {
+      const pageWidth = doc.page.width;
+      const marginLeft = 50;
+      const marginRight = 50;
+      const contentWidth = pageWidth - marginLeft - marginRight;
+      const colWidth = (contentWidth - 20) / 2;
+
       // === HEADER ===
       doc
-        .fontSize(24)
+        .fontSize(20)
         .font('Roboto-Bold')
-        .text(t.invoice, { align: 'center' })
-        .moveDown(0.5);
+        .text(t.invoice, marginLeft, 50, { width: contentWidth, align: 'center' });
 
-      // Номер і дата
+      // Номер і дата — під заголовком
+      doc
+        .fontSize(9)
+        .font('Roboto')
+        .text(`${t.invoiceNumber}: ${invoiceNumber}`, marginLeft, 78, { width: contentWidth, align: 'center' })
+        .text(`${t.date}: ${new Date().toLocaleDateString('ro-RO')} | ${t.orderNumber}: ${order.orderNumber}`, marginLeft, 90, { width: contentWidth, align: 'center' });
+
+      // Лінія під заголовком
+      doc.moveTo(marginLeft, 108).lineTo(pageWidth - marginRight, 108).stroke();
+
+      // === ПРОДАВЕЦЬ і ПОКУПЕЦЬ — дві колонки ===
+      const infoTop = 118;
+      const col2X = marginLeft + colWidth + 20;
+
       doc
         .fontSize(10)
-        .font('Roboto')
-        .text(`${t.invoiceNumber}: ${invoiceNumber}`, { align: 'right' })
-        .text(`${t.date}: ${new Date().toLocaleDateString('ro-RO')}`, { align: 'right' })
-        .text(`${t.orderNumber}: ${order.orderNumber}`, { align: 'right' })
-        .moveDown(2);
-
-      // === ПРОДАВЕЦЬ ===
-      doc
-        .fontSize(12)
         .font('Roboto-Bold')
-        .text(t.seller)
-        .fontSize(10)
+        .text(t.seller, marginLeft, infoTop, { width: colWidth })
+        .fontSize(9)
         .font('Roboto')
-        .text('Covaci Trees')
-        .text('IDNO: 1234567890')
-        .text(`${t.address}: с. Ришканы, Каушанский район, Молдова`)
-        .text(`${t.phone}: +373 797 481 311`)
-        .text(`${t.email}: info@covacitrees.md`)
-        .moveDown(1.5);
+        .text('Covaci Trees', marginLeft, infoTop + 14, { width: colWidth })
+        .text('IDNO: 1234567890', marginLeft, infoTop + 26, { width: colWidth })
+        .text(`${t.address}: с. Ришканы, Каушанский р-н`, marginLeft, infoTop + 38, { width: colWidth })
+        .text(`${t.phone}: +373 797 481 311`, marginLeft, infoTop + 50, { width: colWidth })
+        .text(`${t.email}: info@covacitrees.md`, marginLeft, infoTop + 62, { width: colWidth });
 
-      // === ПОКУПЕЦЬ ===
       doc
-        .fontSize(12)
-        .font('Roboto-Bold')
-        .text(t.buyer)
         .fontSize(10)
+        .font('Roboto-Bold')
+        .text(t.buyer, col2X, infoTop, { width: colWidth })
+        .fontSize(9)
         .font('Roboto')
-        .text(order.shippingAddress.name)
-        .text(`${t.address}: ${order.shippingAddress.address}, ${order.shippingAddress.city}`)
-        .text(`${t.phone}: ${order.shippingAddress.phone}`)
-        .text(`${t.email}: ${order.guestEmail || order.userId?.email || ''}`)
-        .moveDown(2);
+        .text(order.shippingAddress.name, col2X, infoTop + 14, { width: colWidth })
+        .text(`${t.address}: ${order.shippingAddress.address}, ${order.shippingAddress.city}`, col2X, infoTop + 26, { width: colWidth })
+        .text(`${t.phone}: ${order.shippingAddress.phone}`, col2X, infoTop + 38, { width: colWidth })
+        .text(`${t.email}: ${order.guestEmail || order.userId?.email || ''}`, col2X, infoTop + 50, { width: colWidth });
+
+      // Вертикальна лінія між колонками
+      doc.moveTo(marginLeft + colWidth + 10, infoTop - 2).lineTo(marginLeft + colWidth + 10, infoTop + 74).stroke();
+
+      // Лінія під блоком продавець/покупець
+      const tableTop = infoTop + 84;
+      doc.moveTo(marginLeft, tableTop - 10).lineTo(pageWidth - marginRight, tableTop - 10).stroke();
 
       // === ТАБЛИЦЯ ТОВАРІВ ===
-      const tableTop = doc.y;
       const tableHeaders = [
-        { label: t.product, x: 50, width: 250 },
-        { label: t.quantity, x: 300, width: 60 },
+        { label: t.product, x: marginLeft, width: 240 },
+        { label: t.quantity, x: 295, width: 60 },
         { label: t.price, x: 360, width: 80 },
-        { label: t.total, x: 440, width: 100 }
+        { label: t.total, x: 445, width: 100 }
       ];
 
-      // Заголовки таблиці
-      doc
-        .fontSize(10)
-        .font('Roboto-Bold');
-
+      doc.fontSize(9).font('Roboto-Bold');
       tableHeaders.forEach(header => {
         doc.text(header.label, header.x, tableTop, {
           width: header.width,
@@ -138,78 +146,77 @@ class InvoiceService {
         });
       });
 
-      // Лінія під заголовками
-      doc
-        .moveTo(50, tableTop + 20)
-        .lineTo(540, tableTop + 20)
-        .stroke();
+      doc.moveTo(marginLeft, tableTop + 16).lineTo(pageWidth - marginRight, tableTop + 16).stroke();
 
       // Товари
-      let yPosition = tableTop + 30;
+      let yPosition = tableTop + 24;
       doc.font('Roboto').fontSize(9);
 
       order.items.forEach((item) => {
         const title = item.title && (item.title[language] || item.title.ru || item.title.ro) || 'Товар/Produs';
 
-        doc.text(title, 50, yPosition, { width: 240 });
-        doc.text(item.quantity.toString(), 300, yPosition, { width: 60, align: 'right' });
+        doc.text(title, marginLeft, yPosition, { width: 235 });
+        doc.text(item.quantity.toString(), 295, yPosition, { width: 60, align: 'right' });
         doc.text(`${item.price.toFixed(2)} MDL`, 360, yPosition, { width: 80, align: 'right' });
-        doc.text(`${item.subtotal.toFixed(2)} MDL`, 440, yPosition, { width: 100, align: 'right' });
+        doc.text(`${item.subtotal.toFixed(2)} MDL`, 445, yPosition, { width: 100, align: 'right' });
 
-        yPosition += 25;
+        yPosition += 20;
       });
 
       // Лінія перед підсумком
-      doc
-        .moveTo(50, yPosition)
-        .lineTo(540, yPosition)
-        .stroke();
-
-      yPosition += 15;
+      doc.moveTo(marginLeft, yPosition).lineTo(pageWidth - marginRight, yPosition).stroke();
+      yPosition += 10;
 
       // === ПІДСУМОК ===
       doc
-        .fontSize(12)
+        .fontSize(10)
         .font('Roboto-Bold')
         .text(t.totalAmount, 300, yPosition)
-        .text(`${order.totalAmount.toFixed(2)} MDL`, 440, yPosition, {
-          width: 100,
-          align: 'right'
-        });
+        .text(`${order.totalAmount.toFixed(2)} MDL`, 445, yPosition, { width: 100, align: 'right' });
 
-      yPosition += 40;
+      yPosition += 24;
+      doc.moveTo(marginLeft, yPosition).lineTo(pageWidth - marginRight, yPosition).stroke();
+      yPosition += 14;
 
       // === РЕКВІЗИТИ ДЛЯ ОПЛАТИ ===
       doc
-        .fontSize(12)
-        .font('Roboto-Bold')
-        .text(t.paymentDetails, 50, yPosition)
-        .moveDown(0.5);
-
-      doc
         .fontSize(10)
-        .font('Roboto')
-        .text(`${t.beneficiary}: Covaci Trees`)
-        .text(`${t.bankName}: Moldova Agroindbank`)
-        .text(`${t.accountNumber}: MD00AG000000000000000000`)
-        .text(`${t.iban}: MD00AG000000000000000000`)
-        .text(`${t.swift}: AGRNMD2X`)
-        .text(`${t.paymentPurpose}: ${t.invoiceNumber} ${invoiceNumber}, ${t.orderNumber} ${order.orderNumber}`)
-        .moveDown(2);
+        .font('Roboto-Bold')
+        .text(t.paymentDetails, marginLeft, yPosition);
+
+      yPosition += 14;
+      doc.fontSize(9).font('Roboto');
+
+      const payRows = [
+        [`${t.beneficiary}:`, 'Covaci Trees'],
+        [`${t.bankName}:`, 'Moldova Agroindbank'],
+        [`${t.iban}:`, 'MD00AG000000000000000000'],
+        [`${t.swift}:`, 'AGRNMD2X'],
+        [`${t.paymentPurpose}:`, `${invoiceNumber}, ${t.orderNumber} ${order.orderNumber}`],
+      ];
+
+      payRows.forEach(([label, value]) => {
+        doc.font('Roboto-Bold').text(label, marginLeft, yPosition, { width: 130, continued: false });
+        doc.font('Roboto').text(value, marginLeft + 135, yPosition, { width: contentWidth - 135 });
+        yPosition += 14;
+      });
 
       // === ПІДПИС ===
+      const signY = doc.page.height - 80;
+      doc.moveTo(marginLeft, signY - 6).lineTo(pageWidth - marginRight, signY - 6).stroke();
       doc
-        .fontSize(10)
-        .text(`${t.signature}: _________________`, 50, doc.page.height - 150)
-        .text(`${t.stamp}`, 400, doc.page.height - 150);
+        .fontSize(9)
+        .font('Roboto')
+        .text(`${t.signature}: _________________`, marginLeft, signY)
+        .text(`${t.stamp}`, pageWidth - marginRight - 80, signY);
 
       // Footer
       doc
         .fontSize(8)
         .font('Roboto')
-        .text('Covaci Trees - www.covacitrees.md', 50, doc.page.height - 50, {
+        .text('Covaci Trees - www.covacitrees.md', marginLeft, doc.page.height - 35, {
           align: 'center',
-          width: 500
+          width: contentWidth
         });
     });
 

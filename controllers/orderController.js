@@ -93,7 +93,6 @@ export const createOrder = async (req, res) => {
       }
 
       // Отправляем email со счетом
-      const invoiceUrl = invoiceResult.relativePath;
       const emailTemplate =
         invoiceEmailTemplates[language] || invoiceEmailTemplates.ru;
 
@@ -111,7 +110,7 @@ export const createOrder = async (req, res) => {
         language === "ro"
           ? "Factura pentru comanda dvs."
           : "Счет на оплату заказа",
-        emailTemplate(newOrder, invoiceUrl),
+        emailTemplate(newOrder),
         attachments,
       );
 

@@ -587,7 +587,7 @@ export const productApprovalTemplates = {
 };
 
 export const invoiceEmailTemplates = {
-  ru: (order, invoiceUrl) => `
+  ru: (order) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
       <div style="background: linear-gradient(135deg, #388e3c, #2e7d32); color: white; padding: 30px; text-align: center;">
         <h1 style="margin: 0; font-size: 28px;">📋 Счёт на оплату</h1>
@@ -628,12 +628,6 @@ export const invoiceEmailTemplates = {
           <p><strong>Назначение платежа:</strong> Счёт ${order.invoice.number}, Заказ ${order.orderNumber}</p>
         </div>
 
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${invoiceUrl}" download
-             style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-            📄 Скачать счёт (PDF)
-          </a>
-        </div>
 
         <p style="color: #666; font-size: 14px;">
           После произведения оплаты, пожалуйста, сообщите нам, и мы сразу начнём обработку вашего заказа.
@@ -655,7 +649,7 @@ export const invoiceEmailTemplates = {
     </div>
   `,
   
-  ro: (order, invoiceUrl) => `
+  ro: (order) => `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #ddd; border-radius: 8px; overflow: hidden;">
       <div style="background: linear-gradient(135deg, #388e3c, #2e7d32); color: white; padding: 30px; text-align: center;">
         <h1 style="margin: 0; font-size: 28px;">📋 Factură de plată</h1>
@@ -696,12 +690,6 @@ export const invoiceEmailTemplates = {
           <p><strong>Scop plată:</strong> Factură ${order.invoice.number}, Comandă ${order.orderNumber}</p>
         </div>
         
-        <div style="text-align: center; margin: 30px 0;">
-          <a href="${invoiceUrl}" download
-             style="background: #388e3c; color: white; padding: 15px 40px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
-            📄 Descarcă factura (PDF)
-          </a>
-        </div>
         
         <p style="color: #666; font-size: 14px;">
           După efectuarea plății, vă rugăm să ne informați și vom începe imediat procesarea comenzii.
