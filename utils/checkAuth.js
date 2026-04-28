@@ -109,7 +109,7 @@ export const verifyEmail = async (req, res) => {
       .cookie("auth_token", token, {
         httpOnly: true,
         secure: true, // змініть на true для HTTPS в продакшені
-        sameSite: "Strict",
+        sameSite: "None",
         maxAge: 30 * 24 * 60 * 60 * 1000, // 30 днів
         path: "/",
       })

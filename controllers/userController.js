@@ -180,7 +180,7 @@ export const login = async (req, res) => {
       .cookie("auth_token", token, {
         httpOnly: true,
         secure: true, // für localhost
-        sameSite: "Strict",
+        sameSite: "None",
         maxAge: 30 * 24 * 60 * 60 * 1000, 
         path: "/",
       })
@@ -225,7 +225,7 @@ export const logout = (req, res) => {
   res.clearCookie("auth_token", {
     httpOnly: true,
     secure: true,
-    sameSite: "Strict",
+    sameSite: "None",
     path: "/",
   });
   res.status(200).json({ message: "Logout successful" });
